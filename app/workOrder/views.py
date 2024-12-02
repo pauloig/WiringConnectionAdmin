@@ -1803,6 +1803,15 @@ def update_po(request, id, woID, selectedvs):
     else:
         form = InternalPOForm(request.POST or None, instance = obj )
 
+
+    
+    context["order"] = obj.woID.prismID + " - " + obj.woID.workOrderId + " - " + obj.woID.PO
+    context["order"] = obj.woID.prismID + " - " + obj.woID.workOrderId + " - " + obj.woID.PO
+
+    if obj.transferFromPO:
+        context["transferFromPO"] = obj.transferFromPO.prismID + " - " + obj.transferFromPO.workOrderId + " - " + obj.transferFromPO.PO 
+    else: 
+        context["transferFromPO"] = ""
  
     if form.is_valid():
         vendor = request.POST.get('vendor') 
@@ -1936,6 +1945,7 @@ def create_po(request, id, selectedvs):
 
 
     wo = workOrder.objects.filter(id=id).first()
+    context["order"] = wo
     
     if request.user.is_staff or emp.is_superAdmin:
         form = InternalPOFormAdmin(request.POST or None, initial={'woID': wo})    
@@ -1946,8 +1956,10 @@ def create_po(request, id, selectedvs):
     
     
     if form.is_valid():
+        form.instance.woID = wo
+
         vendor = request.POST.get('vendor') 
-        
+                
         if vendor == "0":
             form.instance.vendor = None
         else:
@@ -8071,6 +8083,27 @@ def update_estimate(request, id, estimateID):
     
     
     return render(request, "update_estimate.html", context)
+
+@login_required(login_url='/home/')
+def convert_final_estimate(request, id, estimateID):    
+    context = {} 
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context["emp"] = emp
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    estimate = woEstimate.objects.filter(estimateNumber = estimateID).first()
+
+    if estimate:
+        estimate.is_partial = False
+    
+        estimate.save()
+
+    return HttpResponseRedirect("/billing_list/" + str(id)+ "/False") 
+    
+    
+    
 
 @login_required(login_url='/home/')
 def add_internalPO_to_estimate(request, poID, woID, estimateID):

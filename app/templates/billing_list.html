@@ -3,6 +3,16 @@
 {%load humanize%}
 {% block container %}
 
+<script>
+    function convert_to_final(orderId, estNumber){
+        event.preventDefault();
+        if (confirm(`Are you sure to convert the estimate ${estNumber} to Final?`))
+        {           
+            window.location.href = `/convert_final_estimate/${orderId}/${estNumber}`;
+        }  
+    }
+</script>
+
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
@@ -110,7 +120,9 @@
                                 <table class="table table-sm table-bordered table-striped">
                                     <thead>
                                         <tr class="table-primary">
-                                            <td class="p-1">Estimate</td>
+                                            <td class="p-1">
+                                                Estimate                                                
+                                            </td>
                                             <td class="p-1">Date Created</td>
                                             <td class="p-1">Status</td>
                                             <!--<td  class="p-1">Total</td>-->
@@ -122,7 +134,13 @@
                                     <tbody>
                                         {%for itemd in estimateList %}
                                         <tr>
-                                            <td class="p-1">{{itemd.estimateNumber}}</td>
+                                            <td class="p-1">
+                                                {{itemd.estimateNumber}}
+                                                {% if not itemd.is_partial %}
+                                                    <span class="badge bg-info text-dark">  Final</span>
+                                                {% endif %}
+
+                                            </td>
                                             <td class="p-1">{{itemd.created_date|date:"M d, Y"}}</td>
                                             <td class="p-1">
                                                 {% if itemd.Status == 1%}
@@ -169,16 +187,22 @@
 
                                                 {% if itemd.Status == 1 %}
                                                 <!--&nbsp; <a data-bs-toggle="tooltip" data-bs-placement="top" title="Generate Invoice" href="/partial_estimate/{{order.id}}/True/2/0"><i class="fa-solid fa-circle-arrow-right" style="color: green;"></i></a>  -->
+                                                    
+                                                    &nbsp;
+                                                    {% if itemd.is_partial %}
+                                                        <a data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Convert to final estimate"
+                                                        onclick="convert_to_final({{order.id}},{{itemd.estimateNumber}})" >
+                                                            <i class="fa-solid fa-magic" style="color: blue;"></i></a>
+                                                        &nbsp;
+                                                    {% endif %}
 
-
-
-                                                &nbsp;
-                                                <button type="button" class="btn shadow-none m-0 p-0"
+                                                    <button type="button" class="btn shadow-none m-0 p-0"
                                                     data-bs-toggle="modal" data-bs-target="#invoice-alert">
                                                     <i class="fa-solid fa-circle-arrow-right fa-lg "
                                                         style="color: green;"></i>
                                                 </button>
-                                                {%endif%}
+                                                {% endif %}
                                             </td>
                                         </tr>
                                         {%endfor%}

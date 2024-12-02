@@ -66,10 +66,16 @@
             <div id="forma">
                 <div class="row">
                     <div class="col-sm-6">
-                        <div class="mb-3">
+                        <!--<div class="mb-3">
                             <label for="{{ form.externalProdID.id_for_label }}" class="form-label">Selected work order</label>
                             <input type="text" value="{{form.instance.externalProdID}}" class="form-control" disabled />
-                            <!--{% render_field form.externalProdID class="form-control" %}-->
+                            <!--{% render_field form.externalProdID class="form-control" %}
+                            <div class="invalid-feedback">{{ form.externalProdID.errors|first }}</div>
+                        </div>-->
+
+                        <div class="mb-3">
+                            <label for="{{ form.externalProdID.id_for_label }}" class="form-label">Selected work order</label>
+                            <input type="text" name="externalProdID" id="externalProdID" class="form-control" disabled>
                             <div class="invalid-feedback">{{ form.externalProdID.errors|first }}</div>
                         </div>
                     </div>                

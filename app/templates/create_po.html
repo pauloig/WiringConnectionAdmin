@@ -38,7 +38,17 @@
                                         </select>  
                                     </div> -->                                  
                                 </div>                                                                                
-                            </div>                    
+                            </div>       
+                            <div class="row"> 
+                                <div class="col-lg-12">
+                                    <div class="mb-3">    
+                                        <label for="PID" class="form-label">Work Order:</label>                
+                                        <div class="input-group mb-3">                                         
+                                               <input type="text" class="form-control" placeholder="Work Order" aria-label="woID" id="woID" name="woID" aria-describedby="basic-addon1" value="{{order}}" disabled>                                                                                        
+                                        </div>                                      
+                                    </div>                                                         
+                                </div>                                                                                
+                            </div>                 
                             <div class="row">
                                   <!-- Using the formset -->
                                 {{ form.as_p }}

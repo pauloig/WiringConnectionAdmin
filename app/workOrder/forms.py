@@ -167,7 +167,7 @@ class InternalPOForm(forms.ModelForm):
         model = internalPO
         fields = [
             'poNumber',
-            'woID',
+            #'woID',
             'supervisor',
             'pickupEmployee',
             'product',
@@ -177,7 +177,7 @@ class InternalPOForm(forms.ModelForm):
             'created_date',
             'createdBy',
             'Status',
-            'transferFromPO',
+            #'transferFromPO',
             'transfer_date',
             'transferBy'         
         ]
@@ -186,11 +186,11 @@ class InternalPOForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):      
         super().__init__(*args, **kwargs)
         self.fields['poNumber'].disabled = True
-        self.fields['woID'].disabled = True
+        #self.fields['woID'].disabled = True
         self.fields['createdBy'].disabled = True
         self.fields['created_date'].disabled = True
         self.fields['Status'].disabled = True
-        self.fields['transferFromPO'].disabled = True
+        #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True
         self.fields['total'].disabled = True
@@ -209,7 +209,7 @@ class InternalPOFormAccounPay(forms.ModelForm):
         model = internalPO
         fields = [
             'poNumber',
-            'woID',
+            #'woID',
             'supervisor',
             'pickupEmployee',
             'product',
@@ -219,7 +219,7 @@ class InternalPOFormAccounPay(forms.ModelForm):
             'created_date',
             'createdBy',
             'Status',
-            'transferFromPO',
+            #'transferFromPO',
             'transfer_date',
             'transferBy'         
         ]
@@ -228,11 +228,11 @@ class InternalPOFormAccounPay(forms.ModelForm):
     def __init__(self, *args, **kwargs):      
         super().__init__(*args, **kwargs)
         self.fields['poNumber'].disabled = True
-        self.fields['woID'].disabled = True
+        #self.fields['woID'].disabled = True
         self.fields['createdBy'].disabled = True
         self.fields['created_date'].disabled = True
         self.fields['Status'].disabled = True
-        self.fields['transferFromPO'].disabled = True
+        #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True        
 
@@ -250,7 +250,7 @@ class InternalPOFormAdmin(forms.ModelForm):
         model = internalPO
         fields = [
             'poNumber',
-            'woID',
+            #'woID',
             'supervisor',
             'pickupEmployee',
             'product',
@@ -261,7 +261,7 @@ class InternalPOFormAdmin(forms.ModelForm):
             'created_date',
             'createdBy',
             'Status',
-            'transferFromPO',
+            #'transferFromPO',
             'transfer_date',
             'transferBy'         
         ]
@@ -270,11 +270,11 @@ class InternalPOFormAdmin(forms.ModelForm):
     def __init__(self, *args, **kwargs):      
         super().__init__(*args, **kwargs)
         self.fields['poNumber'].disabled = True
-        self.fields['woID'].disabled = True
+        #self.fields['woID'].disabled = True
         self.fields['createdBy'].disabled = True
         self.fields['created_date'].disabled = True
         self.fields['Status'].disabled = True
-        self.fields['transferFromPO'].disabled = True
+        #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True 
         
