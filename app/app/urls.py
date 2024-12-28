@@ -115,6 +115,7 @@ urlpatterns = [
     path('update_invoice/<id>/<invoiceID>',views.update_invoice),
     path('update_estimate/<id>/<estimateID>',views.update_estimate),
     path('convert_final_estimate/<id>/<estimateID>',views.convert_final_estimate),
+    path('convert_partial_estimate/<id>/<estimateID>',views.convert_partial_estimate),
     path('employee_location_list/<empID>',views.employee_location_list),
     path('create_employee_location/<empID>',views.create_employee_location),
     path('delete_employee_location/<empID>',views.delete_employee_location),

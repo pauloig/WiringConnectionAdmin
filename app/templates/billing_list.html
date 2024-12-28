@@ -11,6 +11,14 @@
             window.location.href = `/convert_final_estimate/${orderId}/${estNumber}`;
         }  
     }
+
+    function convert_to_partial(orderId, estNumber){
+        event.preventDefault();
+        if (confirm(`Are you sure to convert the estimate ${estNumber} to Partial?`))
+        {           
+            window.location.href = `/convert_partial_estimate/${orderId}/${estNumber}`;
+        }  
+    }
 </script>
 
 <div class="container">
@@ -193,6 +201,12 @@
                                                         <a data-bs-toggle="tooltip" data-bs-placement="top"
                                                         title="Convert to final estimate"
                                                         onclick="convert_to_final({{order.id}},{{itemd.estimateNumber}})" >
+                                                            <i class="fa-solid fa-magic" style="color: blue;"></i></a>
+                                                        &nbsp;
+                                                    {% else %}
+                                                        <a data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Convert to Partial estimate"
+                                                        onclick="convert_to_partial({{order.id}},{{itemd.estimateNumber}})" >
                                                             <i class="fa-solid fa-magic" style="color: blue;"></i></a>
                                                         &nbsp;
                                                     {% endif %}

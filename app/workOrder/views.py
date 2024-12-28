@@ -8101,6 +8101,24 @@ def convert_final_estimate(request, id, estimateID):
         estimate.save()
 
     return HttpResponseRedirect("/billing_list/" + str(id)+ "/False") 
+
+@login_required(login_url='/home/')
+def convert_partial_estimate(request, id, estimateID):    
+    context = {} 
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context["emp"] = emp
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    estimate = woEstimate.objects.filter(estimateNumber = estimateID).first()
+
+    if estimate:
+        estimate.is_partial = True
+    
+        estimate.save()
+
+    return HttpResponseRedirect("/billing_list/" + str(id)+ "/False") 
     
     
     
