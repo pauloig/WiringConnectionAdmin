@@ -61,19 +61,16 @@
 
                 }
 
+               
+
                 $("#orders").DataTable();  
             </script>
             <div id="forma" style="display: none;">
                 <div class="row">
-                    <div class="col-sm-6">
-                        <!--<div class="mb-3">
-                            <label for="{{ form.externalProdID.id_for_label }}" class="form-label">Selected work order</label>
-                            {% render_field form.externalProdID class="form-control" %}
-                            <div class="invalid-feedback">{{ form.externalProdID.errors|first }}</div>
-                        </div>-->
+                    <div class="col-sm-6">                       
                         <div class="mb-3">
                             <label for="{{ form.externalProdID.id_for_label }}" class="form-label">Selected work order</label>
-                            <input type="text" name="externalProdID" id="externalProdID" class="form-control" disabled>
+                            <input type="text" name="externalProdID" id="externalProdID" class="form-control" value="{{externalProdID}}" disabled>
                             <div class="invalid-feedback">{{ form.externalProdID.errors|first }}</div>
                         </div>
                     </div>                
@@ -83,7 +80,7 @@
                             <input type="text" name="itemName" id="itemName" class="form-control" disabled>                                                
                             <input type="hidden" name="itemID" id="itemID">
                         </div>
-                    </div>                                   
+                    </div>                                
                 </div>  
                 <div class="row">
                     <div class="col-sm-6">
@@ -92,7 +89,7 @@
                             {% render_field form.quantity class="form-control" %}
                             <div class="invalid-feedback">{{ form.quantity.errors|first }}</div>
                         </div>
-                    </div> 
+                    </div>
                 </div>              
             </div>            
         </div>

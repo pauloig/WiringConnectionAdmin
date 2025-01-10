@@ -100,6 +100,7 @@ urlpatterns = [
     path('create_external_prod/<woID>',views.create_external_prod),
     path('get_external_prod/<id>',views.get_external_prod),
     path('update_external_prod/<id>',views.update_external_prod),
+    path('remove_external_prod/<id>',views.remove_external_prod),
     path('upload_external_prod/<id>',views.upload_external_prod),
     path('create_ext_prod_item/<id>',views.create_ext_prod_item),
     path('update_ext_prod_item/<id>',views.update_ext_prod_item),

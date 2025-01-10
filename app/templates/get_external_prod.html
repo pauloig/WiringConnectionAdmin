@@ -4,6 +4,18 @@
 {% block container %}
 {% load widget_tweaks%}
 
+<script>
+    function remove_production(prodId){
+        event.preventDefault();
+        if (confirm(`Are you sure to remove this External Production?`))
+        {           
+            window.location.href = `/remove_external_prod/${prodId}`;
+        }  
+    }
+
+</script>
+
+
 <div class="container">
     {% csrf_token %}
     <div class="row">
@@ -77,7 +89,10 @@
                         <div class="col-lg-6">
                             <div class="form-outline" style="align-items: center;">
                                 {%if emp.is_supervisor == False and order.Status != "5" %}
-                                <a class="btn btn-success" hx-get="/update_external_prod/{{form.id}}" hx-target="#dialog">UPDATE</a>
+                                    <a class="btn btn-success" hx-get="/update_external_prod/{{form.id}}" hx-target="#dialog">UPDATE</a>
+                                    {%if is_open %}
+                                        <a class="btn btn-warning" onclick="remove_production({{form.id}})">Remove</a>
+                                    {%endif%}
                                 {%endif%}
 
                                 <a class="btn btn-danger" href="/external_prod_list/{{form.woID.id}}"
@@ -128,10 +143,11 @@
                                                     <td class="p-1">${{itemd.itemID.emp_payout|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>   
                                                     <td class="p-1">
-                                                        {% if emp.is_superAdmin or emp.is_admin or user.is_staff  %}                                                                
+                                                        {% if emp.is_superAdmin or emp.is_admin or user.is_staff  %}     
+                                                            {%if itemd.Status == 1 %}                                                         
                                                                 <a hx-get="/update_ext_prod_item/{{itemd.id}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i> Edit</a>
                                                                 <a hx-get="/delete_ext_prod_item/{{itemd.id}}" hx-target="#dialog"><i class="fa-solid fa-circle-minus" style="color: red;"></i> Remove</a>
-                                                        
+                                                            {%endif%}
                                                         {%endif%}
                                                     </td> 
                                                 </tr>

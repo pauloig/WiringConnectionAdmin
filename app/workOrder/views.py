@@ -4586,6 +4586,7 @@ def create_daily_item(request, id, LocID):
          
     context['form']= form
     context["emp"] = emp
+    context["DailyID"] = dailyID
     context["itemList"] = itemLocation
     return render(request, "create_daily_item.html", context)
 
@@ -6895,7 +6896,7 @@ def get_external_prod(request, id):
     context ={}
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()   
     per = period.objects.filter(status__in=(1,2)).first()
-    
+    is_open = True
 
     obj = get_object_or_404(externalProduction , id = id )
 
@@ -6904,8 +6905,16 @@ def get_external_prod(request, id):
     else:
         context["payPercent"] = obj.subcontractor.payPercent + "%"
 
+    extProdItem = externalProdItem.objects.filter(externalProdID = obj)
+
+    for i in extProdItem:
+        if i.Status != 1:
+            is_open = False
+
+    
     context["id"] = id
-    context["items"] = externalProdItem.objects.filter(externalProdID = obj)
+    context["items"] = extProdItem
+    context["is_open"] = is_open
 
     context["per"] = per
     context["form"] = obj
@@ -6937,6 +6946,43 @@ def update_external_prod(request, id):
     context["form"] = form
     context["emp"] = emp
     return render(request, "update_external_prod.html", context)
+
+@login_required(login_url='/home/')
+def remove_external_prod(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    
+    per = period.objects.filter(status__in=(1,2)).first()
+    
+    obj = get_object_or_404(externalProduction , id = id )
+ 
+
+    if obj:
+
+        ext_prod_item = externalProdItem.objects.filter(externalProdID = obj)
+
+        for i in ext_prod_item:
+
+            authItem = authorizedBilling.objects.filter(woID = i.externalProdID.woID, itemID = i.itemID, Status = 1).first()
+
+            if authItem:
+                if authItem.quantity == i.quantity:
+                    authItem.delete()
+                else:
+                    authItem.quantity -=  i.quantity
+                    authItem.save()
+
+            i.delete()
+
+        obj.delete()
+
+        return HttpResponseRedirect("/external_prod_list/" + str(obj.woID.id))
+
+    context["per"] = per
+    context["emp"] = emp
+    return render(request, "get_external_prod.html", context)
+
+
 
 @login_required(login_url='/home/')
 def upload_external_prod(request, id):
@@ -6999,6 +7045,7 @@ def create_ext_prod_item(request, id):
     context['form']= form
     context["emp"] = emp
     context["itemList"] = itemLocation
+    context["externalProdID"] = dailyID
     return render(request, "create_ext_prod_item.html", context)
 
 @login_required(login_url='/home/')
@@ -7051,6 +7098,16 @@ def delete_ext_prod_item(request, id):
     context["emp"] = emp
  
     if request.method == 'POST':
+
+        authItem = authorizedBilling.objects.filter(woID = obj.externalProdID.woID, itemID = obj.itemID, Status = 1).first()
+
+        if authItem:
+            if authItem.quantity == obj.quantity:
+                authItem.delete()
+            else:
+                authItem.quantity -=  obj.quantity
+                authItem.save()
+
         obj.delete()
 
 
@@ -7058,6 +7115,9 @@ def delete_ext_prod_item(request, id):
 
    
     return render(request, "delete_ext_prod_item.html", context)
+
+
+    
 
 @login_required(login_url='/home/')
 def authorized_billing_list(request, id):
