@@ -164,6 +164,8 @@ urlpatterns = [
          ),
          name='login'),
          path('login/',viewHome.login),
+         # Timesheet URLs
+        path('timesheet/', include('timesheet.urls')), 
     ]
 
 if settings.DEBUG:
