@@ -1,7 +1,7 @@
 {% extends 'index.html' %} 
 {%load static%}
 {% block title %} Duplicate Order List {% endblock %} 
-
+{% load humanize %}
 {% block container %}
 
 <div class="container">
@@ -14,43 +14,42 @@
                     <h6 class="card-header card-header-wc" >Filters</h6>
                     <div class="card-body">
                         <div class="row"> 
-                            <div class="col-lg-5">
+                            <div class="col-lg-2">
                                 <div class="mb-3">
-                                    <label for="employee" class="form-label">Status</label>                
+                                    <label for="employee" class="form-label">PO Status</label>    
+                                                
                                         <div class="input-group mb-3">   
-                                            <select class="form-select" aria-label="Default select example" name="status" id="status">                                                                                           
-                                                {%if selectEstatus == "-1"%} 
-                                                    <option value ="0" selected>Select an Option</option>
-                                                {%else%}
-                                                    <option value ="0">Select an Option</option>
-                                                {%endif%}
-                                               <!-- 
-                                               {%if selectEstatus == "0"%} 
-                                                    <option value ="0" selected >All PO</option>
-                                                {%else%}
-                                                    <option value ="0">All PO</option>
-                                                {%endif%} 
-                                               --> 
-                                                {%if selectEstatus == "1"%}
-                                                    <option value ="1" selected>Open</option>
-                                                {%else%}
-                                                    <option value ="1" >Open</option>
-                                                {%endif%}
-                                                {%if selectEstatus == "2"%}
-                                                    <option value ="2" selected>estimated</option>
-                                                {%else%}
-                                                    <option value ="2" >estimated</option>
-                                                {%endif%}
-                                                {%if selectEstatus == "3"%}
-                                                    <option value ="3" selected>Invoiced</option>
-                                                {%else%}
-                                                    <option value ="3" >Invoiced</option>
-                                                {%endif%}
+                                            <select class="form-select" aria-label="Internal PO Status" name="status" id="status">                                                                                           
+                                               
+                                                <option value ="0" {% if selectEstatus == "-1" %}selected{% endif %} >Select an Option</option>
+                                                                                                                                         
+                                                {% for key, value in prodStatus_choices %}
+                                                    <option value="{{ key }}" {% if key|slugify == selectEstatus %}selected{% endif %}>
+                                                        {{ value }}
+                                                    </option>
+                                                {% endfor %}
                                             </select>
-                                            <!--<button type="submit" class="btn btn-primary py-2"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button> -->
                                         </div>
                                 </div>                                                                
-                            </div>    
+                            </div>   
+                            <div class="col-lg-3">
+                         
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">WO Status</label>                
+                                        <div class="input-group mb-3">   
+                                            <select class="form-select" aria-label="WO Status" name="woStatus" id="woStatus">  
+                                                <option value ="0" {% if selectWOEstatus == "-1" %}selected{% endif %} >Select an Option</option>
+                                                                                                                                         
+                                                {% for key, value in status_choices %}
+                                                    <option value="{{ key }}" {% if key == selectWOEstatus %}selected{% endif %}>
+                                                        {{ value }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            
+                                        </div>
+                                </div>                                                                
+                            </div> 
                             <div class="col-lg-3">
                                 <div class="mb-3">
                                     <label for="employee" class="form-label">PO Number</label>                
@@ -76,7 +75,7 @@
                                 <div class="form-outline" style="align-items: center;">
                                     <input class="btn btn-primary" type="submit" value="Search">     
                                     
-                                    <a class="btn btn-primary" href="/get_internal_po_list/{{selectEstatusd}}/{{selectedPOd}}/{{selectedPIDd}}" role="button">Download</a>
+                                    <a class="btn btn-primary" href="/get_internal_po_list/{{selectEstatusd}}/{{selectWOEstatusd}}/{{selectedPOd}}/{{selectedPIDd}}" role="button">Download</a>
                                     
                                     <a href="/" type="button" class="btn btn-danger">Close</a>                             
                                 </div>
@@ -114,6 +113,7 @@
                                             <th scope="col">PO</th>                                            
                                             <th scope="col">Vendor</th>
                                             <th scope="col">Status</th>
+                                            <th scope="col">Wo Status</th>
                                             <th scope="col">Supervisor</th>
                                             <th scope="col">Pick up Employee</th>
                                             <th scope="col">Product</th>  
@@ -135,15 +135,11 @@
                                                     {%endfor%}
                                                 </td>
                                                 <td>
-                                                    {% if po.Status == 1 %}
-                                                        Open
-                                                    {%elif po.Status == 2%}
-                                                        Estimated
-                                                    {%elif po.Status == 3%}
-                                                        Invoiced
-                                                    {%endif%}
+                                                    {{po.get_Status_display}}                                                    
                                                 </td>
-                                                
+                                                <td>
+                                                    {{po.woID.get_Status_display}}                                                    
+                                                </td>                                                
                                                 <td>{{po.supervisor}}</td>
                                                 <td>{{po.pickupEmployee}}</td>
                                                 <td>{{po.product}}</td>
