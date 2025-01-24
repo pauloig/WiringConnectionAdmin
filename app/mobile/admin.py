@@ -1,5 +1,5 @@
 from django.contrib import admin
-from timesheet.models import *
+from mobile.models import *
 
 
 # Register your models here.

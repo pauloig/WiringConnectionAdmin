@@ -14,6 +14,17 @@ from workOrder import models as catalogModel
 
 
 @login_required(login_url='/home/')
+
+def mobile_home(request):
+    emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per    
+    context["emp"]= emp
+
+    return render(request, "mobile/home.html", context)
+
 def employee_list(request):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
@@ -23,7 +34,7 @@ def employee_list(request):
     
     context["emp"]= emp
 
-    return render(request, "timesheet/employee_list.html", context)
+    return render(request, "mobile/employee_list.html", context)
 
 @login_required(login_url='/home/')
 def employee_submitted_list(request):
@@ -35,7 +46,7 @@ def employee_submitted_list(request):
     
     context["emp"]= emp
 
-    return render(request, "timesheet/employee_submitted_list.html", context)
+    return render(request, "mobile/employee_submitted_list.html", context)
 
 
 
@@ -65,12 +76,12 @@ def create(request):
         form.save() 
 
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/employee_list/')
+        return HttpResponseRedirect('/mobile/employee_list/')
        
  
     context['form']= form
     context["emp"] = emp
-    return render(request, "timesheet/timesheet.html", context)
+    return render(request, "mobile/timesheet.html", context)
 
 
 @login_required(login_url='/home/')
@@ -95,13 +106,13 @@ def update(request, id):
         form.instance.updated_date = datetime.now()    
         form.save()
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/employee_list/')
+        return HttpResponseRedirect('/mobile/employee_list/')
 
     context["object"] = obj     
     context['form']= form
     context["emp"] = emp
     context["id"] = id
-    return render(request, "timesheet/timesheet.html", context)
+    return render(request, "mobile/timesheet.html", context)
 
 
 """
@@ -174,7 +185,7 @@ def supervisor_list(request):
 
 
         
-    return render(request, "timesheet/supervisor_list.html", context)
+    return render(request, "mobile/supervisor_list.html", context)
 
 
 
@@ -193,12 +204,12 @@ def createBySupervisor(request):
         form.instance.total_hours = calculate_hours(form.instance.start_time, form.instance.end_time, form.instance.start_lunch_time, form.instance.end_lunch_time)
         form.save()
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/supervisor_list/')
+        return HttpResponseRedirect('/mobile/supervisor_list/')
 
          
     context['form']= form
     context["emp"] = emp
-    return render(request, "timesheet/supervisor_timesheet.html", context)
+    return render(request, "mobile/supervisor_timesheet.html", context)
 
 @login_required(login_url='/home/')
 def update_status(request, id, status):
@@ -213,12 +224,12 @@ def update_status(request, id, status):
         obj.Status = status
         obj.save()
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/supervisor_list/')
+        return HttpResponseRedirect('/mobile/supervisor_list/')
 
         
     context["emp"] = emp
     context["id"] = id
-    return render(request, "timesheet/timesheet.html/" + str(id), context)
+    return render(request, "mobile/timesheet.html/" + str(id), context)
 
 @login_required(login_url='/home/')
 def updateBySuper(request, id):
@@ -244,14 +255,14 @@ def updateBySuper(request, id):
         form.instance.updated_date = datetime.now()    
         form.save()
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/supervisor_list/')
+        return HttpResponseRedirect('/mobile/supervisor_list/')
 
          
     context['obj']= obj
     context['form']= form
     context["emp"] = emp
     context["id"] = id
-    return render(request, "timesheet/supervisor_timesheet.html", context)
+    return render(request, "mobile/supervisor_timesheet.html", context)
 
 
 def reject_timesheet(request, id):
@@ -267,12 +278,12 @@ def reject_timesheet(request, id):
         form.instance.Status = 5
         form.save()
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/supervisor_list/')
+        return HttpResponseRedirect('/mobile/supervisor_list/')
 
     context['form']= form     
     context["emp"] = emp
     context["id"] = id
-    return render(request, "timesheet/reject_timesheet.html", context)
+    return render(request, "mobile/reject_timesheet.html", context)
 
 
 def approve_timesheet(request, id):
@@ -312,13 +323,13 @@ def approve_timesheet(request, id):
         dailyemp.save()
 
         # Return to Locations List
-        return HttpResponseRedirect('/timesheet/supervisor_list/')
+        return HttpResponseRedirect('/mobile/supervisor_list/')
 
     context['form']= form     
     context["emp"] = emp
     
     context["id"] = id
-    return render(request, "timesheet/approve_timesheet.html", context)
+    return render(request, "mobile/approve_timesheet.html", context)
 
 """
 ****************  REPORTS *********************************
@@ -417,7 +428,7 @@ def report_list(request):
     context["dateSelected2"] =  dateS2
 
 
-    return render(request, "timesheet/report_list.html", context)
+    return render(request, "mobile/report_list.html", context)
 
 
 @login_required(login_url='/home/')

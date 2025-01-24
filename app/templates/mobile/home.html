@@ -1,0 +1,62 @@
+{% extends 'mobile/index.html' %} 
+{%load static%}
+{% block title %} Home Mobile {% endblock %} 
+
+{% block container %}
+
+<div class="container">
+    <form method='post' enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!--<div class="row">      
+            <div class="col-sm-10 my-3"></div>  
+            <div class="col-sm-2 my-3">
+                <a class="btn btn-success" href="/timesheet/create/" role="button">New</a>
+                <a href="/home/" type="button" class="btn btn-danger">Close</a> 
+            </div>
+               
+        </div> -->
+
+        <div class="row mt-3 pt-5">
+            {% comment %} <div class="col-2">
+              <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action">Section 1</a>
+                <a href="#" class="list-group-item list-group-item-action">Section 2</a>
+                <a href="#" class="list-group-item list-group-item-action">Section 3</a>
+                <a href="#" class="list-group-item list-group-item-action">Section 4</a>
+              </div>
+            </div> {% endcomment %}
+            <div class="col-12">
+              <div class="card mt-3 ">
+                <div class="card-body">
+                  <h5 class="card-title">Welcome {{emp.first_name}} {{emp.last_name}}</h5>
+                   <p class="card-text"></p>
+                  <ul class="list-unstyled">
+                    <li class="mb-2">
+                      <i class="fas fa-calendar-alt"></i> Period: {{per.periodID}}  
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-map-marker-alt"></i> Location: {{ emp.Location }}
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-calendar-week"></i> Week: {{per.weekRange}}
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-calendar-day"></i> From Date: {{per.fromDate}}
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-calendar-day"></i> To Date:{{per.toDate}}
+                    </li>
+                    <li class="mb-2">
+                      <i class="fas fa-money-check-alt"></i> Pay Date: {{per.payDate}}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div> 
+        </div>
+        
+
+        
+</div>
+{% endblock %}

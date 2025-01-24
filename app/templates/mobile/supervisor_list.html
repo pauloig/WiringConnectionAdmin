@@ -124,7 +124,7 @@
                                 <input class="btn btn-primary" type="submit" value="Search">
                             </div>
                             <div class="col-sm-2 my-4">
-                                <a class="btn btn-success" href="/timesheet/create_by_supervisor/" role="button">New</a>
+                                <a class="btn btn-success" href="/mobile/create_by_supervisor/" role="button">New</a>
                                 <a href="/home/" type="button" class="btn btn-danger">Close</a>
                             </div>
 
@@ -194,14 +194,14 @@
                                                 onClick="ApproveReject(this, 4,{{data.id}}, 'Are you sure to Approve this Timesheet')"
                                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Approve"><i
                                                     class="fa-solid fa-check mr-1" style="color: green;"></i></a>-->
-                                                <a hx-get="/timesheet/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                <a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
                                                     class="fa-solid fa-check mr-1" style="color: green;"></i></a>
                                                             
-                                                <a hx-get="/timesheet/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
                                                         class="fa-solid fa-x mr-1" style="color: red;"></i></a>
                                             <!--<a href="" onClick="ApproveReject(this, 5,{{data.id}}, 'Are you sure to Reject this Timesheet')" data-bs-toggle="tooltip" data-bs-placement="top" title="Reject"><i class="fa-solid fa-x mr-1" style="color: red;"></i></a>-->
                                             {%endif%}
-                                            <a href="/timesheet/update_by_super/{{data.id}}" data-bs-toggle="tooltip"
+                                            <a href="/mobile/update_by_super/{{data.id}}" data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Edit"><i
                                                     class="fa-solid fa-pen-to-square mr-1" style="color: blue;"></i></a>
                                         </td>

@@ -2,11 +2,17 @@ from turtle import home
 from django.contrib import admin
 from django.urls import path, include
 from . import views
-from timesheet import views
+from mobile import views
 
 urlpatterns = [
+     # ****** Home **********************
+     path('',views.mobile_home),
+
+     # ****** Employee **********************
      path('employee_list/',views.employee_list),   
      path('employee_submitted_list/',views.employee_submitted_list), 
+     
+     # ****** Crew  Supervisor **********************
      path('create/',views.create),
      path('update/<id>',views.update),
      path('create/',views.create),

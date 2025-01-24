@@ -1,0 +1,42 @@
+body, html {
+    height: 100%;
+    margin: 0;
+  }
+  .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .content {
+    flex: 1;
+    padding-top: 10px; /* Adjust for fixed navbar */
+  }
+  .navbar-brand img {
+    margin-left: 10%;
+    border-radius: 5%;
+  }
+
+  .exit-btn {
+    margin-right: 3%;
+    border-radius: 10%;
+  }
+
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+  }
+  .card-title {
+    font-weight: bold;
+  }
+  .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+  .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+  }
+  .footer-nav {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e7e7e7;
+  }

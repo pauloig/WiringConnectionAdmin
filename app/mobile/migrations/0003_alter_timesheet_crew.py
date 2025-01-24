@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('workOrder', '0096_alter_woadjustment_estimatenumber_and_more'),
-        ('timesheet', '0002_timesheet_period_timesheet_crew_and_more'),
+        ('mobile', '0002_timesheet_period_timesheet_crew_and_more'),
     ]
 
     operations = [

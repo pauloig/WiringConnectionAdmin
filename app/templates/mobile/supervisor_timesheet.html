@@ -180,10 +180,10 @@
                                         
                                         {% if obj.Status == 2 or obj.Status == 3 %}
                                             <a class = "btn btn-success" href="" onClick="updateStatus(this, 4, 'Are you sure to Approve this Timesheet')">approve</a>    
-                                            <a class = "btn btn-warning" hx-get="/timesheet/reject_timesheet/{{form.instance.id}}" hx-target="#dialog" >Reject</a>   
+                                            <a class = "btn btn-warning" hx-get="/mobile/reject_timesheet/{{form.instance.id}}" hx-target="#dialog" >Reject</a>   
                                         {%endif%}
 
-                                        <a class="btn btn-danger" href="/timesheet/supervisor_list" role="button">Close</a>
+                                        <a class="btn btn-danger" href="/mobile/supervisor_list" role="button">Close</a>
                                     </div>
                                 </div>
                             </div>                                    
