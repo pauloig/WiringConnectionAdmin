@@ -51,3 +51,80 @@ class Timesheet(models.Model):
     class Meta:
         unique_together = ('EmployeeID','date')
     #COnsultar cuantas veces puede enviar el empleado información al dia
+
+
+class DailyMob(models.Model):
+    crew = models.IntegerField(null=False, blank=False)
+    Location = models.ForeignKey(catalogModel.Locations, on_delete=models.CASCADE, db_column ='Location', null=False, blank=False)
+    Period = models.ForeignKey(catalogModel.period, on_delete=models.CASCADE, db_column ='Period', null=False, blank=False)
+    day = models.DateField(null=False, blank=False)
+    woID = models.ForeignKey(catalogModel.workOrder, on_delete=models.CASCADE, db_column ='woID', null=True, blank=True)
+    supervisor = models.CharField(max_length=200, blank=True, null=True)
+    own_vehicle = models.FloatField(blank=True, null=True)
+    total_pay = models.FloatField(blank=True, null=True) 
+    split_paymet = models.BooleanField(default=False)
+    pdfDaily = models.FileField(null=True, upload_to="dailys") 
+    created_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.crew) + " - " + str(self.day)
+    
+    class Meta:
+        unique_together = ('Period','Location','day', 'crew')
+
+class DailyMobEmployee(models.Model):
+    DailyID = models.ForeignKey(DailyMob, on_delete=models.CASCADE, db_column ='DailyID', null=False, blank=False)
+    EmployeeID = models.ForeignKey(catalogModel.Employee, on_delete=models.CASCADE, db_column ='EmployeeID', null=False, blank=False)
+    per_to_pay =  models.FloatField(null=True, blank=True)
+    on_call = models.FloatField(null=True, blank=True)
+    bonus =  models.FloatField(null=True, blank=True)
+    start_time = models.IntegerField(null=True, blank=True)
+    start_lunch_time = models.IntegerField(null=True, blank=True)
+    end_lunch_time = models.IntegerField(null=True, blank=True)
+    end_time = models.IntegerField(null=True, blank=True)
+    total_hours = models.FloatField(null=True, blank=True)
+    regular_hours = models.FloatField(null=True, blank=True)
+    rt_pay = models.FloatField(blank=True, null=True)
+    ot_hour = models.FloatField(null=True, blank=True)
+    ot_pay = models.FloatField(blank=True, null=True)
+    double_time = models.FloatField(null=True, blank=True)
+    dt_pay = models.FloatField(blank=True, null=True)
+    payout =  models.FloatField(null=True, blank=True)
+    emp_rate = models.FloatField(blank=True, null=True) 
+    production = models.FloatField(blank=True, null=True) 
+    billableHours = models.BooleanField(default=False)
+    estimate = models.CharField(max_length=50, null=True, blank=True)
+    invoice = models.CharField(max_length=50, null=True, blank=True)
+    Status = models.IntegerField(default=1, choices = prodStatus_choice)     
+    created_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.DailyID) + " - " + str(self.EmployeeID)
+    
+    class Meta:
+        unique_together = ('DailyID','EmployeeID')
+
+class DailyMobItem(models.Model):
+    DailyID = models.ForeignKey(DailyMob, on_delete=models.CASCADE, db_column ='DailyID', null=False, blank=False)
+    itemID = models.ForeignKey(catalogModel.itemPrice, on_delete=models.CASCADE, db_column ='itemID', null=False, blank=False )
+    quantity = models.IntegerField(null=False, blank=False)
+    price = models.FloatField(null=True, blank=True)  
+    total = models.FloatField(null=True, blank=True) 
+    emp_payout = models.FloatField(null=True, blank=True)      
+    estimate = models.CharField(max_length=50, null=True, blank=True)
+    invoice = models.CharField(max_length=50, null=True, blank=True)
+    Status = models.IntegerField(default=1, choices = prodStatus_choice)     
+    isAuthorized = models.BooleanField(default=False)
+    authorized_date = models.DateTimeField(null=True, blank=True)
+    autorizedID = models.ForeignKey(catalogModel.authorizedBilling, on_delete=models.SET_NULL, db_column ='autorizedID', null=True, blank=True)
+    created_date = models.DateTimeField(null=True, blank=True)
+    createdBy = models.CharField(max_length=60, blank=True, null=True)
+    updated_date = models.DateTimeField(null=True, blank=True)
+    updatedBy = models.CharField(max_length=60, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.DailyID) + " - " + str(self.itemID)
+    
+    class Meta:
+        unique_together = ('DailyID','itemID')
+

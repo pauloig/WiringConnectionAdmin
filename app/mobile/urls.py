@@ -7,10 +7,20 @@ from mobile import views
 urlpatterns = [
      # ****** Home **********************
      path('',views.mobile_home),
+     path('crew/<perID>/<dID>/<crewID>/<LocID>',views.crew),
+     path('update_supervisor/<perID>/<dID>/<crewID>/<LocID>',views.update_supervisor),
+     path('create_daily/<pID>/<dID>/<LocID>',views.create_daily),
+     path('delete_daily/<id>/<LocID>',views.delete_daily),
+     path('update_order_daily/<woID>/<dailyID>/<LocID>',views.update_order_daily),
+
+     path('orders_payroll/<dailyID>/<LocID>',views.orders_payroll),   
+
+     path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
 
      # ****** Employee **********************
      path('employee_list/',views.employee_list),   
      path('employee_submitted_list/',views.employee_submitted_list), 
+     
      
      # ****** Crew  Supervisor **********************
      path('create/',views.create),

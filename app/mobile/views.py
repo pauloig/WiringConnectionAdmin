@@ -11,20 +11,537 @@ from .forms import *
 from . import views
 from sequences import get_next_value, Sequence
 from workOrder import models as catalogModel
+from datetime import datetime, timedelta
 
 
 @login_required(login_url='/home/')
-
 def mobile_home(request):
+    emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = catalogModel.period.objects.filter(status=1).first()
+    context ={}
+    context["period"] = per    
+    context["emp"]= emp
+    
+
+    #Select the location
+    loca = catalogModel.Locations.objects.filter(LocationID = emp.Location.LocationID).first()
+    context["selectedLocation"] = emp.Location.LocationID
+
+    #getting the list of days per week
+    startDate = per.fromDate
+    numDays = 7
+    week1 = []
+
+    for x in range(0,numDays):
+        selectedDay = False
+        fullDate = startDate + timedelta(days = x)
+        shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
+        longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
+        day = fullDate.strftime("%d")
+        """if dID == day:
+            selectedDay = True
+            selectedDate = fullDate
+            twTitle += ' - ' + fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()"""
+        
+        #obtengo la cantidad de Items asociados
+        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
+        totalItems = 0
+
+        for d in dItems:
+            dItemDetail = DailyMobItem.objects.filter(DailyID=d)
+
+            for i in dItemDetail:
+                totalItems += i.quantity
+
+        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+
+    startDate += timedelta(days = numDays)
+    week2 = []
+    for x in range(0,numDays):
+        selectedDay = False
+        fullDate = startDate + timedelta(days = x)
+        shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
+        longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
+        day = fullDate.strftime("%d")
+
+        """if dID == day:
+            selectedDay = True
+            selectedDate = fullDate
+            twTitle += ' - ' + fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()"""
+
+        #obtengo la cantidad de Items asociados
+        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
+        totalItems = 0
+
+        for d in dItems:
+            dItemDetail = DailyMobItem.objects.filter(DailyID=d)
+
+            for i in dItemDetail:
+                totalItems += i.quantity
+
+        week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+    
+
+    context["week1"] = week1
+    context["week2"] = week2
+
+    return render(request, "mobile/home.html", context)
+
+@login_required(login_url='/home/')
+def crew(request, perID, dID, crewID, LocID):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
 
     per = catalogModel.period.objects.filter(status__in=(1,2)).first()
     context["per"] = per    
+    context["period"] = per    
     context["emp"]= emp
 
-    return render(request, "mobile/home.html", context)
+    #Select the location
+    loca = catalogModel.Locations.objects.filter(LocationID = emp.Location.LocationID).first()
 
+    twTitle = ''
+
+    #getting the list of days per week
+    startDate = per.fromDate
+    numDays = 7
+    week1 = []
+    for x in range(0,numDays):
+        selectedDay = False
+        fullDate = startDate + timedelta(days = x)
+        shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
+        longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
+        day = fullDate.strftime("%d")
+        if dID == day:
+            selectedDay = True
+            selectedDate = fullDate
+            twTitle +=  fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()
+        
+        #obtengo la cantidad de Items asociados
+        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
+        totalItems = 0
+
+        for d in dItems:
+            dItemDetail = DailyMobItem.objects.filter(DailyID=d)
+
+            for i in dItemDetail:
+                totalItems += i.quantity
+
+        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+
+    startDate += timedelta(days = numDays)
+    week2 = []
+    for x in range(0,numDays):
+        selectedDay = False
+        fullDate = startDate + timedelta(days = x)
+        shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
+        longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
+        day = fullDate.strftime("%d")
+
+        if dID == day:
+            selectedDay = True
+            selectedDate = fullDate
+            twTitle +=  fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()
+
+        #obtengo la cantidad de Items asociados
+        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
+        totalItems = 0
+
+        for d in dItems:
+            dItemDetail = DailyMobItem.objects.filter(DailyID=d)
+
+            for i in dItemDetail:
+                totalItems += i.quantity
+
+        week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+    
+    
+
+    if request.user.is_staff or emp.is_superAdmin:
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+    else:
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+
+    if dID != "0":
+        # get the list of dailys for the period, Day selected and Location
+        crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca).order_by('crew')
+        context["crew"] = crews
+
+    if crews.count() == 1:
+        crewID = crews.first().crew
+
+    if crewID != "0":
+        dailyID = DailyMob.objects.filter(Period = perID, day=selectedDate, crew = crewID, Location = loca ).first()
+        dailyEmp = DailyMobEmployee.objects.filter(DailyID = dailyID).order_by('created_date')
+        context["dailyEmp"] = dailyEmp
+
+        dailyItem = DailyMobItem.objects.filter(DailyID = dailyID).order_by('created_date')
+        dailyTotal = 0
+        ovT = 0
+        for di in dailyItem:
+            dailyTotal += di.total 
+
+
+        if dailyID.own_vehicle != None:
+            ovT = (dailyTotal * dailyID.own_vehicle) / 100
+        
+        granTotal = dailyTotal + ovT
+
+        context["dailyItem"] = dailyItem
+        context["TotalItem"] = dailyTotal
+        context["ovTotal"] = ovT
+        context["GranTotalItem"] = granTotal
+
+    context["week1"] = week1
+    context["week2"] = week2
+    context["selectedDate"] = twTitle
+    context["superV"] = superV
+    context["selectedCrew"] = int(crewID)
+    context["selectedDay"] = int(dID)
+    context["selectedLocation"] = LocID
+
+    return render(request, "mobile/crew.html", context)
+
+
+@login_required(login_url='/home/')
+def update_supervisor(request, perID, dID, crewID, LocID):
+    emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per    
+    context["period"] = per    
+    context["emp"]= emp
+
+    if request.user.is_staff or emp.is_superAdmin:
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+    else:
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+    
+
+    if request.method == 'POST':
+        dailyID = request.POST.get('daily')
+        sup = request.POST.get('supervisor') 
+        split = request.POST.get('split')
+        ptp = request.POST.get('ptp')
+        ov = request.POST.get('ov')
+        crew = DailyMob.objects.filter(id = dailyID).first()
+        if crew:            
+            crew.supervisor = sup                      
+            crew.split_paymet = bool(split)   
+
+            if ov != '':
+                crew.own_vehicle = ov
+            else:
+                crew.own_vehicle = None    
+
+            #emp_ptp = update_ptp_Emp(dailyID, bool(split))
+            emp_ptp = 0
+
+            crew.total_pay = emp_ptp     
+            crew.save()
+            per = crew.Period.id  
+
+            #emp_ptp = update_ptp_Emp(dailyID, bool(split))       
+            
+            if int(str(sup))>0 and crew.woID != None:
+                super = catalogModel.Employee.objects.filter(employeeID = sup ).first()
+                if super:   
+                    wo = catalogModel.workOrder.objects.filter( id = crew.woID.id).first()
+                    if wo:             
+                        wo.WCSup = super
+                        wo.save()           
+
+        return HttpResponseRedirect('/mobile/crew/' + str(per) + '/' + dID  + '/'+ str(crew.crew) +'/'+LocID)       
+
+    context["superV"] = superV            
+    context["selectedCrew"] = int(crewID)
+    context["selectedDay"] = int(dID)
+    context["selectedLocation"] = LocID      
+
+    return render(request, "mobile/update_supervisor.html", context)
+
+
+@login_required(login_url='/home/')
+def create_daily(request, pID, dID, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    
+    context = {}    
+    context["emp"] = emp    
+    per = catalogModel.period.objects.filter(id = pID).first()
+
+    perActual = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = perActual
+
+    if int(LocID) > 0:
+        loc = catalogModel.Locations.objects.filter(LocationID = LocID).first()
+    else:
+        loc = catalogModel.Locations.objects.filter(LocationID = emp.Location.LocationID).first()
+
+    if per:
+        #Selecting the day date
+        startDate = per.fromDate
+        selectedDate = per.fromDate
+        numDays = 14
+        for x in range(0,numDays):            
+            fullDate = startDate + timedelta(days = x)            
+            day = fullDate.strftime("%d")
+            if int(dID) == int(day):
+                 selectedDate = fullDate
+
+        crewNumber = DailyMob.objects.filter( Period = per, day = selectedDate, Location = loc).last()
+        if crewNumber:
+            crewNo = crewNumber.crew
+        else:
+            crewNo = 0
+
+        crew  = DailyMob(
+            Period = per,
+            Location = loc,
+            day = selectedDate,
+            crew = int(crewNo) + 1,
+            created_date = datetime.now()
+        )
+
+        crew.save()
+        per = crew.Period.id
+        
+        #Adding Audit
+        
+        operationDetail = "Period: " + str(per) + ", Crew: " + str(crew.crew)       
+        
+
+        return HttpResponseRedirect('/mobile/crew/' + str(per) + '/' + crew.day.strftime("%d")  + '/'+ str(crew.crew) +'/'+LocID)
+    else:
+        return HttpResponseRedirect('/mobile/')
+
+@login_required(login_url='/home/')
+def delete_daily(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+
+    obj = get_object_or_404(DailyMob, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+ 
+    actual_wo = obj.woID
+    
+    obj.delete()
+
+    if actual_wo != None:
+        lastD = DailyMob.objects.filter(woID = actual_wo).last()
+        wo = catalogModel.workOrder.objects.filter(id = actual_wo.id).first()
+        
+        if lastD:                 
+            wo.UploadDate = lastD.created_date
+
+            if lastD.supervisor != None:
+                sup = catalogModel.Employee.objects.filter(employeeID = lastD.supervisor ).first()
+                if sup:                
+                    wo.WCSup = sup
+
+            wo.save()
+        else:             
+
+            wo.Status = 1
+            wo.Location = None
+            wo.UploadDate = None
+            wo.UserName = None
+            wo.WCSup = None
+            wo.UploadDate = datetime.now()
+            wo.save()
+
+        
+    return HttpResponseRedirect('/mobile/crew/' + str(obj.Period.id) + '/' + obj.day.strftime("%d") + '/0/' + str(LocID)) 
+
+@login_required(login_url='/home/')
+def update_order_daily(request, woID, dailyID, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+
+    context = {}    
+    context["emp"] = emp    
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    crew = DailyMob.objects.filter(id = dailyID).first()
+    wo = catalogModel.workOrder.objects.filter(id = woID).first()
+    
+    anterior = None
+
+    if crew and wo:
+
+        if crew.woID != None:
+            anterior = catalogModel.workOrder.objects.filter(id = crew.woID.id).first()
+
+            if anterior:                
+
+                anterior.Status = 1
+                anterior.Location = None
+                anterior.UploadDate = None
+                anterior.UserName = None
+                anterior.WCSup = None
+                anterior.UploadDate = datetime.now()
+                anterior.save()
+
+
+        crew.woID = wo
+        crew.save()
+
+        
+        wo.Status = 2
+        wo.Location = crew.Location
+        wo.UploadDate = datetime.now()
+        wo.UserName = request.user.username
+        if crew.supervisor != None:
+            sup = catalogModel.Employee.objects.filter(employeeID = crew.supervisor ).first()
+            if sup:                
+                wo.WCSup = sup
+
+        wo.save()
+
+        per = crew.Period.id
+        
+        #Adding Audit
+        if crew.woID != None:            
+            operationDetail = "Change on Selected WO - last WO: " + str(anterior) + ", New WO: " + str(wo)
+        else:
+            operationDetail = "Adding a Selected WO: " + str(wo)        
+
+    return HttpResponseRedirect('/mobile/crew/' + str(per) + '/' + crew.day.strftime("%d")  + '/'+ str(crew.crew) +'/' + str(LocID))
+    """"else:
+        return HttpResponseRedirect('/mobile/')"""
+
+@login_required(login_url='/home/')
+def delete_daily_item(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobItem, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+    if request.method == 'POST':
+        
+        operationDetail = "Deleting Item: " + str(obj.itemID) + ", Quantity: " + str(obj.quantity) + ", Total: " + str(obj.total)
+        
+        
+        obj.delete()
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+        return HttpResponseRedirect('/payroll/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+
+   
+    return render(request, "delete_daily_item.html", context)
+
+
+@login_required(login_url='/home/')
+def orders_payroll(request, dailyID, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    daily = DailyMob.objects.filter(id = dailyID).first()    
+    loca = list(catalogModel.Locations.objects.all().exclude(LocationID = daily.Location.LocationID))
+    
+    WOdailyList = list(DailyMob.objects.filter(Period = daily.Period, day = daily.day, Location__LocationID = LocID).exclude(woID = None).values_list('woID__id',flat=True))
+
+
+    wo = catalogModel.workOrder.objects.filter(Status__in = [1,2]).exclude(Location__in = loca).exclude(id__in = WOdailyList )
+    context = {}    
+    context["orders"] = wo
+    context["emp"] = emp    
+    context["daily"] = dailyID
+    context["selectedLocation"] = LocID
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+    #context["WOdailyList"] = WOdailyList
+
+    return render(request, "mobile/orders_payroll.html", context)
+
+@login_required(login_url='/home/')
+def update_ptp_Emp(dailyID, split):
+    emp_ptp = 0
+    crew = DailyMob.objects.filter(id = dailyID).first()
+    if crew:
+        itemCount = 0
+        itemSum = 0
+        
+        if bool(split):
+            empCount = DailyMobEmployee.objects.filter(DailyID = crew).count()
+           
+            if empCount > 0:
+                empPtp =  validate_decimals(100 / empCount)
+                empList = DailyMobEmployee.objects.filter(DailyID = crew)
+
+                for empl in empList:
+                    empD = DailyMobEmployee.objects.filter(id = empl.id).first()
+                    empD.per_to_pay = empPtp
+                    empD.save()
+      
+
+        itemCount = DailyMobItem.objects.filter(DailyID = crew).count()
+        if itemCount > 0:            
+            itemList = DailyMobItem.objects.filter(DailyID = crew)
+
+            for iteml in itemList:
+                itemSum += iteml.total 
+
+        if crew.own_vehicle != None:
+            ovp = (itemSum * crew.own_vehicle) / 100
+            itemSum += ovp                     
+                                      
+        empList = DailyMobEmployee.objects.filter(DailyID = crew)
+        
+        for empl in empList:
+            rt_pay = 0
+            ot_pay = 0
+            dt_pay = 0
+            empRate = 0
+            production = 0
+            
+            empD = DailyMobEmployee.objects.filter(id = empl.id).first()    
+            if empD.per_to_pay != None:                                         
+                emp_ptp += empD.per_to_pay                 
+            if itemCount > 0:
+                pay_out = validate_decimals(((itemSum * empD.per_to_pay) / 100))
+                production = validate_decimals(((itemSum * empD.per_to_pay) / 100))
+            else: 
+                if empD.EmployeeID.hourly_rate != None: 
+                    empRate = validate_decimals(empD.EmployeeID.hourly_rate)
+
+                rt_pay = (empD.regular_hours * empRate)
+                ot_pay = (empD.ot_hour * (empRate * 1.5))
+                dt_pay = (empD.double_time * (empRate * 2))
+                pay_out = (empD.regular_hours * empRate) + (empD.ot_hour * (empRate * 1.5)) + (empD.double_time * (empRate * 2))
+
+            if empD.on_call != None:
+                pay_out += empD.on_call
+
+            if empD.bonus != None:
+                pay_out += empD.bonus
+            
+            empD.rt_pay = rt_pay
+            empD.ot_pay = ot_pay
+            empD.dt_pay = dt_pay
+            empD.emp_rate = empRate
+            empD.payout = pay_out
+            empD.production = production
+            empD.save()
+        
+        crew.total_pay = round(emp_ptp)
+        crew.save()
+    return emp_ptp
+
+# ****************************************************************************
 def employee_list(request):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
@@ -295,7 +812,7 @@ def approve_timesheet(request, id):
     obj = get_object_or_404(Timesheet, id = id)
     
     if obj:
-        crew = catalogModel.Daily.objects.filter(Location = obj.Location, Period = per, day = obj.date)
+        crew = DailyMob.objects.filter(Location = obj.Location, Period = per, day = obj.date)
     else:
         crew = None
 
@@ -309,7 +826,7 @@ def approve_timesheet(request, id):
         form.save()
 
         # se agrega la timesheet al crew
-        crew = catalogModel.Daily.objects.filter(Location = obj.Location, Period = per, day = obj.date, crew = form.instance.crew.crew).first()
+        crew = DailyMob.objects.filter(Location = obj.Location, Period = per, day = obj.date, crew = form.instance.crew.crew).first()
 
         dailyemp = catalogModel.DailyEmployee(DailyID = crew,
                                               EmployeeID = form.instance.EmployeeID,
