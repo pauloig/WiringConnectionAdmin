@@ -21,63 +21,134 @@
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
-      
-        <div class="row mt-5 pt-5">             
-          <div class="col-sm-12">   
+      <div class="mt-5 pt-4 d-flex justify-content-center">
+        <h4>{{selectedDate}}</h>
+      </div>
+        <div class="d-flex justify-content-between">             
+          <div>  
             {% if selectedDay > 0 %}
                 {%if emp.is_superAdmin  or user.is_staff  or period.status == 1%}  
-                    <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}">
-                        Add Crew
+                    <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
+                        <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
                     </a> 
                 {%endif%}
             {%endif%}   
             {% for item in crew %}                         
                 {% if item.crew == selectedCrew %}
-                    <a class="btn btn-warning px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">Crew {{item.crew}}</a>
+                    <a class="btn btn-warning px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"> <i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew}}</a>
                 {%else%}
-                    <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">Crew {{item.crew}}</a>
+                    <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew}}</a>
                 {%endif%} 
-            {%endfor%}                           
-        
-            
-            <a class="btn btn-danger" href="/mobile" >Close</a>    
+            {%endfor%}                        
         </div>
-        
+        <div>
+            <a class="btn btn-danger px-2" href="/mobile/" style="height: 3em; margin-bottom: 0.5em;">
+                <i class="fa-solid fa-circle-left" style="height: 0.5em;"></i> 
+            </a> 
+        </div>
+    </div>
   
       <div class="row mt-2 pt-2">  
         <div class="col-sm-12">
           <div class="card">
-              <h6 class="card-header card-header-wc text-center"> {{selectedDate}}  </h6>
+              <div class="card-header card-header-wc text-center"> Work Order Info.  </div> 
               <div class="card-body">
                   {% for item in crew %} 
                       {% if item.crew == selectedCrew %}
-                          <div class="row">                                                       
+                      <!--Work Address-->
+                        <div class="d-flex justify-content-left align-items-center">
+                            <i class="fas fa-briefcase mr-2" style="padding-bottom: 15px;"></i> 
+                            {% if not item.woID%}
+                                <p id="address" name="address" style="margin-left: 10px">No Work Order Selected</p>
+                            {%else%}
+                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}</p>
+                            {%endif%}
+                            {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
+                                <a class="btn  pt-1" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                            {%endif%}
+                                
+                        </div>
+                        {% if item.woID%}
+                            <!--Address-->
+                            <div class="d-flex justify-content-left align-items-center">
+                                <i class="fas fa-map-marker-alt mr-2" style="padding-bottom: 15px;"></i> 
+                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.JobAddress}}</p>
+                            </div>
+                            <!--Supervisor-->
+                            <div class="d-flex justify-content-left align-items-center">
+                                <i class="fas fa-male mr-2" style="padding-bottom: 15px;"></i> 
+
+                                {% for sup in superV %}    
+                                    {% if sup.employeeID|slugify == item.supervisor %}    
+                                        <p id="supervisor" name="supervisor" style="margin-left: 10px">{{sup.first_name}} {{sup.last_name}}</p>           
+                                    {% endif %}    
+                                {% endfor %}     
+                                
+                                {%if item.supervisor == None%}
+                                    <p id="supervisor" name="supervisor" style="margin-left: 10px">No Supervisor Selected</p> 
+                                {%endif%}
+
+                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
+                                    <a class="btn  pt-1" href="/mobile/update_supervisor/{{period.id}}/{{item.day|date:'d'}}/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                                {%endif%}
+                            </div>
+                            <!--Payment and Vehicle-->
+                            <div class="d-flex justify-content-left align-items-center">
+                                <div class="d-flex align-items-center ">
+                                    <i class="fa fa-usd" style="padding-bottom: 15px;"></i> 
+                                    {% if item.split_paymet %}
+                                        <p style="margin-left: 10px">Split</p>
+                                    {% else %}
+                                        <p style="margin-left: 10px">NO Split</p>
+                                    {%endif%}  
+                                </div>
+                                <div class="d-flex align-items-center" style="margin-left: 20px">
+                                    <i class="fa fa-car" style="padding-bottom: 15px;"></i> 
+                                    <p style="margin-left: 10px">{%if item.own_vehicle > 0 %}{{item.own_vehicle}} %{%endif%}</p>
+                                </div> 
+                            </div>
+
+                            {%if item.total_pay != 100 %}
+                                <div class="alert alert-danger" role="alert">
+                                    The Total % to Pay must be equal to 100
+                                </div>
+                                
+                            {%endif%}
+                            {% if item.supervisor == None or item.woID == None %}
+                                <div class="alert alert-warning" role="alert">
+                                    must select a WO and supervisor to add employees and production 
+                                </div>
+                            {%endif%}
+                            
+                        {%endif%}
+
+                          <!-- Classic Form
+                            
+                            <div class="row">                                                       
                               <div class="col-sm-5">
                                   <div class="mb-3">    
                                       <label for="PID" class="form-label">PID - Work Order - PO</label>                
                                       <div class="input-group mb-3">                                        
                                           <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}" disabled>                                                                                             
                                               {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                                                  {% comment %} <button hx-get="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}" class="btn btn-primary py-2" hx-target="#dialog" ><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>                                                
-                                                  <button hx-get="/mobile/orders_payroll/3/20" class="btn btn-primary py-2" hx-target="#dialog" ><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>  {% endcomment %}
-                                                  <a class= "btn btn-primary py-2" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></a>                                        
-
-                                                  {%endif%}
+                                                  <a class= "btn btn-primary py-2" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></a>
+                                                {%endif%}
                                           </div>                                      
                                   </div>        
                               </div>                                  
                               <div class="col-sm-7">
                                   <div class="mb-3">
-                                      <label for="PID" class="form-label">Address</label>
-                                      <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{item.woID.JobAddress}}" disabled>                                    
-                                  </div>     
+                                      <label for="PID" class="form-label"><strong>Address</strong></label>
+                                      {% comment %} <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{item.woID.JobAddress}}" disabled>                                     {% endcomment %}
+                                      <i class="fas fa-map-marker-alt"></i> <p id="address" name="address">{{item.woID.JobAddress}}</p>
+                                    </div>     
                               </div>
                           </div>
                           </br>     
                           <div class="row">                                                                       
                               <div class="col-sm-3">      
                                   <div class="mb-3">                                                                                                                                                                                      
-                                      <label for="supervisor" class="form-label">Supervisor</label>
+                                      <label for="supervisor2" class="form-label">Supervisor</label>
                                       <div class="input-group mb-3">
                                           <select class="form-select" name="supervisor2" id="supervisor2" disabled>
                                               <option value ="0" selected>Select Supervisor</option>
@@ -128,50 +199,9 @@
                               <div class="col-sm-2 pt-4">
                                   <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">                                         
                               </div> 
-                        </div>
+                        </div>-->
       </form>
-                  
-                              {% comment %} <div class="col-sm-4 pt-3">
-                                  
-                                  {% comment %} {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                                      <button type="button" class="btn btn-primary p-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                          upload daily
-                                      </button> 
-                                      
-                                  {%endif%}
-                                  {% if item.pdfDaily != '' and item.pdfDaily != None %}                                        
-                                      <a class="btn btn-primary p-3" href="/static/media/{{item.pdfDaily}}" target="_blank"> View Daily</a>  
-                                  {% endif %}     
-                                                              
-                              </div> {% endcomment %}
-                           
-                          <div class="row">
-                              <div class="col-sm-12">
-                                  {%if item.total_pay != 100 %}
-                                      <h4 style="color:red;"> The Total % to Pay must be equal to 100</h4>
-                                  {%endif%}
-                                  {% if item.supervisor == None or item.woID == None %}
-                                      <h4 style="color:orangered;">You must select supervisor and PID to be able to add employees and production in this crew</h4>
-                                  {%endif%}
-                              </div>
-                          </div>
-                          {%if selectedDay > 0 and selectedCrew > 0 %}      
-                            {% for item in crew %} 
-                                {% if item.crew == selectedCrew %}
-                                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
-                                    <a class="btn btn-danger px-5"
-                                    data-bs-toggle="tooltip" data-bs-placement="top"                                  
-                                    onclick="delete_daily({{item.id}},{{selectedLocation}})" >
-                                        <i class="fa-solid fa-trash-can"></i></a>
-
-                                        {% comment %} <a class="btn btn-danger px-2" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a> {% endcomment %}
-                                    {%endif%}
-                                {%endif%}
-                            {%endfor%}
-                          {%endif%}
-                           
-                          
-
+    </div>
 
                       {%endif%} 
                   {%endfor%}
@@ -181,6 +211,81 @@
               </div>
           </div>                 
       </div>  
+
+      <div class="row mt-3 pb-5">             
+        <div class="col-sm-12">  
+          <div class="card">
+            <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+            <div class="card-body">
+                <div class="mb-2">
+                    <a class="btn btn-success" href="">
+                        name
+                        %Pay
+                        Payout
+                    </a>
+                </div>
+                <div>
+                    <a class="btn btn-success" href="">
+                        name
+                        %Pay
+                        Payout
+                    </a>
+                </div>
+                <div>
+                    <a class="btn btn-success" href="">
+                        name
+                        %Pay
+                        Payout
+                    </a>
+                </div>
+                
+                <!--<table class="table table-sm table-bordered table-striped">
+                    <thead>
+                        <tr class="table-primary">                                                  
+                            <td width="25%" class="p-1">Name</td>
+                            <td width="8%" class="p-1">% Pay</td>
+                            {% comment %} <td width="8%" class="p-1">On Call</td>
+                            <td width="8%" class="p-1">Bonus</td>                                      {% endcomment %}
+                            <td width="10%" class="p-1">Total Hrs</td>
+                            {% comment %} <td width="9%" class="p-1">Reg Hrs</td>
+                            <td width="8%" class="p-1">OT Hrs</td>
+                            <td width="8%" class="p-1">DT Hrs</td>
+                            <td width="8%" class="p-1">Payout</td> {% endcomment %}
+                            <td width="8%" class="p-1">
+                                {% if item.supervisor != None and item.woID != None %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                        <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>
+                                    {%endif%}
+                                {% endif %}
+                            </td>
+
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%for emp in dailyEmp %}
+                            <tr>                                                       
+                                <td class="p-1">{{emp.EmployeeID}} </td>
+                                <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
+                                {% comment %} <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
+                                <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
+                                {% comment %} <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
+                                <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
+                                <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
+                                <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
+                                <td class="p-1">
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
+                                        <a hx-get="/update_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
+                                        <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog">  <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
+                                    {%endif%}
+                                    </td>                                                        
+                            </tr>
+                        {%endfor%}
+                    </tbody>                                                
+                </table>-->
+          </div>
+      </div> 
       
       <div class="row mt-2 pt-2">             
         <div class="col-sm-12">  
@@ -230,63 +335,32 @@
           </div>
         </div>
 
-          <div class="row mt-3 pb-5">             
-            <div class="col-sm-12">  
-              <div class="card">
-                <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
-                <div class="card-body">
-                    
-                    <table class="table table-sm table-bordered table-striped">
-                        <thead>
-                            <tr class="table-primary">                                                  
-                                <td width="25%" class="p-1">Name</td>
-                                <td width="8%" class="p-1">% Pay</td>
-                                {% comment %} <td width="8%" class="p-1">On Call</td>
-                                <td width="8%" class="p-1">Bonus</td>                                      {% endcomment %}
-                                <td width="10%" class="p-1">Total Hrs</td>
-                                {% comment %} <td width="9%" class="p-1">Reg Hrs</td>
-                                <td width="8%" class="p-1">OT Hrs</td>
-                                <td width="8%" class="p-1">DT Hrs</td>
-                                <td width="8%" class="p-1">Payout</td> {% endcomment %}
-                                <td width="8%" class="p-1">
-                                    {% if item.supervisor != None and item.woID != None %}
-                                        {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                            <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>
-                                        {%endif%}
-                                    {% endif %}
-                                </td>
+       
 
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {%for emp in dailyEmp %}
-                                <tr>                                                       
-                                    <td class="p-1">{{emp.EmployeeID}} </td>
-                                    <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
-                                    {% comment %} <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                    <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
-                                    <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
-                                    {% comment %} <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
-                                    <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
-                                    <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
-                                    <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
-                                    <td class="p-1">
-                                        {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
-                                            <a hx-get="/update_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
-                                            <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog">  <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
-                                        {%endif%}
-                                        </td>                                                        
-                                </tr>
-                            {%endfor%}
-                        </tbody>                                                
-                    </table>
-              </div>
-          </div>                                                
+          
+          
+          {%if selectedDay > 0 and selectedCrew > 0 %}      
+          {% for item in crew %} 
+              {% if item.crew == selectedCrew %}
+                  {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
+                  <a class="btn btn-danger px-5"
+                  data-bs-toggle="tooltip" data-bs-placement="top"                                  
+                  onclick="delete_daily({{item.id}},{{selectedLocation}})" >
+                      <i class="fa-solid fa-trash-can"></i></a>
+    
+                      {% comment %} <a class="btn btn-danger px-2" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a> {% endcomment %}
+                  {%endif%}
+              {%endif%}
+          {%endfor%}
+        {%endif%}
       </div>
       </div>
+
+      
               {%endif%}
             {%endfor%}
+
+          
      
 </div>
 {% endblock %}

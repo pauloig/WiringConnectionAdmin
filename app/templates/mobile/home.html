@@ -8,31 +8,27 @@
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
       
-        <div class="row mt-3 pt-5">             
+        <div class="row mt-3 pt-3">             
             <div class="col-12">
               <div class="card mt-3">
                 <div class="card-body">
-                  <h5 class="card-title">Welcome {{emp.first_name}} {{emp.last_name}}</h5>
+                  {% comment %} <h5 class="card-title">Welcome {{emp.first_name}} {{emp.last_name}}</h5> {% endcomment %}
                    <p class="card-text"></p>
                   <ul class="list-unstyled">
-                    <li class="mb-2">                      
-                      <i class="fas fa-calendar-alt"></i> Period: {{period.periodID}}  
+                    <li class="mb-2 d-flex justify-content-between">                                          
+                      <div><i class="fas fa-map-marker-alt"></i> {{ emp.Location }}</div>
+                      <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
+                      <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
                     </li>
+                
+                    <li class="mb-2 d-flex">
+                      <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"Y-m-d"}}</div>
+                      <div class="pl-3"><i class="fas fa-calendar-day"></i> <strong>To:</strong>  {{period.toDate|date:"Y-m-d"}}</div>
+                    </li>
+
                     <li class="mb-2">
-                      <i class="fas fa-map-marker-alt"></i> Location: {{ emp.Location }}
-                    </li>
-                    <li class="mb-2">
-                      <i class="fas fa-calendar-week"></i> Week: {{period.weekRange}}
-                    </li>
-                    <li class="mb-2">
-                      <i class="fas fa-calendar-day"></i> From Date: {{period.fromDate}}
-                    </li>
-                    <li class="mb-2">
-                      <i class="fas fa-calendar-day"></i> To Date: {{period.toDate}}
-                    </li>
-                    <li class="mb-2">
-                      <i class="fas fa-money-check-alt"></i> Pay Date: {{period.payDate}}
-                    </li>
+                      <i class="fas fa-money-check-alt"></i> <strong>Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
+                    </li> 
                   </ul>
                 </div>
               </div>

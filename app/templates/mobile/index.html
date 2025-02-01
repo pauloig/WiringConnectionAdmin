@@ -44,7 +44,7 @@
       border-radius: 5%;
     }
   
-    .exit-btn {
+    .r-header {
       margin-right: 3%;
       border-radius: 10%;
     }
@@ -73,6 +73,9 @@
       text-align: center;
       width: auto;
     }
+    .btn-exit {
+      color: red;
+    }
   </style>
 
 </head>
@@ -80,14 +83,18 @@
 <body class="">
 
   <div class="content-wrapper">
-    <div class="container-fluid">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" id="mainNav">
-        <a class="navbar-brand" href="#">
-          <img src="{% static 'images/WC_logo.jpg' %}" width="100" height="35" class="d-inline-block align-top" alt="">
-        </a>
-        <button class="btn btn-danger exit-btn" type="button" onclick="window.location.href='/logout/'">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>              
+    <div class="">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top d-flex justify-content-between" id="mainNav">
+        <div>
+          <a class="navbar-brand" href="#">
+            <img src="{% static 'images/WC_logo.jpg' %}" width="100" height="35" class="d-inline-block align-top" alt="">
+          </a>
+        </div>
+        
+
+        <div class="r-header">
+            <i class="icon ion-md-contact lead"></i> {{ user.username }}  -  {{ emp }}	
+        </div>
       </nav>
     </div>
 
@@ -97,15 +104,13 @@
 
   <nav class="navbar navbar-expand-lg navbar-light footer-nav fixed-bottom">
     <div class="container-fluid">
-      <button class="btn btn-link nav-link" type="button">
+      <a class="btn btn-link nav-link" type="button" href="/mobile/">
         <i class="fa fa-home"></i>
-      </button>
-      <button class="btn btn-link nav-link" type="button">
-        <i class="fa fa-plus-circle"></i>
-      </button>
-      <button class="btn btn-link nav-link" type="button">
-        <i class="fa fa-chart-bar"></i>
-      </button>
+      </a>
+
+      <a class="btn btn-link nav-link btn-exit" type="button" href="/logout/">
+        <i class="fa fa-sign-out-alt"></i>
+      </a>
     </div>
   </nav>
 
