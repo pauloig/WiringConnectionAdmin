@@ -235,14 +235,14 @@ def update_supervisor(request, perID, dID, crewID, LocID):
             else:
                 crew.own_vehicle = None    
 
-            #emp_ptp = update_ptp_Emp(dailyID, bool(split))
+            emp_ptp = update_ptp_Emp(dailyID, bool(split))
             emp_ptp = 0
 
             crew.total_pay = emp_ptp     
             crew.save()
             per = crew.Period.id  
 
-            #emp_ptp = update_ptp_Emp(dailyID, bool(split))       
+            emp_ptp = update_ptp_Emp(dailyID, bool(split))       
             
             if int(str(sup))>0 and crew.woID != None:
                 super = catalogModel.Employee.objects.filter(employeeID = sup ).first()
@@ -414,8 +414,117 @@ def update_order_daily(request, woID, dailyID, LocID):
             operationDetail = "Adding a Selected WO: " + str(wo)        
 
     return HttpResponseRedirect('/mobile/crew/' + str(per) + '/' + crew.day.strftime("%d")  + '/'+ str(crew.crew) +'/' + str(LocID))
-    """"else:
-        return HttpResponseRedirect('/mobile/')"""
+
+
+#************** DAILY EMP ***********************
+
+@login_required(login_url='/home/')    
+def create_daily_emp(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    dailyID = DailyMob.objects.filter(id = id).first()
+
+    dailyE = DailyMobEmployee.objects.filter(DailyID = dailyID)
+    empList = []
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    for i in dailyE:
+       empList.append(i.EmployeeID.employeeID) 
+
+    EmpLocation = catalogModel.Employee.objects.filter(is_active = True, is_supervisor = False).exclude(employeeID__in = empList)
+
+    form = DailyMobEmpForm(request.POST or None, initial={'DailyID': dailyID}, qs = EmpLocation)
+    if form.is_valid():                
+        startTime = form.instance.start_time
+        endTime = form.instance.end_time
+        lunch_startTime = form.instance.start_lunch_time
+        lunch_endTime = form.instance.end_lunch_time
+
+        form.instance.total_hours, form.instance.regular_hours,form.instance.ot_hour, form.instance.double_time = calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime)
+        form.instance.created_date = datetime.now()
+
+        empid = request.POST.get('EmployeeID')
+        
+        selectedEmp = catalogModel.Employee.objects.filter(employeeID = empid).first()
+        form.instance.EmployeeID = selectedEmp
+        form.save()  
+          
+        update_ptp_Emp(id, dailyID.split_paymet)             
+        return HttpResponseRedirect('/mobile/crew/' + str(dailyID.Period.id) + '/' + dailyID.day.strftime("%d") + '/' + str(dailyID.crew) +'/' + str(LocID))        
+         
+    context['form']= form
+    context["emp"] = emp
+    context["daily"] = dailyID
+    context["empList"] = EmpLocation
+    return render(request, "mobile/create_daily_emp.html", context)
+
+@login_required(login_url='/home/')
+def update_daily_emp(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}    
+    obj = get_object_or_404(DailyMobEmployee, id = id)
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per    
+
+    EmpLocation = catalogModel.Employee.objects.all()
+    empSelected = catalogModel.Employee.objects.filter(employeeID = obj.EmployeeID.employeeID ).first()
+ 
+    form = DailyMobEmpForm(request.POST or None, instance = obj, qs = EmpLocation)
+ 
+    if form.is_valid():      
+        startTime = form.instance.start_time
+        endTime = form.instance.end_time
+        lunch_startTime = form.instance.start_lunch_time
+        lunch_endTime = form.instance.end_lunch_time
+
+        form.instance.total_hours, form.instance.regular_hours,form.instance.ot_hour, form.instance.double_time = calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime)
+
+        empid = request.POST.get('EmployeeID')
+        
+        selectedEmp = catalogModel.Employee.objects.filter(employeeID = empid).first()
+        form.instance.EmployeeID = selectedEmp
+
+        form.save()       
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+        context["emp"] = emp       
+        return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) + '/' + str(LocID)) 
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
+
+    context["form"] = form
+    context["emp"] = emp
+    context["daily"] = dailyID
+    context["empList"] = EmpLocation
+    context["empSelected"] = empSelected
+    
+    return render(request, "mobile/update_daily_emp.html", context)
+
+
+@login_required(login_url='/home/')
+def delete_daily_emp(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    obj = get_object_or_404(DailyMobEmployee, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+ 
+    if obj:
+        obj.delete()
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet)        
+       
+    return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+
+   
 
 @login_required(login_url='/home/')
 def delete_daily_item(request, id, LocID):
@@ -467,7 +576,6 @@ def orders_payroll(request, dailyID, LocID):
 
     return render(request, "mobile/orders_payroll.html", context)
 
-@login_required(login_url='/home/')
 def update_ptp_Emp(dailyID, split):
     emp_ptp = 0
     crew = DailyMob.objects.filter(id = dailyID).first()
@@ -1161,5 +1269,25 @@ def calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime):
         total_lunch = 0
     
     endTotal = total - total_lunch
+    
+    if endTotal <= 8:          
+        regular_hours =  validate_decimals(endTotal)
+        ot_hours = 0
+        double_time = 0
+    elif endTotal > 8 and endTotal <= 12:
+        regular_hours =  8
+        ot_hours = (float(endTotal) - 8)   
+        double_time = 0
+    elif endTotal > 12:
+        regular_hours =  8
+        ot_hours = 4
+        double_time = (float(endTotal) - 12)   
+    else:
+        regular_hours =  0
+        ot_hours = 0
+        double_time = 0
+        
 
-    return endTotal
+    total_hours = regular_hours + ot_hours + double_time
+
+    return total_hours, regular_hours, ot_hours, double_time

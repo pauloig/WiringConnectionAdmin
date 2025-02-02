@@ -7,13 +7,19 @@ from mobile import views
 urlpatterns = [
      # ****** Home **********************
      path('',views.mobile_home),
+
+     # ****** DAILY **********************
      path('crew/<perID>/<dID>/<crewID>/<LocID>',views.crew),
      path('update_supervisor/<perID>/<dID>/<crewID>/<LocID>',views.update_supervisor),
      path('create_daily/<pID>/<dID>/<LocID>',views.create_daily),
      path('delete_daily/<id>/<LocID>',views.delete_daily),
      path('update_order_daily/<woID>/<dailyID>/<LocID>',views.update_order_daily),
-
      path('orders_payroll/<dailyID>/<LocID>',views.orders_payroll),   
+     # ****** DAILY EMPLOYEE**********************
+     path('create_daily_emp/<id>/<LocID>',views.create_daily_emp),
+     path('update_daily_emp/<id>/<LocID>',views.update_daily_emp),
+     path('delete_daily_emp/<id>/<LocID>',views.delete_daily_emp),
+     
 
      path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
 

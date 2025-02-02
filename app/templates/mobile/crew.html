@@ -15,6 +15,16 @@
       }  
   }
 
+
+  function delete_daily_emp(id, selectedLocation){
+    event.preventDefault();
+    if (confirm(`Are you sure to remove this Employee?`))
+    {           
+        window.location.href = `/mobile/delete_daily_emp/${id}/${selectedLocation}`;
+
+        
+    }  
+}
   
 </script>
 
@@ -211,157 +221,98 @@
               </div>
           </div>                 
       </div>  
-
-      <div class="row mt-3 pb-5">             
-        <div class="col-sm-12">  
-          <div class="card">
-            <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
-            <div class="card-body">
-                <!--Address-
-                <div class="d-flex justify-content-left align-items-center">
-                    <div class="d-flex align-items-center ">
-                        <i class="fa fa-user" style="padding-bottom: 15px;"></i>                        
-                            <p style="margin-left: 10px">Paulo Ismalej</p>                         
-                    </div>
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                         
-                        <p >| 25%</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                        
-                        <p >| $ 1,500</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 20px">
-                        <i class="fa fa-trash" style="padding-bottom: 15px;"></i> 
-                        <i class="fa fa-pencil" style="padding-bottom: 15px; margin-left: 30px"></i> 
-                        
-                    </div> 
-                </div>
-                <div class="d-flex justify-content-left align-items-center">
-                    <div class="d-flex align-items-center ">
-                        <i class="fa fa-user" style="padding-bottom: 15px;"></i>                        
-                            <p style="margin-left: 10px">Carolina Herrera</p>                         
-                    </div>
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                         
-                        <p >| 25%</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                        
-                        <p >| $ 1,500</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 20px">
-                        <i class="fa fa-trash" style="padding-bottom: 15px;"></i> 
-                        <i class="fa fa-pencil" style="padding-bottom: 15px; margin-left: 30px"></i> 
-                        
-                    </div> 
-                </div>
-                <div class="d-flex justify-content-left align-items-center">
-                    <div class="d-flex align-items-center ">
-                        <i class="fa fa-user" style="padding-bottom: 15px;"></i>                        
-                            <p style="margin-left: 10px">Juan Carlos Perez</p>                         
-                    </div>
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                         
-                        <p >| 25%</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 10px">
-                        
-                        <p >| $ 1,500</p>
-                    </div> 
-                    <div class="d-flex align-items-center" style="margin-left: 20px">
-                        <i class="fa fa-trash" style="padding-bottom: 15px;"></i> 
-                        <i class="fa fa-pencil" style="padding-bottom: 15px; margin-left: 30px"></i> 
-                        
-                    </div> 
-                </div>-->
-
-            <table class="table table-sm ">
-                <tr>
-                    <td width="45%"> 
-                                               
-                            <p >Ana Carolina Herrera Guzman</p>                         
-                    </td>
-                    <td width="15%">
-                        <p> | 25%</p>
-                    </td>
-                    <td width="20%">
-                        <p>   | $ 1,500</p>
-                    </td>
-                    <td width="10%">
-                        <i class="fa fa-trash" style="padding-bottom: 15px;"></i> 
-                    </td>
-                    <td width="10%">
-                        <i class="fa fa-pencil" style="padding-bottom: 15px;"></i> 
-                    </td>
-                </tr>
-                <tr>
-                    <td width="45%"> 
-                                               
-                            <p > Paulo Ismalej</p>                         
-                    </td>
-                    <td width="15%">
-                        <p> | 25%</p>
-                    </td>
-                    <td width="20%">
-                        <p>   | $ 1,500</p>
-                    </td>
-                    <td width="10%">
-                        <i class="fa fa-trash" style="padding-bottom: 15px;"></i> 
-                    </td>
-                    <td width="10%">
-                        <i class="fa fa-pencil" style="padding-bottom: 15px;"></i> 
-                    </td>
-                </tr>
-            </table>
-                
-                <!--<table class="table table-sm table-bordered table-striped">
-                    <thead>
-                        <tr class="table-primary">                                                  
-                            <td width="25%" class="p-1">Name</td>
-                            <td width="8%" class="p-1">% Pay</td>
-                            {% comment %} <td width="8%" class="p-1">On Call</td>
-                            <td width="8%" class="p-1">Bonus</td>                                      {% endcomment %}
-                            <td width="10%" class="p-1">Total Hrs</td>
-                            {% comment %} <td width="9%" class="p-1">Reg Hrs</td>
-                            <td width="8%" class="p-1">OT Hrs</td>
-                            <td width="8%" class="p-1">DT Hrs</td>
-                            <td width="8%" class="p-1">Payout</td> {% endcomment %}
-                            <td width="8%" class="p-1">
-                                {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>
+      {% for item in crew %} 
+            {% if item.crew == selectedCrew %}
+                <div class="row mt-3 pb-5">             
+                    <div class="col-sm-12">  
+                    <div class="card">
+                        <div class="card-header card-header-wc d-flex justify-content-between" >
+                            <h6>Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+                            {% if item.supervisor != None and item.woID != None %}
+                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                    <a href="/mobile/create_daily_emp/{{item.id}}/{{selectedLocation}}" ><i class="fa-solid fa-user-plus"></i></a>
+                                {%endif%}
+                            {% endif %}
+                        </div>
+                        <div class="card-body">               
+                                <table class="table table-sm">
+                                    {%if not dailyEmp %}
+                                        <p>No Employees Included</p>     
                                     {%endif%}
-                                {% endif %}
-                            </td>
-
+                                    {%for emp in dailyEmp %}
+                                        <tr>
+                                            <td width="35%">                                                                    
+                                                    <p >{{emp.EmployeeID}}</p>                         
+                                            </td>
+                                            <td width="20%">
+                                                <p> | {{emp.per_to_pay|floatformat:2|intcomma}}%</p>
+                                            </td>
+                                            <td width="35%">
+                                                <p>   | {%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</p>
+                                            </td>
+                                            <td width="10%">
+                                                <a href="/mobile/update_daily_emp/{{emp.id}}/{{selectedLocation}}"  ><i class="fa fa-pencil" style="padding-bottom: 15px;"></i></a>
+                                            </td>
+                                            <td width="10%">
+                                                 
+                                                <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" onclick="delete_daily_emp({{emp.id}},{{selectedLocation}})"><i class="fa fa-trash" style="padding-bottom: 15px;"></i></a>
+                                            </td>
+                                           
+                                        </tr>
+                                    {%endfor%}
+                                    
+                                </table>
                             
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {%for emp in dailyEmp %}
-                            <tr>                                                       
-                                <td class="p-1">{{emp.EmployeeID}} </td>
-                                <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
-                                {% comment %} <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
-                                <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
-                                {% comment %} <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
-                                <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
-                                <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
-                                <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
-                                <td class="p-1">
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
-                                        <a hx-get="/update_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
-                                        <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog">  <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
-                                    {%endif%}
-                                    </td>                                                        
-                            </tr>
-                        {%endfor%}
-                    </tbody>                                                
-                </table>-->
-          </div>
-      </div> 
+                            <!--<table class="table table-sm table-bordered table-striped">
+                                <thead>
+                                    <tr class="table-primary">                                                  
+                                        <td width="25%" class="p-1">Name</td>
+                                        <td width="8%" class="p-1">% Pay</td>
+                                        {% comment %} <td width="8%" class="p-1">On Call</td>
+                                        <td width="8%" class="p-1">Bonus</td>                                      {% endcomment %}
+                                        <td width="10%" class="p-1">Total Hrs</td>
+                                        {% comment %} <td width="9%" class="p-1">Reg Hrs</td>
+                                        <td width="8%" class="p-1">OT Hrs</td>
+                                        <td width="8%" class="p-1">DT Hrs</td>
+                                        <td width="8%" class="p-1">Payout</td> {% endcomment %}
+                                        <td width="8%" class="p-1">
+                                            {% if item.supervisor != None and item.woID != None %}
+                                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                                    <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>
+                                                {%endif%}
+                                            {% endif %}
+                                        </td>
+
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for emp in dailyEmp %}
+                                        <tr>                                                       
+                                            <td class="p-1">{{emp.EmployeeID}} </td>
+                                            <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
+                                            {% comment %} <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                            <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
+                                            <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
+                                            {% comment %} <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
+                                            <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
+                                            <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
+                                            <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td> {% endcomment %}
+                                            <td class="p-1">
+                                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
+                                                    <a hx-get="/update_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
+                                                    <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog">  <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
+                                                {%endif%}
+                                                </td>                                                        
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>                                                
+                            </table>-->
+                            </div>
+                        </div> 
+                    </div>
+                    {%endif%} 
+                    {%endfor%}
       
       <div class="row mt-2 pt-2">             
         <div class="col-sm-12">  

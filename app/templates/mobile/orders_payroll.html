@@ -15,10 +15,10 @@
                     <thead class="table-primary">
                         <tr>
                             
-                            <th scope="col">work Order</th>
+                            <th scope="col" style="width: 80%%">work Order</th>
                         
                             {% comment %} <th scope="col">Status</th> {% endcomment %}
-                            <th scope="col"></th>
+                            <th scope="col" style="width: 80%%"></th>
                         </tr>              
                     </thead>
                     <tbody>                                       
@@ -36,10 +36,11 @@
                 </table>
             </div>
         </div>
-        <div class="row mt-2 pt-2">  
-            <div class="col-sm-12">
-                <a class="btn btn-danger" href="/mobile" >Close</a>  
-            </div>
+        <div class="d-flex justify-content-center mt-2 pt-2">  
+          
+                <button type="button" class="btn btn-danger" onclick="window.history.back();">Close</button> 
+
+ 
         </div>
     </form>
 </div>

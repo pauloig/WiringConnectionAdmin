@@ -4,6 +4,31 @@ from django import forms
 from .models import *
 from workOrder import models as catalogModel
 
+class DailyMobEmpForm(forms.ModelForm):
+
+    class Meta:
+        model = DailyMobEmployee
+        fields = [
+            'DailyID',
+            'EmployeeID',
+            'per_to_pay',
+            'on_call',
+            'bonus',
+            'start_time',
+            'start_lunch_time',
+            'end_lunch_time',
+            'end_time',
+            'total_hours',
+            'billableHours'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        qs = kwargs.pop('qs')
+        super().__init__(*args, **kwargs)
+        self.fields['DailyID'].disabled = True
+        self.fields['EmployeeID'].queryset = qs
+
+
 class TimesheetForm(forms.ModelForm):   
     class Meta:
         model = Timesheet
