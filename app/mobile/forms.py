@@ -28,6 +28,23 @@ class DailyMobEmpForm(forms.ModelForm):
         self.fields['DailyID'].disabled = True
         self.fields['EmployeeID'].queryset = qs
 
+class DailyMobItemForm(forms.ModelForm):
+    """ itemID = forms.ModelChoiceField(queryset=itemPrice.objects.filter(location__LocationID = ),required=False)"""
+
+    class Meta:
+        model = DailyMobItem
+        fields = [
+            'DailyID',
+            'itemID',
+            'quantity',            
+        ]
+
+    def __init__(self, *args, **kwargs):
+        qs = kwargs.pop('qs')
+        super().__init__(*args, **kwargs)
+        self.fields['DailyID'].disabled = True
+        self.fields['itemID'].queryset = qs
+
 
 class TimesheetForm(forms.ModelForm):   
     class Meta:

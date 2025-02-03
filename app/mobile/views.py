@@ -43,8 +43,10 @@ def mobile_home(request):
             selectedDate = fullDate
             twTitle += ' - ' + fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()"""
         
+        user = request.user.username
+
         #obtengo la cantidad de Items asociados
-        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
+        dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate, created_by = user)
         totalItems = 0
 
         for d in dItems:
@@ -162,16 +164,18 @@ def crew(request, perID, dID, crewID, LocID):
     else:
         superV = catalogModel.Employee.objects.filter(is_supervisor=True)
 
+    user = request.user.username
+
     if dID != "0":
         # get the list of dailys for the period, Day selected and Location
-        crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca).order_by('crew')
+        crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca, created_by = user).order_by('crew')
         context["crew"] = crews
 
     if crews.count() == 1:
         crewID = crews.first().crew
 
     if crewID != "0":
-        dailyID = DailyMob.objects.filter(Period = perID, day=selectedDate, crew = crewID, Location = loca ).first()
+        dailyID = DailyMob.objects.filter(Period = perID, day=selectedDate, crew = crewID, Location = loca, created_by = user ).first()
         dailyEmp = DailyMobEmployee.objects.filter(DailyID = dailyID).order_by('created_date')
         context["dailyEmp"] = dailyEmp
 
@@ -300,7 +304,8 @@ def create_daily(request, pID, dID, LocID):
             Location = loc,
             day = selectedDate,
             crew = int(crewNo) + 1,
-            created_date = datetime.now()
+            created_date = datetime.now(),
+            created_by = request.user.username
         )
 
         crew.save()
@@ -527,6 +532,96 @@ def delete_daily_emp(request, id, LocID):
    
 
 @login_required(login_url='/home/')
+def create_daily_item(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    dailyID = DailyMob.objects.filter(id = id).first()
+
+    dailyI = DailyMobItem.objects.filter(DailyID = dailyID)
+    itemList = []
+
+    for i in dailyI:
+       itemList.append(i.itemID.item.itemID) 
+
+    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID).exclude(item__itemID__in = itemList)
+
+    form = DailyMobItemForm(request.POST or None, initial={'DailyID': dailyID}, qs = itemLocation)
+    if form.is_valid():    
+        
+        itemid = request.POST.get('itemID')
+        
+        selectedItem = catalogModel.itemPrice.objects.filter(id = itemid).first()
+        form.instance.itemID = selectedItem
+
+        price = form.instance.itemID.price   
+        Emppayout = form.instance.itemID.emp_payout 
+        
+        form.instance.emp_payout = float(Emppayout)
+        if form.instance.itemID.price != None and form.instance.itemID.price != "":
+            price = form.instance.itemID.price   
+        else:
+            price = 0
+            
+        form.instance.price = float(price)
+        form.instance.total = form.instance.quantity * float(Emppayout)
+        form.instance.created_date = datetime.now()
+
+        form.save()      
+        
+        update_ptp_Emp(id, dailyID.split_paymet)
+
+        return HttpResponseRedirect('/mobile/crew/' + str(dailyID.Period.id) + '/' + dailyID.day.strftime("%d") + '/' + str(dailyID.crew) +'/' + str(LocID))        
+         
+    context['form']= form
+    context["emp"] = emp
+    context["DailyID"] = dailyID
+    context["itemList"] = itemLocation
+    return render(request, "mobile/create_daily_item.html", context)
+
+@login_required(login_url='/home/')
+def update_daily_item(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobItem, id = id)
+
+    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = obj.DailyID.Location.LocationID)
+    
+    itemSelected = catalogModel.itemPrice.objects.filter(id = obj.itemID.id ).first()
+
+    form = DailyMobItemForm(request.POST or None, instance = obj, qs = itemLocation)
+ 
+    if form.is_valid():
+        price = form.instance.itemID.emp_payout    
+        form.instance.price = float(price)
+        form.instance.total = form.instance.quantity * float(price)
+        
+        itemid = request.POST.get('itemID')
+        
+        selectedItem = catalogModel.itemPrice.objects.filter(id = itemid).first()
+        form.instance.itemID = selectedItem
+
+        form.save()
+        context["emp"] = emp    
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+        return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/'+str(LocID)) 
+
+    context["form"] = form
+    context["emp"] = emp
+    context["itemSelected"] = itemSelected
+    context["DailyID"] = obj.DailyID
+    return render(request, "mobile/update_daily_item.html", context)
+
+@login_required(login_url='/home/')
 def delete_daily_item(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
@@ -539,19 +634,13 @@ def delete_daily_item(request, id, LocID):
     context["form"] = obj
     context["emp"] = emp
  
-    if request.method == 'POST':
-        
-        operationDetail = "Deleting Item: " + str(obj.itemID) + ", Quantity: " + str(obj.quantity) + ", Total: " + str(obj.total)
-        
+    if obj:
         
         obj.delete()
 
         update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
 
-        return HttpResponseRedirect('/payroll/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
-
-   
-    return render(request, "delete_daily_item.html", context)
+    return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
 
 
 @login_required(login_url='/home/')

@@ -20,8 +20,11 @@ urlpatterns = [
      path('update_daily_emp/<id>/<LocID>',views.update_daily_emp),
      path('delete_daily_emp/<id>/<LocID>',views.delete_daily_emp),
      
-
+     # ****** DAILY ITEM **********************
+     path('create_daily_item/<id>/<LocID>',views.create_daily_item),
+     path('update_daily_item/<id>/<LocID>',views.update_daily_item),
      path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
+
 
      # ****** Employee **********************
      path('employee_list/',views.employee_list),   
