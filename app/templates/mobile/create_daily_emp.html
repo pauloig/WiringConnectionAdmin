@@ -35,7 +35,7 @@
                         </tbody>                              
                     </table>
                     <div class="d-flex justify-content-center pt-2">               
-                        <button type="button" class="btn btn-danger" onclick="window.history.back();">Close</button> 
+                        <button type="button" class="btn btn-danger" href=""> Close </button> 
                     </div>
                 </div>
             </div>
@@ -66,14 +66,7 @@
                 $("#orders").DataTable();  
             </script>
             <div id="forma" style="display: none;" class="mt-4 pt-5">
-                <div class="row">
-                    {% comment %} <div class="col-sm-6">
-                        <div class="mb-3">
-                            <label for="{{ form.DailyID.id_for_label }}" class="form-label">Selected Daily</label>
-                            <input type="text" name="DailyID" id="DailyID" class="form-control" disabled>
-                            <div class="invalid-feedback">{{ form.DailyID.errors|first }}</div>
-                        </div>
-                    </div> {% endcomment %}
+                <div class="row">                   
                     <div class="col-sm-12">
                         <div class="mb-3">
                             <label for="EmployeeName" class="form-label">Employee</label>

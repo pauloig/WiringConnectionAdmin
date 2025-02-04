@@ -22,8 +22,8 @@
                     </li>
                 
                     <li class="mb-2 d-flex">
-                      <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"Y-m-d"}}</div>
-                      <div class="pl-3"><i class="fas fa-calendar-day"></i> <strong>To:</strong>  {{period.toDate|date:"Y-m-d"}}</div>
+                      <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
+                      <div class="pl-3"><i class="fas fa-calendar-day"></i> <strong>To:</strong>  {{period.toDate|date:"m-d-Y"}}</div>
                     </li>
 
                     <li class="mb-2">
@@ -35,7 +35,7 @@
             </div>   
         </div>
 
-        <div class="col-sm-5">
+        <div class="col-sm-12">
           <div class="card mt-3">
               <h6 class="card-header card-header-wc">Week 1</h6>
               <div class="card-body">
@@ -43,11 +43,11 @@
                       <div class="col-sm-12">
                           {% for item in week1 %}                                                                        
                               {% if item.selected %}
-                                  <a class="btn btn-success position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}                                            
                                   </a> 
                               {% else %}
-                                  <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
                                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            
@@ -61,7 +61,7 @@
               </div> 
           </div>
       </div>     
-      <div class="col-sm-5 pb-5">
+      <div class="col-sm-12 pb-5">
           <div class="card mt-3">
               <h6 class="card-header card-header-wc">Week 2</h6>
               <div class="card-body">
@@ -70,11 +70,11 @@
                           {% for item in week2 %}                                 
                               
                               {% if item.selected %}
-                                  <a class="btn btn-success position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}                                            
                                   </a> 
                               {% else %}
-                                  <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
                                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            

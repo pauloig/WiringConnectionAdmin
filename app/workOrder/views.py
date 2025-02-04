@@ -1889,12 +1889,24 @@ def update_po(request, id, woID, selectedvs):
     else:
         context['selectedvs2'] = ""    
 
-    if request.user.is_staff or emp.is_superAdmin:
+    if (request.user.is_staff or emp.is_superAdmin) and obj.Status == 1:
+        form = InternalPOFormAdminUpdate(request.POST or None, instance = obj )
+    elif request.user.is_staff or emp.is_superAdmin:
         form = InternalPOFormAdmin(request.POST or None, instance = obj )
     elif emp.accounts_payable:
         form = InternalPOFormAccounPay(request.POST or None, instance = obj )
     else:
         form = InternalPOForm(request.POST or None, instance = obj )
+
+    
+    status_update = (
+    (1, 'Open'),
+    (3, 'Invoiced'),
+    )
+
+    if obj.Status == 1:
+        context["status_update"] = "Permitido de Open a Invoiced"
+        form.fields['Status'].choices = status_update
 
 
     

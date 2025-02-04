@@ -222,6 +222,7 @@ def update_supervisor(request, perID, dID, crewID, LocID):
     else:
         superV = catalogModel.Employee.objects.filter(is_supervisor=True)
     
+    crew = DailyMob.objects.filter(id = dailyID).first()
 
     if request.method == 'POST':
         dailyID = request.POST.get('daily')
@@ -260,6 +261,7 @@ def update_supervisor(request, perID, dID, crewID, LocID):
 
     context["superV"] = superV            
     context["selectedCrew"] = int(crewID)
+    context["dailyObj"] = crew
     context["selectedDay"] = int(dID)
     context["selectedLocation"] = LocID      
 
@@ -299,13 +301,21 @@ def create_daily(request, pID, dID, LocID):
         else:
             crewNo = 0
 
+        user = request.user.username
+        crewNumberByUser = DailyMob.objects.filter( Period = per, day = selectedDate, Location = loc, created_by = user).last()
+        if crewNumberByUser:
+            crewNoByUser = crewNumberByUser.crew_by_user
+        else:
+            crewNoByUser = 0
+
         crew  = DailyMob(
             Period = per,
             Location = loc,
             day = selectedDate,
             crew = int(crewNo) + 1,
             created_date = datetime.now(),
-            created_by = request.user.username
+            created_by = request.user.username,
+            crew_by_user = int(crewNoByUser) + 1
         )
 
         crew.save()
@@ -410,13 +420,8 @@ def update_order_daily(request, woID, dailyID, LocID):
 
         wo.save()
 
-        per = crew.Period.id
+        per = crew.Period.id      
         
-        #Adding Audit
-        if crew.woID != None:            
-            operationDetail = "Change on Selected WO - last WO: " + str(anterior) + ", New WO: " + str(wo)
-        else:
-            operationDetail = "Adding a Selected WO: " + str(wo)        
 
     return HttpResponseRedirect('/mobile/crew/' + str(per) + '/' + crew.day.strftime("%d")  + '/'+ str(crew.crew) +'/' + str(LocID))
 
@@ -657,10 +662,11 @@ def orders_payroll(request, dailyID, LocID):
     context["orders"] = wo
     context["emp"] = emp    
     context["daily"] = dailyID
+    context["dailyObj"] = daily
     context["selectedLocation"] = LocID
 
     per = catalogModel.period.objects.filter(status__in=(1,2)).first()
-    context["per"] = per
+    context["period"] = per
     #context["WOdailyList"] = WOdailyList
 
     return render(request, "mobile/orders_payroll.html", context)

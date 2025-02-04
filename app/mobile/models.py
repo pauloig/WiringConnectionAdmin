@@ -66,6 +66,7 @@ class DailyMob(models.Model):
     pdfDaily = models.FileField(null=True, upload_to="dailys") 
     created_date = models.DateTimeField(null=True, blank=True)
     created_by = models.CharField(max_length=60, blank=True, null=True)
+    crew_by_user = models.IntegerField(null=True , blank=True)
 
     def __str__(self):
         return str(self.crew) + " - " + str(self.day)

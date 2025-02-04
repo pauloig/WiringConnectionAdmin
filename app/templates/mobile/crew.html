@@ -55,9 +55,9 @@ function delete_daily_item(id, selectedLocation){
                 {%endif%}   
                 {% for item in crew %}                         
                     {% if item.crew == selectedCrew %}
-                        <a class="btn btn-warning px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"> <i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew}}</a>
+                        <a class="btn btn-warning px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"> <i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
                     {%else%}
-                        <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew}}</a>
+                        <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
                     {%endif%} 
                 {%endfor%}                        
             </div>
@@ -109,7 +109,7 @@ function delete_daily_item(id, selectedLocation){
                                     <p id="supervisor" name="supervisor" style="margin-left: 10px">No Supervisor Selected</p> 
                                 {%endif%}
 
-                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
+                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}                                
                                     <a class="btn  pt-1" href="/mobile/update_supervisor/{{period.id}}/{{item.day|date:'d'}}/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
                                 {%endif%}
                             </div>
@@ -199,7 +199,7 @@ function delete_daily_item(id, selectedLocation){
                     <div class="col-sm-12">  
                         <div class="card">
                             <div class="card-header card-header-wc d-flex justify-content-between" >
-                                <h6>ITEM LIST  -     TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
+                                <h6>Item List - Total: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
                                 {% if item.supervisor != None and item.woID != None %}
                                     {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
                                         <a href="/mobile/create_daily_item/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>

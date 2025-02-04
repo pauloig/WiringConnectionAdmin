@@ -82,24 +82,27 @@
       color: red;
     }
 
-    #orders {
+    #orders, #orders2 {
       width: 335px;
       table-layout: fixed;
     }
 
     #orders th,
-    #orders td {
+    #orders td,
+    #orders2 th,
+    #orders2 td 
+    {
         width: auto; /* Let columns adjust automatically within the fixed table width */
         overflow: hidden; /* Hide overflow content */
         text-overflow: ellipsis; /* Add ellipsis for overflow text */
         white-space: nowrap; /* Prevent text wrapping */
     }
 
-    #orders_wrapper {
+    #orders_wrapper, #orders2_wrapper {
       width: 355px; /* Match the table width */
       margin: 0 auto; /* Center the table */
   }
-    #orders_paginate {
+    #orders_paginate, #orders2_paginate {
       width: 355px; /* Match the table width */
       margin: 0px auto 0; /* Center the pagination and add margin */
       display: flex;
@@ -108,16 +111,25 @@
   }
 
   /* Style the current page button */
-  #orders_paginate .paginate_button.current {
+  #orders2_paginate .paginate_button.current {
       background-color: #007bff;
       color: white;
       border-color: #007bff;
   }
 
+  #orders2_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
   #orders_paginate .paginate_button:not(.previous):not(.next):not(.current) {
     display: none; /* Hide all buttons except Previous, Next, and Current */
 }
 
+#orders2_paginate .paginate_button:not(.previous):not(.next):not(.current) {
+  display: none; /* Hide all buttons except Previous, Next, and Current */
+}
 
   }
 
@@ -203,7 +215,35 @@
         }
       }
     );  
-    $("#orders2").DataTable();  
+
+    $("#orders2").DataTable({
+      
+      "pagingType": "simple_numbers",
+      "language": {
+        "lengthMenu": "Display _MENU_ records per page",
+        "zeroRecords": "Nothing found - sorry",
+        "info": "Showing page _PAGE_ of _PAGES_",
+        "infoEmpty": "No records available",
+        "infoFiltered": "(filtered from _MAX_ total records)",
+        "search": "Search:",
+        "paginate": {
+          "first": "<<",
+          "last": ">>",
+          "next": ">",
+          "previous": "<"
+        }
+      }
+    }
+  );  
+  // Restrict search input to numbers only
+  $('#orders2_filter input').on('keypress', function(event) {
+    var charCode = event.which ? event.which : event.keyCode;
+    if (charCode < 48 || charCode > 57) { // Allow only numbers (0-9)
+        event.preventDefault();
+    }
+  }); 
+
+  $('#example_filter input').attr('inputmode', 'numeric');
   </script>
 </body>
 

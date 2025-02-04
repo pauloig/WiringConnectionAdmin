@@ -8,15 +8,10 @@
 
 
 <div class="container">
-    <form method='post' action="{{request.path}}" class="modal-content" id="daily_item">
-        {% csrf_token %}
-
-        <div class="modal-header">
-            <h5>Items</h5>           
-        </div>              
+    <form method='post' action="{{request.path}}"  id="daily_item">
+        {% csrf_token %}          
        
-        <div class="modal-body">
-            <div class="row" id="items">            
+        <div class="row mt-5 pt-2" id="items">            
                 <table id="orders" class="table table-sm table-bordered table-striped">
                     <thead class="table-primary">
                         <tr>
@@ -43,7 +38,10 @@
                         {% endfor %}
                     </tbody>                              
                 </table>
-            </div>
+                <div class="d-flex justify-content-center pt-2">               
+                    <button type="button" class="btn btn-danger" onclick="window.history.back();">Close</button> 
+                </div>
+        </div>
             <script>
                 function selectItem(item, itemName)
                 {
@@ -65,7 +63,7 @@
 
                 $("#orders").DataTable();  
             </script>
-            <div id="forma" style="display: none;">
+            <div id="forma" style="display: none;" class="mt-4 pt-5">
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="mb-3">
@@ -90,15 +88,16 @@
                             <div class="invalid-feedback">{{ form.quantity.errors|first }}</div>
                         </div>
                     </div> 
-                </div>              
+                </div>  
+                
+                <div class="d-flex justify-content-center pb-5 mb-5">           
+                    <button type="submit" class="btn btn-primary" form="daily_item">Save</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="window.history.back();">Close</button>            
+                </div>
             </div>            
-        </div>
         
-        <div class="modal-footer">          
-            <button type="submit" class="btn btn-primary" form="daily_item">Save</button>
-            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="window.history.back();">Close</button> 
-            
-        </div>
+        
+      
    
     </form>
 </div>
