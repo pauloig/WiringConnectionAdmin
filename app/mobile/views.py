@@ -17,6 +17,16 @@ from datetime import datetime, timedelta
 def mobile(request):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     per = catalogModel.period.objects.filter(status=1).first()
+
+    #Select the location according to the parameter
+    
+    if emp:
+        if emp.Location is None or not emp.Location:        
+            return render(request,'mobile/landing.html',{'message':'This user does not have a location assigned', 'alertType':'danger', 'emp':emp})
+        elif not per:
+            return render(request,'mobile/landing.html',{'message':'no active period found', 'alertType':'danger', 'emp':emp})
+    else:
+        return render(request,'mobile/landing.html',{'message':'This user does not have a location assigned', 'alertType':'danger', 'emp':emp})
     
     if emp:
         LocID = emp.Location.LocationID

@@ -1,0 +1,15 @@
+{% extends 'mobile/index.html' %} 
+{%load static%}
+{% block title %} Duplicate Order List {% endblock %} 
+
+{% block container %}
+
+<div class="container">
+    <br>
+    <br>
+    <div class="alert alert-{{alertType}} pt5 mt-5" role="alert">
+       {{message}}
+    </div>
+   
+</div>
+{% endblock %}

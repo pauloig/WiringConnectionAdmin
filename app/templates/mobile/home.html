@@ -26,10 +26,9 @@
                    <p class="card-text"></p>
                    <ul class="list-unstyled">
                         <li class="mb-2 d-flex justify-content-between">                                          
-                            <div>
-                                <i class="fas fa-map-marker-alt"></i> 
-                                
-                                <select name="location" id="location" onchange="change_location(this);">
+                            <div class="d-flex justify-content-left align-items-center">
+                                <i class="fas fa-map-marker-alt fa-xl" style="margin-right: 10px;"></i>                                 
+                                <select class="form-select" name="location" id="location" onchange="change_location(this);">
                                 
                                     {% for loc in locationList %}
                                         {% if loc.LocationID|slugify == selectedLocation|slugify %}
@@ -40,22 +39,23 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
-                            <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
+                            
+                            
                         </li> 
 
-                     <li class="mb-2 d-flex justify-content-between">                                          
-         
-                        
+                     <li class="mb-2 d-flex justify-content-between align-items-center">       
+                        <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>                                   
+                        <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
+                        <div><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
                       </li>
                 
-                    <li class="mb-2 d-flex">
-                      <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
-                      <div class="pl-3"><i class="fas fa-calendar-day"></i> <strong>To:</strong>  {{period.toDate|date:"m-d-Y"}}</div>
+                    <li class="mb-2 d-flex align-items-center">                                           
+                      <div class=""><i class="fas fa-calendar-day"></i> <strong> To:</strong>  {{period.toDate|date:"m-d-Y"}}</div>
+                      <i class="fas fa-money-check-alt" style="margin-left: 30px;"></i> <strong> Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
                     </li>
 
                     <li class="mb-2">
-                      <i class="fas fa-money-check-alt"></i> <strong>Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
+                      
                     </li> 
                   </ul>
                 </div>
