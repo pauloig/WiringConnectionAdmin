@@ -35,7 +35,7 @@
                         </tbody>                              
                     </table>
                     <div class="d-flex justify-content-center pt-2">               
-                        <button type="button" class="btn btn-danger" href=""> Close </button> 
+                        <a type="button" class="btn btn-danger" href="/mobile/crew/{{daily.Period.id}}/{{daily.day|date:'d'}}/{{daily.crew}}/{{selectedLocation}}">Close</a>     
                     </div>
                 </div>
             </div>
@@ -332,7 +332,7 @@
 
                     <div class="d-flex justify-content-center pb-5 mb-5">          
                         <button type="submit" class="btn btn-primary" id="save_btn" form="daily_emp">Save</button>
-                        <button type="button" class="btn btn-danger" onclick="window.history.back();window.history.back();">Close</button> 
+                        <a type="button" class="btn btn-danger" href="/mobile/crew/{{daily.Period.id}}/{{daily.day|date:'d'}}/{{daily.crew}}/{{selectedLocation}}">Close</a>  
                     </div>
                 </div>
             </div>

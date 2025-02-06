@@ -4,6 +4,16 @@
 {% load humanize %}
 {% block container %}
 
+<script>
+    function change_location(sel) {
+        var location = sel.options[sel.selectedIndex].value;
+        console.log(location);
+        var url = "/mobile/home/" + location;
+        window.location.href = url; 
+        
+    }   
+</script>
+
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
@@ -14,12 +24,30 @@
                 <div class="card-body">
                   {% comment %} <h5 class="card-title">Welcome {{emp.first_name}} {{emp.last_name}}</h5> {% endcomment %}
                    <p class="card-text"></p>
-                  <ul class="list-unstyled">
-                    <li class="mb-2 d-flex justify-content-between">                                          
-                      <div><i class="fas fa-map-marker-alt"></i> {{ emp.Location }}</div>
-                      <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
-                      <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
-                    </li>
+                   <ul class="list-unstyled">
+                        <li class="mb-2 d-flex justify-content-between">                                          
+                            <div>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                
+                                <select name="location" id="location" onchange="change_location(this);">
+                                
+                                    {% for loc in locationList %}
+                                        {% if loc.LocationID|slugify == selectedLocation|slugify %}
+                                            <option value="{{loc.LocationID}}" selected>{{loc.name}}</option>
+                                        {% else %}
+                                            <option value="{{loc.LocationID}}">{{loc.name}}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
+                            <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
+                        </li> 
+
+                     <li class="mb-2 d-flex justify-content-between">                                          
+         
+                        
+                      </li>
                 
                     <li class="mb-2 d-flex">
                       <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
@@ -43,11 +71,11 @@
                       <div class="col-sm-12">
                           {% for item in week1 %}                                                                        
                               {% if item.selected %}
-                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}                                            
                                   </a> 
                               {% else %}
-                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
                                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            
@@ -70,11 +98,11 @@
                           {% for item in week2 %}                                 
                               
                               {% if item.selected %}
-                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}                                            
                                   </a> 
                               {% else %}
-                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
                                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            

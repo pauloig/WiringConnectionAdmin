@@ -13,19 +13,51 @@ from sequences import get_next_value, Sequence
 from workOrder import models as catalogModel
 from datetime import datetime, timedelta
 
+@login_required(login_url='/home/')
+def mobile(request):
+    emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = catalogModel.period.objects.filter(status=1).first()
+    
+    if emp:
+        LocID = emp.Location.LocationID
+    else: 
+        LocID = 0
+    
+    context ={}
+
+
+    context["period"] = per    
+    context["emp"]= emp
+
+    return HttpResponseRedirect('/mobile/home/' + str(LocID))       
+
+
 
 @login_required(login_url='/home/')
-def mobile_home(request):
+def mobile_home(request, LocID):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     per = catalogModel.period.objects.filter(status=1).first()
     context ={}
     context["period"] = per    
     context["emp"]= emp
-    
 
-    #Select the location
-    loca = catalogModel.Locations.objects.filter(LocationID = emp.Location.LocationID).first()
-    context["selectedLocation"] = emp.Location.LocationID
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append({'LocationID': emp.Location.LocationID, 'name':emp.Location.name })
+    
+    for i in locaList:
+        locationList.append({'LocationID': i.LocationID.LocationID, 'name': i.LocationID.name} )
+
+    context["locationList"] = locationList
+
+    if LocID == 0:
+        context["selectedLocation"] = emp.Location.LocationID
+    else:
+        context["selectedLocation"] = LocID
+
+    #Select the location according to the parameter
+    loca = catalogModel.Locations.objects.filter(LocationID = LocID).first()
 
     #getting the list of days per week
     startDate = per.fromDate
@@ -38,10 +70,6 @@ def mobile_home(request):
         shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
         longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
         day = fullDate.strftime("%d")
-        """if dID == day:
-            selectedDay = True
-            selectedDate = fullDate
-            twTitle += ' - ' + fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()"""
         
         user = request.user.username
 
@@ -100,7 +128,7 @@ def crew(request, perID, dID, crewID, LocID):
     context["emp"]= emp
 
     #Select the location
-    loca = catalogModel.Locations.objects.filter(LocationID = emp.Location.LocationID).first()
+    loca = catalogModel.Locations.objects.filter(LocationID = LocID).first()
 
     twTitle = ''
 
@@ -203,6 +231,7 @@ def crew(request, perID, dID, crewID, LocID):
     context["selectedCrew"] = int(crewID)
     context["selectedDay"] = int(dID)
     context["selectedLocation"] = LocID
+    context["selectedLoca"] = loca
 
     return render(request, "mobile/crew.html", context)
 
@@ -222,7 +251,7 @@ def update_supervisor(request, perID, dID, crewID, LocID):
     else:
         superV = catalogModel.Employee.objects.filter(is_supervisor=True)
     
-    crew = DailyMob.objects.filter(id = dailyID).first()
+    crew = DailyMob.objects.filter(id = crewID).first()
 
     if request.method == 'POST':
         dailyID = request.POST.get('daily')
@@ -464,10 +493,12 @@ def create_daily_emp(request, id, LocID):
         update_ptp_Emp(id, dailyID.split_paymet)             
         return HttpResponseRedirect('/mobile/crew/' + str(dailyID.Period.id) + '/' + dailyID.day.strftime("%d") + '/' + str(dailyID.crew) +'/' + str(LocID))        
          
+    
     context['form']= form
     context["emp"] = emp
     context["daily"] = dailyID
     context["empList"] = EmpLocation
+    context["selectedLocation"] = LocID
     return render(request, "mobile/create_daily_emp.html", context)
 
 @login_required(login_url='/home/')
@@ -478,6 +509,8 @@ def update_daily_emp(request, id, LocID):
 
     per = catalogModel.period.objects.filter(status__in=(1,2)).first()
     context["per"] = per    
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
 
     EmpLocation = catalogModel.Employee.objects.all()
     empSelected = catalogModel.Employee.objects.filter(employeeID = obj.EmployeeID.employeeID ).first()
@@ -511,6 +544,7 @@ def update_daily_emp(request, id, LocID):
     context["daily"] = dailyID
     context["empList"] = EmpLocation
     context["empSelected"] = empSelected
+    context["selectedLocation"] = LocID
     
     return render(request, "mobile/update_daily_emp.html", context)
 
@@ -585,6 +619,7 @@ def create_daily_item(request, id, LocID):
     context["emp"] = emp
     context["DailyID"] = dailyID
     context["itemList"] = itemLocation
+    context["selectedLocation"] = LocID
     return render(request, "mobile/create_daily_item.html", context)
 
 @login_required(login_url='/home/')
@@ -596,6 +631,8 @@ def update_daily_item(request, id, LocID):
     context["per"] = per
 
     obj = get_object_or_404(DailyMobItem, id = id)
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
 
     itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = obj.DailyID.Location.LocationID)
     
@@ -623,7 +660,8 @@ def update_daily_item(request, id, LocID):
     context["form"] = form
     context["emp"] = emp
     context["itemSelected"] = itemSelected
-    context["DailyID"] = obj.DailyID
+    context["DailyID"] = dailyID
+    context["selectedLocation"] = LocID
     return render(request, "mobile/update_daily_item.html", context)
 
 @login_required(login_url='/home/')

@@ -6,7 +6,8 @@ from mobile import views
 
 urlpatterns = [
      # ****** Home **********************
-     path('',views.mobile_home),
+     path('',views.mobile),
+     path('home/<LocID>',views.mobile_home),
 
      # ****** DAILY **********************
      path('crew/<perID>/<dID>/<crewID>/<LocID>',views.crew),

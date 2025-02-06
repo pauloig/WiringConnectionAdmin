@@ -63,7 +63,7 @@ function delete_daily_item(id, selectedLocation){
             </div>
 
             <div>
-                <a class="btn btn-danger px-2" href="/mobile/" style="height: 3em; margin-bottom: 0.5em;">
+                <a class="btn btn-danger px-2" href="/mobile/home/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
                     <i class="fa-solid fa-circle-left" style="height: 0.5em;"></i> 
                 </a> 
             </div>
@@ -72,7 +72,7 @@ function delete_daily_item(id, selectedLocation){
       <div class="row mt-2 pt-2">  
         <div class="col-sm-12">
           <div class="card">
-              <div class="card-header card-header-wc text-center"> Work Order Info.  </div> 
+              <div class="card-header card-header-wc text-center"> Work Order Info.  - {{selectedLoca}}</div> 
               <div class="card-body">
                   {% for item in crew %} 
                       {% if item.crew == selectedCrew %}
