@@ -101,9 +101,37 @@
                 {%endif%}   
                 {% for item in crew %}                         
                     {% if item.crew == selectedCrew %}
-                        <a class="btn btn-warning px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">Crew {{item.crew}}</a>
+                        <a class="btn btn-warning px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {%if item.sent_by == None%}
+                                crew {{item.crew}}
+                            {%else%}
+                                {{item.sent_by}} {{item.crew_by_user}}
+                            {%endif%}
+                        </a>
                     {%else%}
-                        <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">Crew {{item.crew}}</a>
+                        {%if item.approved_by != None%}
+                            <a class="btn btn-info position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                                
+                                {%if item.sent_by == None%}
+                                    crew {{item.crew}}
+                                {%else%}
+                                    {{item.sent_by}} {{item.crew_by_user}}
+                                {%endif%}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size:0.7rem;">
+                                    {% comment %} <i class="fa fa-mobile fa-xs" aria-hidden="true"></i>                                             {% endcomment %}
+                                    Mob
+                                </span>
+                            </a>
+                        {%else%}
+                            <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                                {%if item.sent_by == None%}
+                                    crew {{item.crew}}
+                                {%else%}
+                                    {{item.sent_by}} {{item.crew_by_user}}
+                                {%endif%}
+                            </a>
+
+                        {%endif%}
                     {%endif%} 
                 {%endfor%}
                   
@@ -198,12 +226,24 @@
                                             <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if item.own_vehicle > 0 %}{{item.own_vehicle}}{%endif%}" min="0" max="100" disabled>                                  
                                         </div> 
                                     </div>
+                                    <div class="col-sm-2">
+                                        <div class="mb-3">                                            
+                                            <label class="form-label" id="ov_l">Reported By</label> 
+                                            <input type="input" class="form-control"   value="{%if item.sent_by != None%}{{item.sent_by}}{%endif%}" disabled>                                  
+                                        </div> 
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="mb-3">                                            
+                                            <label class="form-label" id="ov_l">Approved By</label> 
+                                            <input type="input" class="form-control"   value="{%if item.approved_by != None%}{{item.approved_by}}{%endif%}" disabled>                                  
+                                        </div> 
+                                    </div>
                                     <div class="col-sm-2 pt-4">
                                         <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">                                         
                                     </div> 
                                 </form>
-                        
-                                    <div class="col-sm-4 pt-3">
+
+                                    <div class="col-sm-12 pt-3">
                                         
                                         <a class="btn btn-success p-3 " hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</i></a>
                                         {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}

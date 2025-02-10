@@ -9,7 +9,7 @@ class TimesheetAdmin(admin.ModelAdmin):
         search_fields = ['date', 'Status',]
 
 class  DailyMobAdmin(admin.ModelAdmin):
-    list_display = ('id','woID', 'crew', 'Location','Period','day')
+    list_display = ('id','woID', 'crew', 'Location','Period','day','Status')
     search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO')
 
 class DailyMobItemAdmin(admin.ModelAdmin):

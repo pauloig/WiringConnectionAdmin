@@ -35,6 +35,17 @@ function delete_daily_item(id, selectedLocation){
         
     }  
 }
+
+function send_payroll(id, selectedLocation){
+    event.preventDefault();
+    if (confirm(`Are you sure to send this Daily to Approve?`))
+    {           
+        console.log(id);
+        console.log(selectedLocation);
+        window.location.href = `/mobile/send_payroll/${id}/${selectedLocation}`;
+   
+    }  
+}
   
 </script>
 
@@ -48,16 +59,22 @@ function delete_daily_item(id, selectedLocation){
             <div>  
                 {% if selectedDay > 0 %}
                     {%if emp.is_superAdmin  or user.is_staff  or period.status == 1%}  
-                        <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
-                            <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
-                        </a> 
+                        
+                            <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
+                                <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
+                            </a> 
+                       
                     {%endif%}
                 {%endif%}   
                 {% for item in crew %}                         
                     {% if item.crew == selectedCrew %}
                         <a class="btn btn-warning px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"> <i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
                     {%else%}
-                        <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
+                        {% if item.Status == 5 %}
+                                <a class="btn btn-danger px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em; color:white;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
+                        {%else%}
+                                <a class="btn btn-info px-2" href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button" style="height: 3em; margin-bottom: 0.5em;"><i class="fa-solid fa-users" style="height: 0.5em;"></i>  {{item.crew_by_user}}</a>
+                        {%endif%} 
                     {%endif%} 
                 {%endfor%}                        
             </div>
@@ -72,7 +89,27 @@ function delete_daily_item(id, selectedLocation){
       <div class="row mt-2 pt-2">  
         <div class="col-sm-12">
           <div class="card">
-              <div class="card-header card-header-wc text-center"> Work Order Info.  - {{selectedLoca}}</div> 
+              <div class="card-header card-header-wc d-flex justify-content-between"> 
+                
+                
+                
+                {% for item in crew %}                         
+                    {% if item.crew == selectedCrew %}
+                            <h4>Work Order Info.  - {{selectedLoca}} - 
+                                {% if item.Status == 5 %}
+                                    <span class="badge bg-danger text-white align-content-center"> {{item.get_Status_display}} </span> 
+                                {%else%}
+                                    <span class="badge bg-success text-white align-content-center"> {{item.get_Status_display}} </span> 
+                                {%endif%}
+                            </h4>
+                            
+                            {%if item.Status == 1 or item.Status == 5%}
+                                <a class="btn p-0" onclick="send_payroll({{item.id}},{{selectedLocation}})"><i class="fa-solid fa-paper-plane fa-xl" style="color: green;"></i></a>
+                            {%endif%}
+                        {%endif%}
+                {%endfor%}   
+
+              </div> 
               <div class="card-body">
                   {% for item in crew %} 
                       {% if item.crew == selectedCrew %}
@@ -85,7 +122,9 @@ function delete_daily_item(id, selectedLocation){
                                 <p id="address" name="address" style="margin-left: 10px">{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}</p>
                             {%endif%}
                             {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                                <a class="btn  pt-1" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                                {%if item.Status == 1 or item.Status == 5%}
+                                    <a class="btn  pt-1" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                                {%endif%}
                             {%endif%}
                                 
                         </div>
@@ -109,8 +148,10 @@ function delete_daily_item(id, selectedLocation){
                                     <p id="supervisor" name="supervisor" style="margin-left: 10px">No Supervisor Selected</p> 
                                 {%endif%}
 
-                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}                                
-                                    <a class="btn  pt-1" href="/mobile/update_supervisor/{{period.id}}/{{item.day|date:'d'}}/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}    
+                                    {%if item.Status == 1 or item.Status == 5%}                                                                
+                                        <a class="btn  pt-1" href="/mobile/update_supervisor/{{period.id}}/{{item.day|date:'d'}}/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
+                                    {%endif%}
                                 {%endif%}
                             </div>
                             <!--Payment and Vehicle-->
@@ -159,7 +200,9 @@ function delete_daily_item(id, selectedLocation){
                                 <h6>Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
                                 {% if item.supervisor != None and item.woID != None %}
                                     {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        <a href="/mobile/create_daily_emp/{{item.id}}/{{selectedLocation}}" ><i class="fa-solid fa-user-plus"></i></a>
+                                        {%if item.Status == 1 or item.Status == 5%}                                                                                                    
+                                            <a href="/mobile/create_daily_emp/{{item.id}}/{{selectedLocation}}" ><i class="fa-solid fa-user-plus"></i></a>
+                                        {%endif%}
                                     {%endif%}
                                 {% endif %}
                             </div>
@@ -180,11 +223,14 @@ function delete_daily_item(id, selectedLocation){
                                                 <p>   | {%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</p>
                                             </td>
                                             <td width="10%">
-                                                <a href="/mobile/update_daily_emp/{{emp.id}}/{{selectedLocation}}"  ><i class="fa fa-pen-to-square" style="padding-bottom: 15px; color: green;"></i></a>
-                                            </td>
+                                                {%if item.Status == 1 or item.Status == 5%}                                                               
+                                                    <a href="/mobile/update_daily_emp/{{emp.id}}/{{selectedLocation}}"  ><i class="fa fa-pen-to-square" style="padding-bottom: 15px; color: green;"></i></a>
+                                                {%endif%}
+                                                </td>
                                             <td width="10%">
-                                                
-                                                <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" onclick="delete_daily_emp({{emp.id}},{{selectedLocation}})"><i class="fa fa-circle-minus" style="padding-bottom: 15px; color:red;"></i></a>
+                                                {%if item.Status == 1 or item.Status == 5%}  
+                                                    <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" onclick="delete_daily_emp({{emp.id}},{{selectedLocation}})"><i class="fa fa-circle-minus" style="padding-bottom: 15px; color:red;"></i></a>
+                                                {%endif%}
                                             </td>
                                         
                                         </tr>
@@ -202,7 +248,9 @@ function delete_daily_item(id, selectedLocation){
                                 <h6>Item List - Total: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
                                 {% if item.supervisor != None and item.woID != None %}
                                     {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        <a href="/mobile/create_daily_item/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>
+                                        {%if item.Status == 1 or item.Status == 5%}        
+                                            <a href="/mobile/create_daily_item/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>
+                                        {%endif%}
                                     {%endif%}
                                 {% endif %}
                             </div>
@@ -212,6 +260,7 @@ function delete_daily_item(id, selectedLocation){
                                         <p>No Items Included</p>     
                                     {%endif%}
                                     {%for itemd in dailyItem %}
+                                    <tr>
                                         <td class="p-1"><p>{{itemd.itemID.item.itemID}}</p></td>
                                         <td class="p-1"><p> | {{itemd.quantity}}</p></td>
                                         <td class="p-1"><p> | ${{itemd.emp_payout|floatformat:2|intcomma}}</p></td>
@@ -220,35 +269,58 @@ function delete_daily_item(id, selectedLocation){
                                             {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
                                                 {%if itemd.Status == 1 %}
                                                     <div class="d-flex justify-content-between">
-                                                        <a href="/mobile/update_daily_item/{{itemd.id}}/{{selectedLocation}}"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
-                                                        <a href="#" onclick="delete_daily_item({{itemd.id}},{{selectedLocation}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>  
+                                                        {%if item.Status == 1 or item.Status == 5%}                                                                
+
+                                                            <a href="/mobile/update_daily_item/{{itemd.id}}/{{selectedLocation}}"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                                            <a href="#" onclick="delete_daily_item({{itemd.id}},{{selectedLocation}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>  
+                                                        {%endif%}
                                                     </div>                           
                                                 {%endif%}
                                             {%endif%}                                                                            
-                                        </td> 
+                                        </td>
+                                    </tr> 
                                     {%endfor%}
                                 </table>
                             </div>           
                         </div>           
                     </div>           
-                </div>           
+                </div>  
+                <div class="row mt-3">             
+                    <div class="col-sm-12">
+                        {%if item.Status == 5%}
+                        <div class="alert alert-danger pt5 mt-5" role="alert">                                
+                            <p>Rejected By: {{item.rejected_by}} - {{item.rejected_date}}</p>
+                            <p>Comments: {{item.comments}}</p>
+                         </div>
+                        {%endif%}
+                        {%if item.Status == 4%}
+                            <div class="alert alert-info pt5 mt-5" role="alert">                                
+                               <p>Approved By: {{item.approved_by}} - {{item.approved_date}}</p>
+                               <p>Comments: {{item.comments}}</p>
+                            </div>
+                        {%endif%}
+                    </div>
+                </div>
+
             {%endif%} 
         {%endfor%}
 
           {%if selectedDay > 0 and selectedCrew > 0 %}      
-          {% for item in crew %} 
-              {% if item.crew == selectedCrew %}
-                  {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
-                    <div class="d-flex justify-content-center mt-3 mb-5 pb-5">
-                        <a class="btn btn-danger"
-                        data-bs-toggle="tooltip" data-bs-placement="top"                                  
-                        onclick="delete_daily({{item.id}},{{selectedLocation}})" >
-                            <i class="fa-solid fa-trash-can"></i></a>
-                    </div>   
-                    {% comment %} <a class="btn btn-danger px-2" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a> {% endcomment %}
-                  {%endif%}
-              {%endif%}
-          {%endfor%}
+            {% for item in crew %} 
+                {% if item.crew == selectedCrew %}
+                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
+                    {%if item.Status == 1 or item.Status == 5%}                                                                
+                        <div class="d-flex justify-content-center mt-3 mb-5 pb-5">
+                            <a class="btn btn-danger"
+                            data-bs-toggle="tooltip" data-bs-placement="top"                                  
+                            onclick="delete_daily({{item.id}},{{selectedLocation}})" >
+                                <i class="fa-solid fa-trash-can"></i></a>
+                        </div>   
+                        {% comment %} <a class="btn btn-danger px-2" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a> {% endcomment %}
+                    {%endif%}
+                    {%endif%}
+                {%endif%}
+            {%endfor%}
         {%endif%}   
 </div>
 {% endblock %}

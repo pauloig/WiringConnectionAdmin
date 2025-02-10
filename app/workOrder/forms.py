@@ -45,6 +45,7 @@ class EmployeesForm(forms.ModelForm):
              "is_admin",
              "is_superAdmin",
              "is_manager",
+             "is_mobile",
              "accounts_payable"
         ]
 

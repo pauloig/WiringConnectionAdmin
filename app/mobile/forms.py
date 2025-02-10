@@ -223,3 +223,24 @@ class TimesheetApprovedForm(forms.ModelForm):
         self.fields['date'].disabled = True
         self.fields['crew'].required = True
         self.fields['crew'].queryset = qs
+
+class DailyMobApprovedForm(forms.ModelForm):
+
+    Period = forms.ModelChoiceField(queryset= catalogModel.period.objects.filter(status=1),required=True)
+    
+
+    class Meta:
+        model = DailyMob
+        fields = [
+                  'day',                 
+                  'Period',
+                  'crew',                  
+                  'comments'              
+                  ]
+        
+    def __init__(self, *args, **kwargs):        
+        super().__init__(*args, **kwargs)
+        self.fields['day'].disabled = True
+        self.fields['Period'].disabled = True
+        self.fields['crew'].disabled = True
+

@@ -12,6 +12,7 @@ from . import views
 from sequences import get_next_value, Sequence
 from workOrder import models as catalogModel
 from datetime import datetime, timedelta
+from django.db import transaction
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -73,6 +74,7 @@ def mobile_home(request, LocID):
     startDate = per.fromDate
     numDays = 7
     week1 = []
+    totalRejected = 0
 
     for x in range(0,numDays):
         selectedDay = False
@@ -86,14 +88,24 @@ def mobile_home(request, LocID):
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate, created_by = user)
         totalItems = 0
-
+        
+        
+        type ="success"
         for d in dItems:
+            
             dItemDetail = DailyMobItem.objects.filter(DailyID=d)
 
             for i in dItemDetail:
                 totalItems += i.quantity
 
-        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+        
+            if d.Status == 5:
+                totalRejected += 1
+                type="danger"
+            
+                
+
+        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type })
 
     startDate += timedelta(days = numDays)
     week2 = []
@@ -112,18 +124,25 @@ def mobile_home(request, LocID):
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
         totalItems = 0
-
+        type ="success"
+        
         for d in dItems:
             dItemDetail = DailyMobItem.objects.filter(DailyID=d)
 
             for i in dItemDetail:
                 totalItems += i.quantity
 
-        week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+            
+            if d.Status == 5:
+                totalRejected += 1
+                type="danger"
+
+        week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type })
     
 
     context["week1"] = week1
     context["week2"] = week2
+    context["totalRejected"] = totalRejected
 
     return render(request, "mobile/home.html", context)
 
@@ -695,6 +714,24 @@ def delete_daily_item(request, id, LocID):
 
     return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
 
+@login_required(login_url='/home/')
+def send_payroll(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    obj = get_object_or_404(DailyMob, id = id)
+    
+    if obj:
+        obj.send_date = datetime.now()    
+        obj.Status = 2
+        obj.save()
+        
+        
+    context["emp"] = emp
+    context["id"] = id
+    
+    return HttpResponseRedirect('/mobile/crew/' + str(obj.Period.id) + '/' + obj.day.strftime("%d") + '/0/' + str(LocID)) 
+
 
 @login_required(login_url='/home/')
 def orders_payroll(request, dailyID, LocID):
@@ -904,8 +941,8 @@ def supervisor_list(request):
     if request.method == "POST":
         dateSelected =  request.POST.get('date')
         dateSelected2 = request.POST.get('date2')
-        dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
-        dateS2 = datetime.strptime(dateSelected2, '%Y-%m-%d').date()
+        # dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
+        # dateS2 = datetime.strptime(dateSelected2, '%Y-%m-%d').date()
         status = request.POST.get('status')        
         loc = request.POST.get('location') 
         employee = request.POST.get('emp')
@@ -917,29 +954,38 @@ def supervisor_list(request):
             emp = "0"
            
         if status == "0" and loc == "0" and employee == "0":
-            ts = Timesheet.objects.filter(Status__in = (2,3), date__range=[dateS, dateS2])
+            #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+            ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3))
         else:
             if status != "0" and loc != "0" and employee != "0":
-                ts = Timesheet.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, date__range=[dateS, dateS2])  
+
+                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
             else:
                 if status != "0" and loc!= "0":    
-                    ts = Timesheet.objects.filter(Status = status , Location__LocationID = loc, date__range=[dateS, dateS2])            
+                    ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status = status , Location__LocationID = loc)            
                 else:    
                     if  status != "0" and employee != "0":
-                        ts = Timesheet.objects.filter(Status = status , EmployeeID__employeeID = employee, date__range=[dateS, dateS2])   
+                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status , created_by = empFilter.user)   
                     else:
                         if  loc != "0" and employee != "0":
-                            ts = Timesheet.objects.filter(Location__LocationID = loc, EmployeeID__employeeID = employee, date__range=[dateS, dateS2])   
+                            empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                            ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc, created_by = empFilter.user)   
                         else:
                             if status != "0":
-                                ts = Timesheet.objects.filter(Status = status , date__range=[dateS, dateS2]) 
+                                ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status ) 
                             else:
                                 if loc != "0":
-                                    ts = Timesheet.objects.filter(Location__LocationID = loc, date__range=[dateS, dateS2]) 
+                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc) 
                                 else:
-                                    ts = Timesheet.objects.filter(EmployeeID__employeeID = employee, date__range=[dateS, dateS2])  
+                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,EmployeeID__employeeID = employee) 
     else:
-        ts = Timesheet.objects.filter(Status__in = (2,3))
+        ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
         
     context["emp"] = emp
     context["dataset"] = ts
@@ -1035,67 +1081,190 @@ def updateBySuper(request, id):
 
 def reject_timesheet(request, id):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
     context ={}
+    context["per"] = per
 
-    obj = get_object_or_404(Timesheet, id = id)
-    form = TimesheetRejectedForm(request.POST or None, instance = obj)
+    obj = get_object_or_404(DailyMob, id = id)
+
+    superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+
+    form = DailyMobApprovedForm(request.POST or None, instance = obj) 
     
+    dailyEmp = DailyMobEmployee.objects.filter(DailyID = obj)
+
+    dailyItem = DailyMobItem.objects.filter(DailyID = obj)
+
+    dailyTotal = 0
+    ovT = 0
+    for di in dailyItem:
+        dailyTotal += di.total 
+
+
+    if obj.own_vehicle != None:
+        ovT = (dailyTotal * obj.own_vehicle) / 100
+    
+    granTotal = dailyTotal + ovT
+
+    context["dailyItem"] = dailyItem
+    context["TotalItem"] = dailyTotal
+    context["ovTotal"] = ovT
+    context["GranTotalItem"] = granTotal
+
     if form.is_valid():
-        form.instance.updatedBy = request.user.username
-        form.instance.updated_date = datetime.now()    
+        
         form.instance.Status = 5
+        form.instance.rejected_by = request.user.username
+        form.instance.rejected_date = datetime.now()
         form.save()
+
+
         # Return to Locations List
         return HttpResponseRedirect('/mobile/supervisor_list/')
 
     context['form']= form     
     context["emp"] = emp
+    context["dailyEmp"] = dailyEmp
+    context["dailyItem"] = dailyItem
+    context["superV"] = superV
+    context["dailyWO"] = obj
     context["id"] = id
     return render(request, "mobile/reject_timesheet.html", context)
 
-
+@transaction.atomic
 def approve_timesheet(request, id):
+    
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     per = catalogModel.period.objects.filter(status__in=(1,2)).first()
     context ={}
     context["per"] = per
 
-    obj = get_object_or_404(Timesheet, id = id)
+    obj = get_object_or_404(DailyMob, id = id)
+
+    superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+
+    form = DailyMobApprovedForm(request.POST or None, instance = obj) 
     
-    if obj:
-        crew = DailyMob.objects.filter(Location = obj.Location, Period = per, day = obj.date)
-    else:
-        crew = None
+    dailyEmp = DailyMobEmployee.objects.filter(DailyID = obj)
+
+    dailyItem = DailyMobItem.objects.filter(DailyID = obj)
+
+    dailyTotal = 0
+    ovT = 0
+    for di in dailyItem:
+        dailyTotal += di.total 
 
 
-    form = TimesheetApprovedForm(request.POST or None, instance = obj, qs = crew) 
+    if obj.own_vehicle != None:
+        ovT = (dailyTotal * obj.own_vehicle) / 100
     
+    granTotal = dailyTotal + ovT
+
+    context["dailyItem"] = dailyItem
+    context["TotalItem"] = dailyTotal
+    context["ovTotal"] = ovT
+    context["GranTotalItem"] = granTotal
+
     if form.is_valid():
-        form.instance.tranferredBy = request.user.username
-        form.instance.transferred_date = datetime.now()    
-        form.instance.Status = 4
-        form.save()
+        try:
 
-        # se agrega la timesheet al crew
-        crew = DailyMob.objects.filter(Location = obj.Location, Period = per, day = obj.date, crew = form.instance.crew.crew).first()
+            crewNumber = catalogModel.Daily.objects.filter( Period = per, day = obj.day, Location = obj.Location).last()
+            if crewNumber:
+                crewNo = crewNumber.crew
+            else:
+                crewNo = 0
 
-        dailyemp = catalogModel.DailyEmployee(DailyID = crew,
-                                              EmployeeID = form.instance.EmployeeID,
-                                              start_time =  form.instance.start_time,
-                                              start_lunch_time =form.instance.start_lunch_time,
-                                              end_lunch_time = form.instance.end_lunch_time,
-                                              end_time = form.instance.end_time,
-                                              total_hours = form.instance.total_hours,
-                                              Status = 1,
-                                              created_date = datetime.now())
-        dailyemp.save()
+        
+            newDaily = catalogModel.Daily.objects.create(
+                crew = int(crewNo) + 1,
+                Location = obj.Location,
+                Period = obj.Period,
+                day = obj.day,
+                woID = obj.woID,
+                supervisor = obj.supervisor,
+                own_vehicle = obj.own_vehicle, 
+                total_pay = obj.total_pay,
+                split_paymet = obj.split_paymet,
+                pdfDaily = obj.pdfDaily,
+                created_date = obj.created_date,
+                approved_by =  request.user.username,
+                approved_date = datetime.now(),
+                sent_by = obj.created_by,
+                crew_by_user = obj.crew_by_user
+            )
+            
+            
+
+            for emp in dailyEmp:
+                catalogModel.DailyEmployee.objects.create(                
+                    DailyID = newDaily,
+                    EmployeeID = emp.EmployeeID,
+                    per_to_pay =  emp.per_to_pay,
+                    on_call = emp.on_call,
+                    bonus =  emp.bonus,
+                    start_time = emp.start_time,
+                    start_lunch_time = emp.start_lunch_time,
+                    end_lunch_time = emp.end_lunch_time,
+                    end_time = emp.end_time,
+                    total_hours = emp.total_hours,
+                    regular_hours = emp.regular_hours,
+                    rt_pay = emp.rt_pay,
+                    ot_hour = emp.ot_hour,
+                    ot_pay = emp.ot_pay,
+                    double_time = emp.double_time,
+                    dt_pay = emp.dt_pay,
+                    payout =  emp.payout,
+                    emp_rate = emp.emp_rate,
+                    production = emp.production, 
+                    billableHours = emp.billableHours,
+                    estimate = None,
+                    invoice = None,
+                    Status = 1,   
+                    created_date = datetime.now()
+                )
+
+
+            for item in dailyItem:
+                catalogModel.DailyItem.objects.create(
+                    DailyID = newDaily,
+                    itemID = item.itemID,
+                    quantity = item.quantity,
+                    price = item.price,
+                    total = item.total,
+                    emp_payout = item.emp_payout,      
+                    estimate = None,
+                    invoice = None,
+                    Status = 1,   
+                    isAuthorized = False,
+                    authorized_date = None,
+                    autorizedID = None,
+                    created_date = datetime.now(),
+                    createdBy = request.user.username,
+                    updated_date = None,
+                    updatedBy = None
+                )
+
+
+            
+            
+            form.instance.Status = 4
+            form.instance.approved_by = request.user.username
+            form.instance.approved_date = datetime.now()
+            form.save()
+
+        except Exception as e:
+            raise
+
 
         # Return to Locations List
         return HttpResponseRedirect('/mobile/supervisor_list/')
 
     context['form']= form     
     context["emp"] = emp
-    
+    context["dailyEmp"] = dailyEmp
+    context["dailyItem"] = dailyItem
+    context["superV"] = superV
+    context["dailyWO"] = obj
     context["id"] = id
     return render(request, "mobile/approve_timesheet.html", context)
 

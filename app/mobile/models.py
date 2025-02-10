@@ -64,9 +64,16 @@ class DailyMob(models.Model):
     total_pay = models.FloatField(blank=True, null=True) 
     split_paymet = models.BooleanField(default=False)
     pdfDaily = models.FileField(null=True, upload_to="dailys") 
+    Status = models.IntegerField(default=1, choices = prodStatus_choice)     
+    comments = models.CharField(max_length=800, blank=True, null=True)
     created_date = models.DateTimeField(null=True, blank=True)
     created_by = models.CharField(max_length=60, blank=True, null=True)
     crew_by_user = models.IntegerField(null=True , blank=True)
+    send_date =  models.DateTimeField(null=True, blank=True)
+    approved_date =  models.DateTimeField(null=True, blank=True)
+    approved_by = models.CharField(max_length=60, blank=True, null=True)
+    rejected_date =  models.DateTimeField(null=True, blank=True)
+    rejected_by = models.CharField(max_length=60, blank=True, null=True)
 
     def __str__(self):
         return str(self.crew) + " - " + str(self.day)

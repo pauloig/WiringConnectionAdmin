@@ -58,6 +58,7 @@ class Employee(models.Model):
     is_admin = models.BooleanField(default=False)
     is_superAdmin = models.BooleanField(default=False)
     is_manager = models.BooleanField(default=False)
+    is_mobile = models.BooleanField(default=False)
     accounts_payable = models.BooleanField(default=False)
 
     def __str__(self):
@@ -267,6 +268,10 @@ class Daily(models.Model):
     split_paymet = models.BooleanField(default=False)
     pdfDaily = models.FileField(null=True, upload_to="dailys") 
     created_date = models.DateTimeField(null=True, blank=True)
+    approved_by =  models.CharField(max_length=60, blank=True, null=True)
+    approved_date = models.DateTimeField(null=True, blank=True)
+    sent_by = models.CharField(max_length=60, blank= True, null=True)
+    crew_by_user = models.IntegerField(null=True , blank=True)
 
     def __str__(self):
         return str(self.crew) + " - " + str(self.day)

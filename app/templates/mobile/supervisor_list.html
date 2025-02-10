@@ -21,7 +21,7 @@
                     <h6 class="card-header card-header-wc">Filters</h6>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-lg-2">
+                            <div class="col-lg-3">
                                 <div class="mb-3">
                                     <label for="PID" class="form-label">Status</label>
                                     <div class="input-group mb-3">
@@ -59,7 +59,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-2">
+                            {% comment %} <div class="col-lg-2">
                                 <div class="mb-3">
                                     <label for="PID" class="form-label">Select Date From</label>
                                     <div class="input-group mb-3">
@@ -76,8 +76,8 @@
                                             min="1997-01-01" max="2030-12-31" class="form-control" required>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-2">
+                            </div> {% endcomment %}
+                            <div class="col-lg-3">
                                 <label for="PID" class="form-label">Location</label>
                                 <div class="input-group mb-3">
                                     <select class="form-select" aria-label="Select Location" name="location"
@@ -98,7 +98,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-lg-2">
+                            <div class="col-lg-3">
                                 <label for="PID" class="form-label">Employee</label>
                                 <div class="input-group mb-3">
                                     <select class="form-select" aria-label="Select Employee" name="emp" id="emp">
@@ -120,11 +120,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-lg-1 my-4">
-                                <input class="btn btn-primary" type="submit" value="Search">
-                            </div>
-                            <div class="col-sm-2 my-4">
-                                <a class="btn btn-success" href="/mobile/create_by_supervisor/" role="button">New</a>
+                            <div class="col-lg-3 my-4">
+                                <input class="btn btn-primary" type="submit" value="Search">                           
                                 <a href="/home/" type="button" class="btn btn-danger">Close</a>
                             </div>
 
@@ -143,7 +140,7 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-sm-9">
-                                <h6 class="">Timesheet List </h6>
+                                <h6 class="">Approve List </h6>
                             </div>
                         </div>
                     </div>
@@ -152,41 +149,27 @@
                             <table id="orders" class="table table-sm table-bordered table-striped">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th scope="col" style="width: 6%">Date</th>
-                                        <th scope="col" style="width: 10%">Name</th>
-                                        <th scope="col" style="width: 10%">Location</th>
-                                        <th scope="col" style="width: 5%">Clock In</th>
-                                        <th scope="col" style="width: 5%">Lunch Start</th>
-                                        <th scope="col" style="width: 5%">Lunch End</th>
-                                        <th scope="col" style="width: 5%">Clock Out</th>
-                                        <th scope="col" style="width: 5%">Hours worked</th>
-                                        <th scope="col" style="width: 6%">Starting Mileage</th>
-                                        <th scope="col" style="width: 6%">Ending Mileage</th>
-                                        <th scope="col" style="width: 6%">Total Mileage</th>
-                                        <th scope="col" style="width: 4%">Status</th>
-                                        <th scope="col" style="width: 4%">Updated By</th>
-                                        <th scope="col" style="width: 5%"></th>
+                                        <th scope="col" style="width: 8%">Date</th>
+                                        <th scope="col" style="width: 10%">Location</th>                                        
+                                        <th scope="col" style="width: 6%">Period</th>                                       
+                                        <th scope="col" style="width: 18%">WO</th>                                       
+                                        <th scope="col" style="width: 8%">Total Pay</th>
+                                        <th scope="col" style="width: 8%">Status</th>
+                                        <th scope="col" style="width: 8%">Send By</th>
+                                        <th scope="col" style="width: 10%"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for data in dataset %}
                                     <tr>
-                                        <td>{{data.date|date:'Y-m-d'}}</td>
-                                        <td>{{data.EmployeeID}}</td>
+                                        <td>{{data.day|date:'m-d-Y'}}</td>
                                         <td>{{data.Location}}</td>
-                                        <td>{{data.start_time}}</td>
-                                        <td>{{data.start_lunch_time}}</td>
-                                        <td>{{data.end_lunch_time}}</td>
-                                        <td>{{data.end_time}}</td>
-                                        <td>{{data.total_hours}}</td>
-                                        <td>{{data.start_mileage}}</td>
-                                        <td>{{data.end_mileage}}</td>
-                                        <td>{{data.total_mileage}}</td>
-
+                                        <td>{{data.Period}}</td>
+                                        <td>{{data.woID}}</td>
+                                        <td>{{data.total_pay}}</td>
                                         <td>{{data.get_Status_display}}</td>
-
-                                        <td>{{data.updatedBy}}</td>
-                                        <td class="text-justify">
+                                        <td>{{data.created_by}}</td>
+                                        <td class="text-center">
                                             {% if data.Status == 2%}
                                             <!--<a href="/timesheet/update_status/{{data.id}}/5" data-bs-toggle="tooltip" data-bs-placement="top" title="Reject"><i class="fa-solid fa-x mr-1" style="color: red;"></i></a>-->
 
@@ -195,15 +178,15 @@
                                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Approve"><i
                                                     class="fa-solid fa-check mr-1" style="color: green;"></i></a>-->
                                                 <a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
-                                                    class="fa-solid fa-check mr-1" style="color: green;"></i></a>
+                                                    class="fa-solid fa-check mr-2" style="color: green;"></i></a>
                                                             
                                                 <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
                                                         class="fa-solid fa-x mr-1" style="color: red;"></i></a>
                                             <!--<a href="" onClick="ApproveReject(this, 5,{{data.id}}, 'Are you sure to Reject this Timesheet')" data-bs-toggle="tooltip" data-bs-placement="top" title="Reject"><i class="fa-solid fa-x mr-1" style="color: red;"></i></a>-->
                                             {%endif%}
-                                            <a href="/mobile/update_by_super/{{data.id}}" data-bs-toggle="tooltip"
+                                            {% comment %} <a href="/mobile/update_by_super/{{data.id}}" data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Edit"><i
-                                                    class="fa-solid fa-pen-to-square mr-1" style="color: blue;"></i></a>
+                                                    class="fa-solid fa-pen-to-square mr-1" style="color: blue;"></i></a> {% endcomment %}
                                         </td>
 
                                     </tr>

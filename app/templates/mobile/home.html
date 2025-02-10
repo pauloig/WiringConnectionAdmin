@@ -17,18 +17,30 @@
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
-      
-        <div class="row mt-3 pt-3">             
+        {%if totalRejected > 0%}
+            <div class="row mt-5 pt-3">             
+                <div class="col-sm-12">              
+                    <div class="alert alert-danger" role="alert">                                
+                        <p>You  have {{totalRejected}} Dailys Rejected</p>                
+                    </div>                
+                </div>
+            </div>
+            <div class="row"> 
+        {% else %}
+            <div class="row mt-5 pt-3">
+        {%endif%}
+                
             <div class="col-12">
-              <div class="card mt-3">
+              <div class="card">
                 <div class="card-body">
                   {% comment %} <h5 class="card-title">Welcome {{emp.first_name}} {{emp.last_name}}</h5> {% endcomment %}
                    <p class="card-text"></p>
                    <ul class="list-unstyled">
                         <li class="mb-2 d-flex justify-content-between">                                          
-                            <div class="d-flex justify-content-left align-items-center">
-                                <i class="fas fa-map-marker-alt fa-xl" style="margin-right: 10px;"></i>                                 
-                                <select class="form-select" name="location" id="location" onchange="change_location(this);">
+                            <div>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                
+                                <select name="location" id="location" onchange="change_location(this);">
                                 
                                     {% for loc in locationList %}
                                         {% if loc.LocationID|slugify == selectedLocation|slugify %}
@@ -39,23 +51,22 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            
-                            
+                            <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
+                            <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
                         </li> 
 
-                     <li class="mb-2 d-flex justify-content-between align-items-center">       
-                        <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>                                   
-                        <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
-                        <div><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
+                     <li class="mb-2 d-flex justify-content-between">                                          
+         
+                        
                       </li>
                 
-                    <li class="mb-2 d-flex align-items-center">                                           
-                      <div class=""><i class="fas fa-calendar-day"></i> <strong> To:</strong>  {{period.toDate|date:"m-d-Y"}}</div>
-                      <i class="fas fa-money-check-alt" style="margin-left: 30px;"></i> <strong> Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
+                    <li class="mb-2 d-flex">
+                      <div style="margin-right: 25px;"><i class="fas fa-calendar-day"></i> <strong>From:</strong>  {{period.fromDate|date:"m-d-Y"}}</div>
+                      <div class="pl-3"><i class="fas fa-calendar-day"></i> <strong>To:</strong>  {{period.toDate|date:"m-d-Y"}}</div>
                     </li>
 
                     <li class="mb-2">
-                      
+                      <i class="fas fa-money-check-alt"></i> <strong>Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
                     </li> 
                   </ul>
                 </div>
@@ -77,20 +88,21 @@
                               {% else %}
                                   <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
-                                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
+                                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-{{item.type}}" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            
                                       </span>
                                   </a> 
                               {% endif %}                                       
                           {% endfor %}  
+                          
                           <input class="form-control" type="text" placeholder="day Selected" aria-label="day Selected" id="daySelected" style="display: none">                             
                       </div>
                   </div>                               
               </div> 
           </div>
       </div>     
-      <div class="col-sm-12 pb-5">
-          <div class="card mt-3">
+      <div class="col-sm-12 pb-5 mb-3">
+          <div class="card mt-3 ">
               <h6 class="card-header card-header-wc">Week 2</h6>
               <div class="card-body">
                   <div class="row">
@@ -114,7 +126,8 @@
                   </div>                   
               </div> 
           </div>
-      </div>                
+      </div>       
+
   </form>       
 </div>
 {% endblock %}
