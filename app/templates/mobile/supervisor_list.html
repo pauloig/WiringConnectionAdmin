@@ -185,12 +185,18 @@
                                         <td>{{data.get_Status_display}}</td>
                                         <td>{{data.created_by}}</td>
                                         <td class="text-center">
-                                            {% if data.Status == 2%}                                           
-                                                <a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
-                                                    class="fa-solid fa-check mr-2" style="color: green;"></i></a>
-                                                            
-                                                <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
-                                                        class="fa-solid fa-x mr-1" style="color: red;"></i></a>      
+                                            {% if data.Status == 2%}  
+                                                {%if emp.is_superAdmin or user.is_staff%}
+                                                    <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a> 
+                                                {% else %}
+                                                    <a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-check mr-2" style="color: green;"></i></a>
+                                                                
+                                                    <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-x mr-1" style="color: red;"></i></a>    
+                                                    
+                                                {% endif %}     
                                             {% elif data.Status == 6 %}    
                                                 {%if emp.is_superAdmin or user.is_staff%}
                                                     <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
@@ -203,8 +209,7 @@
                                             {% else %}
                                                 <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
                                                 class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a>    
-                                            {%endif%}
-                                            
+                                            {%endif%}                                           
                                         </td>
 
                                     </tr>

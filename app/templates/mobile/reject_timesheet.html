@@ -228,7 +228,11 @@
                 <div class="row mt-4">
                     <div class="col-lg-12">
                         <span class="d-flex justify-content-center">
-                            <h4>Are you sure to Reject this Daily? </h4>
+                            {% if dailyWO.Status == 2 %}
+                                {%if not emp.is_superAdmin and not user.is_staff %}
+                                    <h4>Are you sure to Reject this Daily? </h4>
+                                {% endif %}  
+                            {% endif %}  
                         </span>
                     </div>
                 </div>  
@@ -236,7 +240,11 @@
                     <div class="">
                         <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
                         {% if dailyWO.Status == 2 %}
-                            {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                            {%if emp.is_superAdmin or user.is_staff %}
+                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}                                
+                            {% else %}
+                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                            {%endif%}
                         {% elif dailyWO.Status == 6  %}
                             {%if emp.is_superAdmin or user.is_staff %}
                                 {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
@@ -257,7 +265,9 @@
            
             
             {% if dailyWO.Status == 2 %}
-                <input class="btn btn-primary" type="submit" value="Reject">
+                {%if not emp.is_superAdmin and not user.is_staff%}
+                    <input class="btn btn-primary" type="submit" value="Reject">
+                {% endif %}
             {% elif dailyWO.Status == 6  %}
                 {%if emp.is_superAdmin or user.is_staff%}
                     <input class="btn btn-primary" type="submit" value="Reject">
