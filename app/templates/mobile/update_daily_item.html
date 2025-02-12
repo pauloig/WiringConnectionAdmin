@@ -16,7 +16,7 @@
                     <thead class="table-primary">
                         <tr>
                             <th scope="col" style="width: 75%">Item</th>                                                        
-                            <th scope="col" style="width: 10%">Price</th>
+                            {% comment %} <th scope="col" style="width: 10%">Price</th> {% endcomment %}
                             <th scope="col" style="width: 10%">Emp. Payout</th>                            
                             <th scope="col" style="width: 5%"></th>
                         </tr>              
@@ -25,7 +25,7 @@
                         {% for item in itemList %}
                             <tr>
                                 <td style="width: 75%">{{item.item}}</td>                               
-                                <td style="width: 10%">{{item.price|floatformat:"2"}}</td>
+                                {% comment %} <td style="width: 10%">{{item.price|floatformat:"2"}}</td> {% endcomment %}
                                 <td style="width: 10%">{{item.emp_payout}}</td>                               
                                 <!--<td style="width: 5%"> <a href="/update_item_price/{{item.id}}"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a></td>-->
                                 <td> 
