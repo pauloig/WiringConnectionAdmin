@@ -55,6 +55,11 @@ class woEstimateAdmin(admin.ModelAdmin):
     search_fields = ('id','Status','estimateNumber')
     list_filter = ('Status',)
 
+class payrollAuditAdmin(admin.ModelAdmin):
+    list_display = ('id','Location','Period','created_date')
+    search_fields = ('id','Location','Period','created_date')
+    list_filter = ('created_date',)
+
 admin.site.register(workOrderDuplicate)
 admin.site.register(Locations)
 admin.site.register(Employee)
@@ -79,7 +84,7 @@ admin.site.register(woInvoice, woInvoiceAdmin)
 admin.site.register(employeeLocation)
 admin.site.register(billingAddress)
 admin.site.register(DailyAudit)
-admin.site.register(payrollAudit)
+admin.site.register(payrollAudit, payrollAuditAdmin)
 admin.site.register(logInAudit)
 admin.site.register(woCommentLog)
 admin.site.register(woAdjustment)

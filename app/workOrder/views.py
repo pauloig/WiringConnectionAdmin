@@ -42,6 +42,7 @@ from decimal import Decimal
 from django.db.models import Max
 from django.db.models import Sum
 from .models import status_choice, prodStatus_choice, estimateStatus_choice
+from mobile import models as MobileModel
 
 
 @login_required(login_url='/home/')
@@ -6350,13 +6351,14 @@ def delete_daily(request, id, LocID):
  
     if request.method == 'POST':
         actual_wo = obj.woID
+        comments = request.POST.get('comments')
         
         #Adding Audit
         
         #Getting all the Payroll operations before to delete
-        
+       
         dAudit = DailyAudit.objects.filter(DailyID = obj.id)
-        opDetail = ""
+        opDetail = comments
         for i in dAudit:
             opDetail += "Crew: " + str(obj.crew) + ", Date: " + str(i.created_date) + ", User: " + i.createdBy + ", Operation: " + i.operationType + ", Detail: " + i.operationDetail + "\n" 
         
@@ -6371,9 +6373,19 @@ def delete_daily(request, id, LocID):
                                 createdBy =  request.user.username
                             )
         
-        pAudit.save()
+        pAudit.save()           
         
-        
+        #Update Mobile Daily to status Deleted
+        if  obj.mobile_id is not None:
+            mcrew = MobileModel.DailyMob.objects.filter(id = obj.mobile_id).first()
+
+            if mcrew:
+                mcrew.Status = 6
+                mcrew.deleted_date = datetime.now()
+                mcrew.deleted_by = request.user.username
+                mcrew.comments = comments
+                mcrew.save()
+
         obj.delete()
 
         if actual_wo != None:

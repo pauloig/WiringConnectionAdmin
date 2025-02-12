@@ -14,7 +14,8 @@ prodStatus_choice = (
     (2, 'Sent'),
     (3, 'Pending'),
     (4, 'Approved'),
-    (5, 'Rejected')
+    (5, 'Rejected'),
+    (6, 'Deleted'),
 )
 
 class Timesheet(models.Model):
@@ -73,7 +74,9 @@ class DailyMob(models.Model):
     approved_date =  models.DateTimeField(null=True, blank=True)
     approved_by = models.CharField(max_length=60, blank=True, null=True)
     rejected_date =  models.DateTimeField(null=True, blank=True)
-    rejected_by = models.CharField(max_length=60, blank=True, null=True)
+    rejected_by = models.CharField(max_length=60, blank=True, null=True)    
+    deleted_date =  models.DateTimeField(null=True, blank=True)
+    deleted_by = models.CharField(max_length=60, blank=True, null=True)  
 
     def __str__(self):
         return str(self.crew) + " - " + str(self.day)

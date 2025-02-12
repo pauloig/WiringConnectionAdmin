@@ -17,12 +17,16 @@
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
-        {%if totalRejected > 0%}
+        {%if totalRejected > 0 or totalDeleted > 0%}
             <div class="row mt-5 pt-3">             
-                <div class="col-sm-12">              
-                    <div class="alert alert-danger" role="alert">                                
-                        <p>You  have {{totalRejected}} Dailys Rejected</p>                
-                    </div>                
+                <div class="col-sm-12">                                
+                    <div class="alert alert-danger" role="alert"> 
+                        {%if totalRejected > 0 %}
+                            <p>You  have {{totalRejected}} Dailys Rejected</p>   
+                        {%elif totalDeleted > 0%}                                             
+                            <p>You  have {{totalDeleted}} Dailys Deleted</p>  
+                        {% endif %}
+                    </div>                                                                    
                 </div>
             </div>
             <div class="row"> 

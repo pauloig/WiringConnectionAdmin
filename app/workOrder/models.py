@@ -272,6 +272,8 @@ class Daily(models.Model):
     approved_date = models.DateTimeField(null=True, blank=True)
     sent_by = models.CharField(max_length=60, blank= True, null=True)
     crew_by_user = models.IntegerField(null=True , blank=True)
+    mobile_id = models.IntegerField(null=True , blank=True)
+    
 
     def __str__(self):
         return str(self.crew) + " - " + str(self.day)

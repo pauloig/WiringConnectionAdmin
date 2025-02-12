@@ -23,38 +23,53 @@
                         <div class="row">
                             <div class="col-lg-3">
                                 <div class="mb-3">
-                                    <label for="PID" class="form-label">Status</label>
+                                    <label for="status" class="form-label">Status</label>
                                     <div class="input-group mb-3">
 
                                         <select class="form-select" aria-label="Default select example" name="status"
                                             id="status">
 
                                             {%if selectEstatus == "0"%}
-                                            <option value="0" selected>Status</option>
+                                                <option value="0" selected>Status</option>
                                             {%else%}
-                                            <option value="0">Status</option>
+                                                <option value="0">Status</option>
                                             {%endif%}
 
+                                            {%if emp.is_superAdmin or user.is_staff%}
+                                                {%if selectEstatus == "1"%}
+                                                    <option value="1" selected>Draft</option>
+                                                {%else%}
+                                                    <option value="1">Draft</option>
+                                                {%endif%}
+                                            {%endif%}
                                             {%if selectEstatus == "2"%}
-                                            <option value="2" selected>Sent</option>
+                                                <option value="2" selected>Sent</option>
                                             {%else%}
-                                            <option value="2">Sent</option>
+                                                <option value="2">Sent</option>
                                             {%endif%}
                                             {%if selectEstatus == "3"%}
-                                            <option value="3" selected>Pending</option>
+                                                <option value="3" selected>Pending</option>
                                             {%else%}
-                                            <option value="3">Pending</option>
+                                                <option value="3">Pending</option>
                                             {%endif%}
                                             {%if selectEstatus == "4"%}
-                                            <option value="4" selected>Approved</option>
+                                                <option value="4" selected>Approved</option>
                                             {%else%}
-                                            <option value="4">Approved</option>
+                                                <option value="4">Approved</option>
                                             {%endif%}
                                             {%if selectEstatus == "5"%}
-                                            <option value="5" selected>Rejected</option>
+                                                <option value="5" selected>Rejected</option>
                                             {%else%}
-                                            <option value="5">Rejected</option>
+                                                <option value="5">Rejected</option>
                                             {%endif%}
+                                            {%if emp.is_superAdmin or user.is_staff%}
+                                                {%if selectEstatus == "6"%}
+                                                    <option value="6" selected>Deleted</option>
+                                                {%else%}
+                                                    <option value="6">Deleted</option>
+                                                {%endif%}
+                                            {%endif%}
+
                                         </select>
                                     </div>
                                 </div>
@@ -78,7 +93,7 @@
                                 </div>
                             </div> {% endcomment %}
                             <div class="col-lg-3">
-                                <label for="PID" class="form-label">Location</label>
+                                <label for="location" class="form-label">Location</label>
                                 <div class="input-group mb-3">
                                     <select class="form-select" aria-label="Select Location" name="location"
                                         id="location">
@@ -99,7 +114,7 @@
                                 </div>
                             </div>
                             <div class="col-lg-3">
-                                <label for="PID" class="form-label">Employee</label>
+                                <label for="emp" class="form-label">Employee</label>
                                 <div class="input-group mb-3">
                                     <select class="form-select" aria-label="Select Employee" name="emp" id="emp">
 
@@ -170,23 +185,26 @@
                                         <td>{{data.get_Status_display}}</td>
                                         <td>{{data.created_by}}</td>
                                         <td class="text-center">
-                                            {% if data.Status == 2%}
-                                            <!--<a href="/timesheet/update_status/{{data.id}}/5" data-bs-toggle="tooltip" data-bs-placement="top" title="Reject"><i class="fa-solid fa-x mr-1" style="color: red;"></i></a>-->
-
-                                            <!-- <a href=""
-                                                onClick="ApproveReject(this, 4,{{data.id}}, 'Are you sure to Approve this Timesheet')"
-                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Approve"><i
-                                                    class="fa-solid fa-check mr-1" style="color: green;"></i></a>-->
+                                            {% if data.Status == 2%}                                           
                                                 <a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
                                                     class="fa-solid fa-check mr-2" style="color: green;"></i></a>
                                                             
                                                 <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
-                                                        class="fa-solid fa-x mr-1" style="color: red;"></i></a>
-                                            <!--<a href="" onClick="ApproveReject(this, 5,{{data.id}}, 'Are you sure to Reject this Timesheet')" data-bs-toggle="tooltip" data-bs-placement="top" title="Reject"><i class="fa-solid fa-x mr-1" style="color: red;"></i></a>-->
+                                                        class="fa-solid fa-x mr-1" style="color: red;"></i></a>      
+                                            {% elif data.Status == 6 %}    
+                                                {%if emp.is_superAdmin or user.is_staff%}
+                                                    <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-x mr-1" style="color: red;"></i></a>   
+                                                {% else %}
+                                                    <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a>    
+                                                {%endif%}
+                                                                                                                      
+                                            {% else %}
+                                                <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a>    
                                             {%endif%}
-                                            {% comment %} <a href="/mobile/update_by_super/{{data.id}}" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Edit"><i
-                                                    class="fa-solid fa-pen-to-square mr-1" style="color: blue;"></i></a> {% endcomment %}
+                                            
                                         </td>
 
                                     </tr>

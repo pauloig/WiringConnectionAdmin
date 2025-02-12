@@ -75,6 +75,7 @@ def mobile_home(request, LocID):
     numDays = 7
     week1 = []
     totalRejected = 0
+    totalDeleted = 0
 
     for x in range(0,numDays):
         selectedDay = False
@@ -101,6 +102,10 @@ def mobile_home(request, LocID):
         
             if d.Status == 5:
                 totalRejected += 1
+                type="danger"
+            
+            if d.Status == 6:
+                totalDeleted += 1
                 type="danger"
             
                 
@@ -136,6 +141,10 @@ def mobile_home(request, LocID):
             if d.Status == 5:
                 totalRejected += 1
                 type="danger"
+            
+            if d.Status == 6:
+                totalDeleted += 1
+                type="danger"
 
         week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type })
     
@@ -143,6 +152,7 @@ def mobile_home(request, LocID):
     context["week1"] = week1
     context["week2"] = week2
     context["totalRejected"] = totalRejected
+    context["totalDeleted"] = totalDeleted
 
     return render(request, "mobile/home.html", context)
 
@@ -952,40 +962,76 @@ def supervisor_list(request):
         
         if emp == None or emp =="":
             emp = "0"
-           
-        if status == "0" and loc == "0" and employee == "0":
-            #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
-            ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3))
-        else:
-            if status != "0" and loc != "0" and employee != "0":
 
-                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
-
-                #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
-                ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+        if request.user.is_staff or emp.is_superAdmin:
+            if status == "0" and loc == "0" and employee == "0":
+                #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+                ts = DailyMob.objects.filter( Status__in = (2,3))
             else:
-                if status != "0" and loc!= "0":    
-                    ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status = status , Location__LocationID = loc)            
-                else:    
-                    if  status != "0" and employee != "0":
-                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+                if status != "0" and loc != "0" and employee != "0":
 
-                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status , created_by = empFilter.user)   
-                    else:
-                        if  loc != "0" and employee != "0":
+                    empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                    #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                    ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+                else:
+                    if status != "0" and loc!= "0":    
+                        ts = DailyMob.objects.filter( Status = status , Location__LocationID = loc)            
+                    else:    
+                        if  status != "0" and employee != "0":
                             empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
 
-                            ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc, created_by = empFilter.user)   
+                            ts = DailyMob.objects.filter(Status = status , created_by = empFilter.user)   
                         else:
-                            if status != "0":
-                                ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status ) 
+                            if  loc != "0" and employee != "0":
+                                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                ts = DailyMob.objects.filter(Location__LocationID = loc, created_by = empFilter.user)   
                             else:
-                                if loc != "0":
-                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc) 
+                                if status != "0":
+                                    ts = DailyMob.objects.filter(Status = status ) 
                                 else:
-                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,EmployeeID__employeeID = employee) 
+                                    if loc != "0":
+                                        ts = DailyMob.objects.filter(Location__LocationID = loc) 
+                                    else:
+                                        ts = DailyMob.objects.filter(EmployeeID__employeeID = employee) 
+        else:
+            if status == "0" and loc == "0" and employee == "0":
+                #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+                ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3))
+            else:
+                if status != "0" and loc != "0" and employee != "0":
+
+                    empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                    #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                    ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+                else:
+                    if status != "0" and loc!= "0":    
+                        ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status = status , Location__LocationID = loc)            
+                    else:    
+                        if  status != "0" and employee != "0":
+                            empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                            ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status , created_by = empFilter.user)   
+                        else:
+                            if  loc != "0" and employee != "0":
+                                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc, created_by = empFilter.user)   
+                            else:
+                                if status != "0":
+                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status ) 
+                                else:
+                                    if loc != "0":
+                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc) 
+                                    else:
+                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,EmployeeID__employeeID = employee) 
     else:
-        ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
+        if request.user.is_staff or emp.is_superAdmin:
+            ts = DailyMob.objects.filter()
+        else:
+            ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
         
     context["emp"] = emp
     context["dataset"] = ts
@@ -1131,6 +1177,8 @@ def reject_timesheet(request, id):
     context["id"] = id
     return render(request, "mobile/reject_timesheet.html", context)
 
+
+@login_required(login_url='/home/')
 @transaction.atomic
 def approve_timesheet(request, id):
     
@@ -1190,7 +1238,8 @@ def approve_timesheet(request, id):
                 approved_by =  request.user.username,
                 approved_date = datetime.now(),
                 sent_by = obj.created_by,
-                crew_by_user = obj.crew_by_user
+                crew_by_user = obj.crew_by_user,
+                mobile_id = obj.id
             )
             
             

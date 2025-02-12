@@ -14,8 +14,22 @@
        
         <div class="modal-body">
             <div class="row">        
-              <h5>Are you sure you want to remove <strong>Crew {{form.crew}}</strong> ?</h5>
-            </div>          
+              <h5>Are you sure you want to remove 
+                <strong>
+                    {%if form.mobile_id != None%}
+                        {{form.sent_by}} {{form.crew_by_user}}
+                    {%else%}
+                        Crew  {{form.crew}}
+                    {%endif%}
+                </strong> ?</h5>
+            </div> 
+            
+            <div class="row"> 
+                <div class="col">
+                    <label for="comments" class="form-label">Comments</label>
+                    <textarea name="comments" id="comments" class="form-control" cols="40" rows="5" required></textarea>
+                </div>                    
+              </div> 
         </div>
         
         <div class="modal-footer">          
