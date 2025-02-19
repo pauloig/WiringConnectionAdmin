@@ -52,7 +52,7 @@
                         </div>
                         <div class="col-sm-6">
                             <label for="{{ form.total_invoice.id_for_label }}" class="form-label">Total Invoice</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{form.total_invoice}}"
+                            <input type="text" class="form-control " id="name" name="name" style="font-weight: bold;" value="${{form.total_invoice|floatformat:2|intcomma}}"
                                 disabled />
                         </div>
                     </div>
@@ -141,7 +141,7 @@
                                                     <td class="p-1">{{itemd.quantity}}</td>
                                                     <td class="p-1">${{itemd.itemID.price|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">${{itemd.itemID.emp_payout|floatformat:2|intcomma}}</td>
-                                                    <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>   
+                                                    <td class="p-1 text-right">${{itemd.total|floatformat:2|intcomma}}</td>   
                                                     <td class="p-1">
                                                         {% if emp.is_superAdmin or emp.is_admin or user.is_staff  %}     
                                                             {%if itemd.Status <= 2 %}                                                         
@@ -152,6 +152,11 @@
                                                     </td> 
                                                 </tr>
                                             {%endfor%}
+                                            <tr class="text-right">
+                                                <td colspan="5"><h5>${{totalextProdItem|floatformat:2|intcomma}}</h5></td>
+
+                                                
+                                            </tr>
                                         </tbody>                                                
                                     </table>
                                 </div>                                           

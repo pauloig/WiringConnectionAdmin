@@ -286,9 +286,9 @@ def update_supervisor(request, perID, dID, crewID, LocID):
     context["emp"]= emp
 
     if request.user.is_staff or emp.is_superAdmin:
-        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True).order_by('first_name')
     else:
-        superV = catalogModel.Employee.objects.filter(is_supervisor=True)
+        superV = catalogModel.Employee.objects.filter(is_supervisor=True).order_by('first_name')
     
     crew = DailyMob.objects.filter(id = crewID).first()
 

@@ -7023,12 +7023,15 @@ def get_external_prod(request, id):
         context["payPercent"] = obj.subcontractor.payPercent + "%"
 
     extProdItem = externalProdItem.objects.filter(externalProdID = obj)
+    totalextProdItem = 0
 
     for i in extProdItem:
         if i.Status != 1:
             is_open = False
 
+        totalextProdItem += i.total
     
+    context["totalextProdItem"] = totalextProdItem
     context["id"] = id
     context["items"] = extProdItem
     context["is_open"] = is_open
@@ -7960,7 +7963,14 @@ def billing_list(request, id, isRestoring):
         #Getting Partial Estimates
         openEstimate = woEstimate.objects.filter(woID = wo, Status = 1).count()
 
-        
+
+        #Getting Internal POs
+        internal = internalPO.objects.filter(woID = wo)
+
+        vendorList = vendorSubcontrator(request) 
+        context["vendorList"] = vendorList
+
+        context["internalPO"] = internal
         context["openEstimate"] = openEstimate > 0
         context["itemCount"] = len(itemFinal)
         context["itemResume"] = sorted(itemFinal, key=lambda d: d['item']) 
