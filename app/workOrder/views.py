@@ -2123,7 +2123,12 @@ def estimate(request, id, estimateID):
 
     for data in authBilling:
         if data.quantity > 0:
-            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
+
+            #calculate the Price for each item
+            price = Decimal(str(data.total)) / Decimal(str(data.quantity))
+
+            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price': price, 'amount':data.total,'Encontrado':False})
+            #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
     
 
     itemHtml = ''
@@ -2565,7 +2570,12 @@ def invoice(request, id, invoiceID):
 
     for data in authBilling:
         if data.quantity > 0:
-            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
+
+            #calculate the Price for each item
+            price = Decimal(str(data.total)) / Decimal(str(data.quantity))
+
+            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':price, 'amount':data.total,'Encontrado':False})
+            #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
 
     itemHtml = ''
     total = 0 
@@ -2793,7 +2803,12 @@ def download_estimate_preview(request, id, estimateID):
 
     for data in authBilling:
         if data.quantity > 0:
-            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
+
+            #calculate the Price for each item
+            price = Decimal(str(data.total)) / Decimal(str(data.quantity))
+
+            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price': price, 'amount':data.total,'Encontrado':False})
+            #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
 
 
     itemHtml = ''
@@ -2984,7 +2999,12 @@ def estimate_preview(request, id, estimateID):
 
     for data in authBilling:
         if data.quantity > 0:
-            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
+
+            #calculate the Price for each item
+            price = Decimal(str(data.total)) / Decimal(str(data.quantity))
+
+            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':price, 'amount':data.total,'Encontrado':False})
+            #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
 
 
     itemHtml = ''
@@ -3155,7 +3175,11 @@ def invoice_preview(request, id, invoiceID):
 
     for data in authBilling:
         if data.quantity > 0:
-            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
+            #calculate the Price for each item
+            price = Decimal(str(data.total)) / Decimal(str(data.quantity))
+
+            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':price, 'amount':data.total,'Encontrado':False})
+            #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':data.total,'Encontrado':False})
 
 
     itemHtml = ''
