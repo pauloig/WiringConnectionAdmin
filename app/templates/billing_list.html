@@ -396,53 +396,52 @@
                                             <td class="p-1">{{itemd.name}}</td>
 
                                             {% if itemd.quantity == None %}
-
-                                            {% if itemd.transferFrom == None %}
-                                            <td class="p-1" colspan="3"
-                                                style="text-align: center; font-weight: 600; color: orangered;"> Not
-                                                Included in Production</td>
+                                                    {% if itemd.transferFrom == None %}
+                                                        <td class="p-1" colspan="3"
+                                                            style="text-align: center; font-weight: 600; color: orangered;"> Not
+                                                            Included in Production</td>
+                                                    {%else%}
+                                                        <td class="p-1" colspan="3"
+                                                            style="text-align: center; font-weight: 500; color: orangered;">
+                                                            Transfer from {{itemd.transferFrom}}</td>
+                                                    {%endif%}
                                             {%else%}
-                                            <td class="p-1" colspan="3"
-                                                style="text-align: center; font-weight: 500; color: orangered;">
-                                                Transfer from {{itemd.transferFrom}}</td>
-                                            {%endif%}
-                                            {%else%}
-                                            <td class="p-1" style="color:darkblue; font-weight: 600;">{{itemd.quantity}}
-                                            </td>
-                                            <td class="p-1" style="color:darkblue; font-weight: 600;">
-                                                ${{itemd.price|floatformat:2|intcomma}}</td>
-                                            <td class="p-1" style="color:darkblue; font-weight: 600;">
-                                                ${{itemd.amount|floatformat:2|intcomma}}</td>
+                                                    <td class="p-1" style="color:darkblue; font-weight: 600;">{{itemd.quantity}}
+                                                    </td>
+                                                    <td class="p-1" style="color:darkblue; font-weight: 600;">
+                                                        ${{itemd.price|floatformat:2|intcomma}}</td>
+                                                    <td class="p-1" style="color:darkblue; font-weight: 600;">
+                                                        ${{itemd.amount|floatformat:2|intcomma}}</td>
                                             {%endif%}
                                             {% if itemd.quantityA == None %}
-                                            <td class="p-1"></td>
-                                            <td class="p-1"></td>
-                                            <td class="p-1"></td>
+                                                <td class="p-1"></td>
+                                                <td class="p-1"></td>
+                                                <td class="p-1"></td>
                                             {%elif itemd.quantityA == 0 %}
-                                            <td class="p-1" colspan="3"
-                                                style="text-align: center; font-weight: 600; color: orangered;"> Not
-                                                Authorized for Billing</td>
+                                                <td class="p-1" colspan="3"
+                                                    style="text-align: center; font-weight: 600; color: orangered;"> Not
+                                                    Authorized for Billing</td>
                                             {%else%}
-                                            <td class="p-1" style="color:darkgreen; font-weight: 600;">
-                                                {{itemd.quantityA}}</td>
-                                            <td class="p-1" style="color:darkgreen; font-weight: 600;">
-                                                ${{itemd.priceA|floatformat:2|intcomma}}</td>
-                                            <td class="p-1" style="color:darkgreen; font-weight: 600;">
-                                                ${{itemd.amountA|floatformat:2|intcomma}}</td>
+                                                <td class="p-1" style="color:darkgreen; font-weight: 600;">
+                                                    {{itemd.quantityA}}</td>
+                                                <td class="p-1" style="color:darkgreen; font-weight: 600;">
+                                                    ${{itemd.priceA|floatformat:2|intcomma}}</td>
+                                                <td class="p-1" style="color:darkgreen; font-weight: 600;">
+                                                    ${{itemd.amountA|floatformat:2|intcomma}}</td>
                                             {%endif%}
                                             <td class="p-1">
 
                                                 {%if order.Status == "2" or order.Status == "4"%}
-                                                {% if emp.is_superAdmin or user.is_staff %}
-                                                <a hx-get="/update_authorized_prod_item/{{itemd.idA}}/0/0"
-                                                    hx-target="#dialog"><i class="fa-solid fa-pen-to-square"
-                                                        style="color: green;"></i></a>
-                                                {%if itemd.quantityA > 0 %}
-                                                <a hx-get="/delete_authorized_prod_item/{{itemd.idA}}/0/0"
-                                                    hx-target="#dialog"><i class="fa-solid fa-circle-minus"
-                                                        style="color: red;"></i></a>
-                                                {%endif%}
-                                                {%endif%}
+                                                    {% if emp.is_superAdmin or user.is_staff %}
+                                                            <a hx-get="/update_authorized_prod_item/{{itemd.idA}}/0/0"
+                                                                hx-target="#dialog"><i class="fa-solid fa-pen-to-square"
+                                                                    style="color: green;"></i></a>
+                                                            {%if itemd.quantityA > 0 %}
+                                                            <a hx-get="/delete_authorized_prod_item/{{itemd.idA}}/0/0"
+                                                                hx-target="#dialog"><i class="fa-solid fa-circle-minus"
+                                                                    style="color: red;"></i></a>
+                                                            {%endif%}
+                                                    {%endif%}
                                                 {%endif%}
                                                 <a hx-get="/comment_authorized_prod_item/{{itemd.idA}}"
                                                     hx-target="#dialog"><i class="fa-solid fa-comment"

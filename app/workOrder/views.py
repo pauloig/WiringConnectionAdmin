@@ -7862,11 +7862,14 @@ def billing_list(request, id, isRestoring):
                 itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
                 amount = 0
                 
-                
-                amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.itemID.price)))  
+                #Calculate amount with DailyItem.price
+                #amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.itemID.price)))  
+                amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.price)))  
 
                 if amount == 0:
-                    errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.itemID.price)) + ' Amount ' + str(validate_decimals(amount))
+                    #Calculate amount with DailyItem.price
+                    #errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.itemID.price)) + ' Amount ' + str(validate_decimals(amount))
+                    errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.price)) + ' Amount ' + str(validate_decimals(amount))
 
                 if itemResult != None:                                      
                     itemResume[itemResult]['quantity'] += data.quantity
@@ -7876,9 +7879,13 @@ def billing_list(request, id, isRestoring):
                         itemResume[itemResult]['updateAmount'] += amount
                 else:            
                     if data.isAuthorized == False:
-                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
+                        #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
+                        #Adding Price from Amount/Qty                        
+                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
                     else:
-                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        #Adding Price from Amount/Qty
+                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
 
                 if data.isAuthorized == False:
                     currentItem = DailyItem.objects.filter(id = data.id).first()
@@ -7973,14 +7980,19 @@ def billing_list(request, id, isRestoring):
         for itemA in authorizedItem:
             itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == itemA.itemID.item.itemID), None)
 
-            if itemResult != None and itemA.transferFrom == None:          
-                itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+            if itemResult != None and itemA.transferFrom == None:    
+                priceA = itemA.total / itemA.quantity
+                     
+                #itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+                itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA': itemResume[itemResult]['price'], 'amountA':itemA.total, 'idA': itemA.id})
                 qtyP += validate_decimals(itemResume[itemResult]['quantity'])
                 totalP += validate_decimals(itemResume[itemResult]['amount'])
                 qtyA += validate_decimals(itemA.quantity)
                 totalA += validate_decimals(itemA.total)
             else:
-                itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+                priceA = itemA.total / itemA.quantity
+                #itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+                itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':priceA, 'amountA':itemA.total, 'idA': itemA.id})
                 qtyA += validate_decimals(itemA.quantity)
                 totalA += validate_decimals(itemA.total)
 
