@@ -625,7 +625,18 @@ def create_daily_item(request, id, LocID):
     for i in dailyI:
        itemList.append(i.itemID.item.itemID) 
 
-    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID).exclude(item__itemID__in = itemList)
+
+    #Validate if the WO was created after the Prices Update
+    priceUpdate = "2025-03-03"
+    priceCreated = dailyID.woID.created_date
+
+    #if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
+    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+    #else:
+    #    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+
+    #context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
+    #context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
 
     form = DailyMobItemForm(request.POST or None, initial={'DailyID': dailyID}, qs = itemLocation)
     if form.is_valid():    

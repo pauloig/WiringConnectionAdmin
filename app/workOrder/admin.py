@@ -3,9 +3,9 @@ from workOrder.models import *
 
 @admin.register(workOrder)
 class  workOrderAdmin(admin.ModelAdmin):
-    list_display = ('id','prismID','workOrderId','PO','Status')
-    search_fields = ('id','prismID','workOrderId','PO','Status')
-    list_filter = ('Status',)
+    list_display = ('id','prismID','workOrderId','PO','Status','created_date')
+    search_fields = ('id','prismID','workOrderId','PO','Status','created_date')
+    list_filter = ('id','prismID','workOrderId','PO','Status','created_date')
 
 
 class  authorizedBillingAdmin(admin.ModelAdmin):
@@ -60,11 +60,24 @@ class payrollAuditAdmin(admin.ModelAdmin):
     search_fields = ('id','Location','Period','created_date')
     list_filter = ('created_date',)
 
+
+class itemAdmin(admin.ModelAdmin):
+    list_display = ('itemID','name', 'description','is_new','created_date')
+    search_fields = ('itemID','name', 'description','is_new','created_date')
+    list_filter = ('itemID','name', 'description','is_new','created_date')
+
+
+class itemPriceAdmin(admin.ModelAdmin):
+
+    search_fields = ('item','location')
+    list_filter = ('item','location')
+
+
 admin.site.register(workOrderDuplicate)
 admin.site.register(Locations)
 admin.site.register(Employee)
-admin.site.register(item)
-admin.site.register(itemPrice)
+admin.site.register(item, itemAdmin)
+admin.site.register(itemPrice,itemPriceAdmin)
 admin.site.register(payroll)
 admin.site.register(payrollDetail)
 admin.site.register(internalPO,internalPOAdmin)

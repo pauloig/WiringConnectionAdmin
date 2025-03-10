@@ -662,7 +662,9 @@ def listOrders(request):
                     orders = workOrder.objects.filter(id__in = woInvLits ).exclude(linkedOrder__isnull = False, uploaded = False)     
                 
             else:  
-                orders = workOrder.objects.filter(id = -1)   
+                #orders = workOrder.objects.filter(id = -1)   
+                last_date = date(2025, 3, 3)
+                orders = workOrder.objects.filter(created_date__gte = last_date).exclude(linkedOrder__isnull = False, uploaded = False)
         
         else:
             if estatus != "0" and loc != "0":
@@ -672,6 +674,7 @@ def listOrders(request):
                     orders = workOrder.objects.filter(Status = estatus).exclude(linkedOrder__isnull = False, uploaded = False )  
                 else:
                     orders = workOrder.objects.filter(Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )  
+
         context["orders"]=orders
 
         context["day_diff"]=date_difference(orders)
@@ -4678,7 +4681,21 @@ def create_daily_item(request, id, LocID):
     for i in dailyI:
        itemList.append(i.itemID.item.itemID) 
 
-    itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID).exclude(item__itemID__in = itemList)
+    #itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID).exclude(item__itemID__in = itemList)
+
+
+    #Validate if the WO was created after the Prices Update
+    priceUpdate = "2025-03-03"
+    priceCreated = dailyID.woID.created_date
+
+    if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
+        itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+    else:
+        itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+
+    context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
+    context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
+
 
     form = DailyItemForm(request.POST or None, initial={'DailyID': dailyID}, qs = itemLocation)
     if form.is_valid():    
@@ -7165,7 +7182,20 @@ def create_ext_prod_item(request, id):
        itemList.append(i.itemID.item.itemID) 
 
     if dailyID.woID.Location != None:
-        itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.woID.Location.LocationID).exclude(item__itemID__in = itemList)
+        #itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.woID.Location.LocationID).exclude(item__itemID__in = itemList)
+
+        #Validate if the WO was created after the Prices Update
+        priceUpdate = "2025-03-03"
+        priceCreated = dailyID.woID.created_date
+
+        if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
+            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+        else:
+            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+
+        context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
+        context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
+        
     else:
         itemLocation = None
 
@@ -7382,7 +7412,19 @@ def create_authorized_prod_item(request, id, invoiceID, estimateID):
        itemList.append(i.itemID.item.itemID) 
 
     if wo.Location != None:
-        itemLocation = itemPrice.objects.filter(location__LocationID = wo.Location.LocationID).exclude(item__itemID__in = itemList)
+        #itemLocation = itemPrice.objects.filter(location__LocationID = wo.Location.LocationID).exclude(item__itemID__in = itemList)
+
+        #Validate if the WO was created after the Prices Update
+        priceUpdate = "2025-03-03"
+        priceCreated = wo.created_date
+
+        if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
+            itemLocation = itemPrice.objects.filter(location__LocationID = wo.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+        else:
+            itemLocation = itemPrice.objects.filter(location__LocationID = wo.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+
+        context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
+        context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
     else:
         itemLocation = None
 
@@ -8168,12 +8210,17 @@ def update_estimate(request, id, estimateID):
 
             itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
             amount = 0
-            amount = Decimal(str(data.quantity)) * Decimal(str(data.itemID.price))  
+            
+            #amount = Decimal(str(data.quantity)) * Decimal(str(data.itemID.price))  
+            amount = Decimal(str(data.quantity)) * Decimal(str(data.price))  
+
             if itemResult != None:                  
                 itemResume[itemResult]['quantity'] += data.quantity
                 itemResume[itemResult]['amount'] += amount
             else:            
-                itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False})
+                #caculate price with autorizeBilling price
+                #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False})
+                itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False})
            
         
     except Exception as e:
@@ -9699,6 +9746,60 @@ def date_difference(orders):
         day_diff.append({'id':i.id, 'days': days_overdue, 'prismID': i.prismID, 'workOrderId': i.workOrderId, 'PO': i.PO, 'POAmount':i.POAmount, 'Status': i.Status,  'Location':i.Location, 'WCSup': i.WCSup, 'created_date': i.created_date, 'UploadDate':i.UploadDate, 'IssuedBy':i.IssuedBy, 'JobName': i.JobName, 'JobAddress': i.JobAddress, 'partial_inv': partial_inv  })
     
     return day_diff
+
+
+
+@login_required(login_url='/home/')    
+def update_item_price_202503(request):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = period.objects.filter(status__in=(1,2)).first()
+    
+    fecha = datetime.strptime("2025-03-03", '%Y-%m-%d').date()
+    createdItems = 0
+    createdItemPrices = 0
+
+    try:        
+        
+        itemCatalog = item.objects.filter(is_new = False)
+
+        updated = 0
+        for it in itemCatalog:
+            
+            newItem = item (
+                itemID = it.itemID + "+",
+                name = it.name,
+                description = it.description,
+                is_active = it.is_active,
+                is_new = True,
+                created_date = fecha,
+                createdBy = "admin"
+            )
+
+            newItem.save()
+            createdItems += 1
+
+            itemPriceCatalog = itemPrice.objects.filter(item = it)
+
+            for ip in itemPriceCatalog:
+                newItemPrice = itemPrice (
+                    item = newItem,   
+                    location = ip.location,
+                    pay_perc = ip.pay_perc,                    
+                    price = ip.price,
+                    emp_payout = ip.emp_payout,
+                    rate = ip.rate
+                )   
+
+                newItemPrice.save()
+
+                createdItemPrices += 1
+        
+        
+
+        return render(request,'landing.html',{ 'message': str(createdItems) + ' Items Created Successfully...  ' + str(createdItemPrices) + 'Item Prices Created Successfully', 'alertType':'success','emp':emp, 'per':per})
+    except Exception as e:
+        return render(request,'landing.html',{'message':'Somenthing went Wrong!' + str(e), 'alertType':'danger','emp':emp, 'per': per})
+
 
 @login_required(login_url='/home/')    
 def update_linked_orders(request):
