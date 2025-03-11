@@ -33,7 +33,7 @@
                                 <!--<td style="width: 5%"> <a href="/update_item_price/{{item.id}}"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a></td>-->
                                 <td> 
                                     {%if item.price != None%}
-                                        <a href="#" onclick="selectItem({{item.id}},'{{item}}')"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                        <a href="#" onclick="selectItem({{item.id}},`{{item}}`)"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
                                     {%endif%}
                                 </td>
                                

@@ -7200,9 +7200,9 @@ def create_ext_prod_item(request, id):
         priceCreated = dailyID.woID.created_date
 
         if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
-            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.woID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
         else:
-            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+            itemLocation = itemPrice.objects.filter(location__LocationID = dailyID.woID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
 
         context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
         context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
@@ -7947,7 +7947,7 @@ def billing_list(request, id, isRestoring):
                     currentItem.save()
         
         except Exception as e:
-            errorMessage += str(e) + ' \n\n'
+            errorMessage += str(e) + ' primero \n\n'
             print(str(e)) 
 
         # Group External Production by Item
@@ -8034,8 +8034,11 @@ def billing_list(request, id, isRestoring):
             itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == itemA.itemID.item.itemID), None)
 
             if itemResult != None and itemA.transferFrom == None:    
-                priceA = itemA.total / itemA.quantity
-                     
+                if itemA.quantity > 0:
+                    priceA = itemA.total / itemA.quantity
+                else:
+                    priceA = 0
+                        
                 #itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
                 itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA': itemResume[itemResult]['price'], 'amountA':itemA.total, 'idA': itemA.id})
                 qtyP += validate_decimals(itemResume[itemResult]['quantity'])
@@ -8043,7 +8046,12 @@ def billing_list(request, id, isRestoring):
                 qtyA += validate_decimals(itemA.quantity)
                 totalA += validate_decimals(itemA.total)
             else:
-                priceA = itemA.total / itemA.quantity
+
+                if itemA.quantity > 0:
+                    priceA = itemA.total / itemA.quantity
+                else:
+                    priceA = 0
+
                 #itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
                 itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':priceA, 'amountA':itemA.total, 'idA': itemA.id})
                 qtyA += validate_decimals(itemA.quantity)
