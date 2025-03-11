@@ -3558,7 +3558,7 @@ def upload_item_price(request):
 
         if not new_item.name.endswith('xlsx'):
             messages.info(request, 'wrong format')
-            return render(request,'upload_itemDetail.html', {'countInserted':countInserted, 'countRejected':countRejected  })
+            return render(request,'upload_itemDetail.html', {'countInserted':"-1", 'countRejected':"-1"  })
 
         imported_data = dataset.load(new_item.read(),format='xlsx')
       
@@ -3566,10 +3566,11 @@ def upload_item_price(request):
         for data in imported_data:             
             try:         
                 itemp = item.objects.filter(itemID = data[0]).first()
-                loca = Locations.objects.filter(LocationID = data[1]).first()
+                loca = Locations.objects.filter(name = data[1]).first()
 
                 if itemp and loca:
-                    value = itemPrice(
+
+                    """value = itemPrice(
                         item = itemp,
                         location = loca,
                         pay_perc =  data[2],
@@ -3577,7 +3578,15 @@ def upload_item_price(request):
                         emp_payout = data[4],
                         rate  = data[5]                
                     )
-                    value.save()
+                    value.save()"""
+
+                    value = itemPrice.objects.filter(item = itemp, location = loca).first()
+                    if value:
+                        value.pay_perc =  data[2]
+                        value.price = data[3]       
+                        value.emp_payout = data[4]
+                        value.rate = data[5]
+                        value.save()
 
                     countInserted = countInserted + 1
             except Exception as e:
@@ -5688,7 +5697,9 @@ def get_list_orders(request,estatus, loc, pid,addR,invNumber,invAmount,invAmount
                     orders = workOrder.objects.filter(id__in = woInvLits ).exclude(linkedOrder__isnull = False, uploaded = False)     
                 
             else:  
-                orders = workOrder.objects.filter(id = -1)   
+                #orders = workOrder.objects.filter(id = -1)   
+                last_date = date(2025, 3, 3)
+                orders = workOrder.objects.filter(created_date__gte = last_date).exclude(linkedOrder__isnull = False, uploaded = False)
         
         else:
             if estatus != "0" and loc != "0":
