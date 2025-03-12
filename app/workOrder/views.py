@@ -7920,6 +7920,10 @@ def billing_list(request, id, isRestoring):
                 amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.price)))  
 
                 if amount == 0:
+                    amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.itemID.price))) 
+
+
+                if amount == 0:
                     #Calculate amount with DailyItem.price
                     #errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.itemID.price)) + ' Amount ' + str(validate_decimals(amount))
                     errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.price)) + ' Amount ' + str(validate_decimals(amount))
@@ -7937,8 +7941,13 @@ def billing_list(request, id, isRestoring):
                         itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
                     else:
                         #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
-                        #Adding Price from Amount/Qty
-                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        
+                        #if data.price == 0 then use the Item Catalog Price
+                        if data.price == 0 or data.price == None:
+                            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        else:                        
+                            #Adding Price from Amount/Qty
+                            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
 
                 if data.isAuthorized == False:
                     currentItem = DailyItem.objects.filter(id = data.id).first()
