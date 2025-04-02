@@ -1,4 +1,7 @@
 from ast import Try, parse
+from django.views.generic import View
+from django.views.generic import CreateView
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import xlwt
@@ -13,6 +16,7 @@ from sequences import get_next_value, Sequence
 from workOrder import models as catalogModel
 from datetime import datetime, timedelta
 from django.db import transaction
+import os
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -258,7 +262,10 @@ def crew(request, perID, dID, crewID, LocID):
         
         granTotal = dailyTotal + ovT
 
+        dailyDocs = DailyMobDocs.objects.filter(DailyID = dailyID).order_by('created_date')
+
         context["dailyItem"] = dailyItem
+        context["dailyDocs"] = dailyDocs
         context["TotalItem"] = dailyTotal
         context["ovTotal"] = ovT
         context["GranTotalItem"] = granTotal
@@ -735,6 +742,74 @@ def delete_daily_item(request, id, LocID):
 
     return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
 
+
+#************** DAILY DOCS ***********************
+class BulkUploadView(View):
+    def post(self, request, *args, **kwargs):
+        form = DailyMobDocsForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            daily_id = form.cleaned_data['DailyID']
+            doc_type = form.cleaned_data['docType']
+            files = self.request.FILES.getlist('files')
+            
+            created_docs = []
+            for file in files:
+                doc = DailyMobDocs(
+                    DailyID=daily_id,
+                    docType=doc_type,
+                    docName=os.path.splitext(file.name)[0],
+                    document=file,
+                    createdBy=self.request.user.username,
+                    Status = 1,
+                    created_date=datetime.now()
+                )
+                doc.save()
+                created_docs.append({
+                    'id': doc.id,
+                    'name': doc.docName,
+                    'url': doc.document.url
+                })
+            
+            return JsonResponse({'success': True, 'documents': created_docs})   
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
+    def get(self, request, id, LocID, *args, **kwargs):
+        emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+        context ={}
+
+        per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+        context["per"] = per
+
+        dailyID = DailyMob.objects.filter(id = id).first()
+
+        # Add this if you need a GET handler for the form page
+        form = DailyMobDocsForm(initial={
+            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
+        })
+
+        return render(request, 'mobile/create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
+    
+@login_required(login_url='/home/')
+def delete_daily_docs(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobDocs, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+    if obj:
+        
+        obj.delete()
+
+    return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+       
+
 @login_required(login_url='/home/')
 def send_payroll(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
@@ -804,9 +879,10 @@ def update_ptp_Emp(dailyID, split):
             for iteml in itemList:
                 itemSum += iteml.total 
 
-        if crew.own_vehicle != None:
+        # Deactivate Own Vehicle per Crew
+        """if crew.own_vehicle != None:
             ovp = (itemSum * crew.own_vehicle) / 100
-            itemSum += ovp                     
+            itemSum += ovp         """          
                                       
         empList = DailyMobEmployee.objects.filter(DailyID = crew)
         
@@ -816,13 +892,21 @@ def update_ptp_Emp(dailyID, split):
             dt_pay = 0
             empRate = 0
             production = 0
+            ovEmp = 0
             
             empD = DailyMobEmployee.objects.filter(id = empl.id).first()    
             if empD.per_to_pay != None:                                         
-                emp_ptp += empD.per_to_pay                 
+                emp_ptp += empD.per_to_pay   
+
             if itemCount > 0:
                 pay_out = validate_decimals(((itemSum * empD.per_to_pay) / 100))
                 production = validate_decimals(((itemSum * empD.per_to_pay) / 100))
+
+                #Calculate Own Vehicle Pay = %5 from total Production
+                if empl.is_own_vehicle:
+                    ovEmp = (itemSum * 5) / 100              
+                    pay_out += ovEmp      
+
             else: 
                 if empD.EmployeeID.hourly_rate != None: 
                     empRate = validate_decimals(empD.EmployeeID.hourly_rate)
@@ -842,8 +926,9 @@ def update_ptp_Emp(dailyID, split):
             empD.ot_pay = ot_pay
             empD.dt_pay = dt_pay
             empD.emp_rate = empRate
+            empD.own_vehicle_pay = ovEmp
             empD.payout = pay_out
-            empD.production = production
+            empD.production = production            
             empD.save()
         
         crew.total_pay = round(emp_ptp)
@@ -1273,6 +1358,8 @@ def approve_timesheet(request, id):
                     ot_pay = emp.ot_pay,
                     double_time = emp.double_time,
                     dt_pay = emp.dt_pay,
+                    own_vehicle_pay = emp.own_vehicle_pay,
+                    is_own_vehicle = emp.is_own_vehicle,
                     payout =  emp.payout,
                     emp_rate = emp.emp_rate,
                     production = emp.production, 

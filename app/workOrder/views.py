@@ -4179,9 +4179,10 @@ def update_ptp_Emp(dailyID, split):
             for iteml in itemList:
                 itemSum += iteml.total 
 
-        if crew.own_vehicle != None:
+        # Deactivate Own Vehicle per Crew
+        """if crew.own_vehicle != None:
             ovp = (itemSum * crew.own_vehicle) / 100
-            itemSum += ovp                     
+            itemSum += ovp      """               
                                       
         empList = DailyEmployee.objects.filter(DailyID = crew)
         
@@ -4191,13 +4192,21 @@ def update_ptp_Emp(dailyID, split):
             dt_pay = 0
             empRate = 0
             production = 0
+            ovEmp = 0
             
             empD = DailyEmployee.objects.filter(id = empl.id).first()    
             if empD.per_to_pay != None:                                         
-                emp_ptp += empD.per_to_pay                 
+                emp_ptp += empD.per_to_pay      
+
             if itemCount > 0:
                 pay_out = validate_decimals(((itemSum * empD.per_to_pay) / 100))
                 production = validate_decimals(((itemSum * empD.per_to_pay) / 100))
+
+                #Calculate Own Vehicle Pay = %5 from total Production
+                if empl.is_own_vehicle:
+                    ovEmp = (itemSum * 5) / 100              
+                    pay_out += ovEmp      
+
             else: 
                 if empD.EmployeeID.hourly_rate != None: 
                     empRate = validate_decimals(empD.EmployeeID.hourly_rate)
@@ -4217,6 +4226,7 @@ def update_ptp_Emp(dailyID, split):
             empD.ot_pay = ot_pay
             empD.dt_pay = dt_pay
             empD.emp_rate = empRate
+            empD.own_vehicle_pay = ovEmp
             empD.payout = pay_out
             empD.production = production
             empD.save()

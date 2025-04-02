@@ -42,8 +42,10 @@
             </div>                                            
             <div class="col-sm-4">
                 <div class="mb-3">
-                    <label class="form-label" id="ov_l">% own Vehicle</label> 
-                    <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if item.own_vehicle > 0 %}{{item.own_vehicle}}{%endif%}" min="0" max="100" >                                  
+                   <!--
+                        <label class="form-label" id="ov_l">% own Vehicle</label> 
+                        <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if item.own_vehicle > 0 %}{{item.own_vehicle}}{%endif%}" min="0" max="100" >       
+                    -->                            
                 </div> 
             </div>
             <input type="text" class="form-control d-none" id="daily" name="daily" value="{{selectedCrew}}"> 

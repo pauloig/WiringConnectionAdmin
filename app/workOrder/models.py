@@ -301,6 +301,8 @@ class DailyEmployee(models.Model):
     ot_pay = models.FloatField(blank=True, null=True)
     double_time = models.FloatField(null=True, blank=True)
     dt_pay = models.FloatField(blank=True, null=True)
+    is_own_vehicle = models.BooleanField(default=False)
+    own_vehicle_pay = models.FloatField(blank=True, null=True)
     payout =  models.FloatField(null=True, blank=True)
     emp_rate = models.FloatField(blank=True, null=True) 
     production = models.FloatField(blank=True, null=True) 

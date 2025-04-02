@@ -21,7 +21,13 @@ class DailyMobEmployeeAdmin(admin.ModelAdmin):
     search_fields = ('id','Status')
     list_filter = ('Status',)
 
+class DailyMobDocsAdmin(admin.ModelAdmin):
+    list_display = ('id','Status')
+    search_fields = ('id','Status')
+    list_filter = ('Status',)
+
 admin.site.register(Timesheet, TimesheetAdmin)
 admin.site.register(DailyMob, DailyMobAdmin)
 admin.site.register(DailyMobItem, DailyMobItemAdmin)    
 admin.site.register(DailyMobEmployee, DailyMobEmployeeAdmin)
+admin.site.register(DailyMobDocs, DailyMobDocsAdmin)

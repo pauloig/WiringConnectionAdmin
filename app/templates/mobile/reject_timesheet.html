@@ -115,8 +115,9 @@
                 </div>                                    
                 <div class="col-sm-2">
                     <div class="mb-3">
-                        <label class="form-label" id="ov_l">% own Vehicle</label> 
+                        <!--<label class="form-label" id="ov_l">% own Vehicle</label> 
                         <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if dailyWO.own_vehicle > 0 %}{{dailyWO.own_vehicle}}{%endif%}" min="0" max="100" disabled>                                  
+                        -->
                     </div> 
                 </div>
                 <div class="col-sm-2 pt-4">
@@ -164,13 +165,18 @@
                                                 <td width="9%" class="p-1">Reg Hrs</td>
                                                 <td width="8%" class="p-1">OT Hrs</td>
                                                 <td width="8%" class="p-1">DT Hrs</td>
+                                                <td width="8%" class="p-1">OV</td>                                                                                            
                                                 <td width="8%" class="p-1">Payout</td>                                                                                            
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {%for emp in dailyEmp %}
                                                 <tr>                                                       
-                                                    <td class="p-1">{{emp.EmployeeID}} </td>
+                                                    <td class="p-1">{{emp.EmployeeID}} 
+                                                        {% if emp.is_own_vehicle%}      
+                                                            <span class="badge bg-success text-white ml-2"> OV </span>      
+                                                        {%endif%}
+                                                    </td>
                                                     <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
                                                     <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
                                                     <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
@@ -178,6 +184,7 @@
                                                     <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
+                                                    <td class="p-1" style="color: red;">{%if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
                                                     <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
                                                                                                     
                                                 </tr>

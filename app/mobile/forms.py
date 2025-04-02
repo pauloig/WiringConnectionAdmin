@@ -3,6 +3,7 @@ from types import CoroutineType
 from django import forms
 from .models import *
 from workOrder import models as catalogModel
+from django.core.validators import FileExtensionValidator
 
 class DailyMobEmpForm(forms.ModelForm):
 
@@ -19,7 +20,9 @@ class DailyMobEmpForm(forms.ModelForm):
             'end_lunch_time',
             'end_time',
             'total_hours',
-            'billableHours'
+            'billableHours',
+            'is_own_vehicle',
+            'own_vehicle_pay',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -44,6 +47,38 @@ class DailyMobItemForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['DailyID'].disabled = True
         self.fields['itemID'].queryset = qs
+
+class DailyMobDocsForm(forms.ModelForm):
+    files = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg'])],
+    )
+    docType = forms.TypedChoiceField(
+        choices=docType_choice,
+        coerce=int,  # Ensure value is converted to integer
+        initial=1,   # Default value
+        widget=forms.Select(attrs={
+            'class': 'form-select doc-type-select',
+            'style': 'cursor: pointer;',
+            'data-testid': 'doc-type-field'
+        }),       
+        error_messages={
+            'required': 'Please select a document type',
+            'invalid_choice': 'Invalid document type selected'
+        }
+    )
+
+    class Meta:
+        model = DailyMobDocs
+        fields = [
+            'DailyID',
+            'docType',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['DailyID'].disabled = False
+        
 
 
 class TimesheetForm(forms.ModelForm):   

@@ -28,6 +28,9 @@ urlpatterns = [
      path('update_daily_item/<id>/<LocID>',views.update_daily_item),
      path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
 
+     # ****** Daily Docs **********************
+     path('create_daily_docs/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload'),
+     path('delete_daily_docs/<id>/<LocID>',views.delete_daily_docs),
 
      # ****** Employee **********************
      path('employee_list/',views.employee_list),   
