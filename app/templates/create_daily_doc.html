@@ -12,11 +12,10 @@
         <div class="row mt-5 pt-2" id="items">      
             <div class="mb-3">
                 <label for="id_DailyID" class="form-label">Daily</label>
-                <input type="text" name="DailyID2" id="DailyID2"  class="form-control" value="{{dailyID}}" disabled>
+                <input type="text" name="DailyID" id="DailyID"  class="form-control" value="{{dailyID}}" disabled>
                 <div class="d-none">
                     {{ form.DailyID }}
-                </div>
-                
+                </div>                
             </div>
 
             
@@ -69,7 +68,7 @@
 
         
         
-        fetch("{% url 'bulk-upload' id=dailyID.id LocID=0%}", {
+        fetch("{% url 'bulk-upload-web' id=dailyID LocID=0%}", {
             method: 'POST',
             body: formData,
             headers: {
@@ -95,7 +94,8 @@
                     fileList.appendChild(li);
                 });
             } else {
-                alert('Error: ' + JSON.stringify(data.errors));
+                console.error('Error:', data);
+                alert('Error: ' + JSON.stringify(data.errors) );
             }
         })
         .catch(error => {

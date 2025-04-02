@@ -76,7 +76,7 @@ urlpatterns = [
     path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
     # Daily Docs
     path('delete_daily_docs/<id>/<LocID>',views.delete_daily_docs),
-    path('create_daily_docs/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload'),
+    path('create_daily_docs/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload-web'),
 
 
     path('upload_daily/<id>/<LocID>',views.upload_daily),

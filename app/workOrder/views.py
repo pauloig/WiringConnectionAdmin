@@ -4850,8 +4850,7 @@ class BulkUploadView(View):
             doc_type = form.cleaned_data['docType']
             files = self.request.FILES.getlist('files')
             
-            dailyIDobj = Daily.objects.filter(id = 19199).first()
-
+            
             created_docs = []
             for file in files:
                 doc = DailyDocs(
@@ -4870,9 +4869,8 @@ class BulkUploadView(View):
                     'url': doc.document.url
                 })
             
-            return JsonResponse({'success': True, 'documents': created_docs})   
-        return JsonResponse({'success': False, 'errors': "Errorrrrrrr"}, status=400)
-        #return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            return JsonResponse({'success': True, 'documents': created_docs})  
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
     def get(self, request, id, LocID, *args, **kwargs):
         emp = Employee.objects.filter(user__username__exact = request.user.username).first()

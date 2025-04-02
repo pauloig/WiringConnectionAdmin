@@ -408,7 +408,7 @@
                                                                     <td width="8%" class="p-1">
                                                                         {% if item.supervisor != None and item.woID != None %}
                                                                             {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                                                                <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
+                                                                                <!--<a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>-->
                                                                                 <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>
                                                                             {%endif%}
                                                                         {% endif %}
