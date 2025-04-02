@@ -2,6 +2,8 @@ import re
 from types import CoroutineType
 from django import forms
 from .models import *
+from django.core.validators import FileExtensionValidator
+
 
 class LocationsForm(forms.ModelForm):
     LocationID = forms.CharField(max_length=10, widget=forms.TextInput(attrs={'class':'form-control'}))
@@ -483,6 +485,38 @@ class subcontractorForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['created_date'].disabled = True
         self.fields['createdBy'].disabled = True
+
+
+class DailyDocsForm(forms.ModelForm):
+    files = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg'])],
+    )
+    docType = forms.TypedChoiceField(
+        choices=docType_choice,
+        coerce=int,  # Ensure value is converted to integer
+        initial=1,   # Default value
+        widget=forms.Select(attrs={
+            'class': 'form-select doc-type-select',
+            'style': 'cursor: pointer;',
+            'data-testid': 'doc-type-field'
+        }),       
+        error_messages={
+            'required': 'Please select a document type',
+            'invalid_choice': 'Invalid document type selected'
+        }
+    )
+
+    class Meta:
+        model = DailyDocs
+        fields = [
+            'DailyID',
+            'docType',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['DailyID'].disabled = False
       
 class extProdForm(forms.ModelForm):
     

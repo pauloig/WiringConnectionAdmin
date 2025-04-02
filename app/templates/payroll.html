@@ -5,6 +5,18 @@
 
 {% block container %}
 
+<script>
+    function delete_daily_docs(id, selectedLocation){
+        event.preventDefault();
+        if (confirm(`Are you sure to remove this attachment?`))
+        {           
+            window.location.href = `/delete_daily_docs/${id}/${selectedLocation}`;
+    
+            
+        }  
+    }
+  </script>
+
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
@@ -366,7 +378,7 @@
                                                                                 {%if itemd.Status == 1 %}
                                                                                     <a hx-get="/update_daily_item/{{itemd.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
                                                                                     <a hx-get="/delete_daily_item/{{itemd.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>
-                                                                            
+                                                                                    
                                                                                 {%endif%}
                                                                             {%endif%}                                                                            
                                                                         </td> 
@@ -377,10 +389,57 @@
                                                     </div>
                                                 </div>                                                
                                             </div>
-                                        </div>  
-                                        
-                                    </div>                                                           
+                                        </div>                                          
+                                    </div>                                     
                                 </div>  
+                                <div clas="row">
+                                    <div class="col-sm-8 px-1">
+                                        <div class="card">
+                                            <h6 class="card-header card-header-wc" >Docs List</h6>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-sm-12 px-1">
+                                                        <table class="table table-sm table-bordered table-striped">
+                                                            <thead>
+                                                                <tr class="table-primary">                                                  
+                                                                    <td width="20%" class="p-1">Name</td>
+                                                                    <td width="20%" class="p-1">Type</td>
+                                                                    
+                                                                    <td width="8%" class="p-1">
+                                                                        {% if item.supervisor != None and item.woID != None %}
+                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                                                                <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
+                                                                                <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>
+                                                                            {%endif%}
+                                                                        {% endif %}
+                                                                    </td>
+        
+                                                                    
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {%for doc in dailyDocs %}
+                                                                    <tr>                                                       
+                                                                        <td class="p-1">{{doc.docName}}</td>
+                                                                        <td class="p-1">{{doc.get_docType_display}}</td>
+                                                                        
+                                                                        <td class="p-1">
+                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
+                                                                                
+                                                                                <a href="/static/media/{{doc.document}}"><i class="fa-solid fa-magnifying-glass" style="color: green;"></i></a>
+                                                                                <a href="#" onclick="delete_daily_docs({{doc.id}},{{selectedLocation}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>  
+                                                                                {%endif%}
+                                                                            </td>                                                        
+                                                                    </tr>
+                                                                {%endfor%}
+                                                            </tbody>                                                
+                                                        </table>
+                                                    </div>
+                                                </div>                                                
+                                            </div>
+                                        </div>    
+                                    </div>
+                                </div>
                                 <!-- Modal -->
                                 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                     <div class="modal-dialog">

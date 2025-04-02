@@ -31,6 +31,12 @@ estimateStatus_choice = (
     (3, 'Updated')
 )
 
+docType_choice = (
+    (1, 'Maps'),
+    (2, 'Pictures'),
+    (3, 'Material Backup'),
+)
+
 class Locations(models.Model):
     LocationID = models.IntegerField(primary_key=True, serialize=False, verbose_name='ID')
     name = models.CharField(max_length=200)
@@ -342,6 +348,23 @@ class DailyItem(models.Model):
     class Meta:
         unique_together = ('DailyID','itemID')
 
+class DailyDocs(models.Model):
+    DailyID = models.ForeignKey(Daily, on_delete=models.CASCADE, db_column ='DailyID', null=False, blank=False)    
+    docType = models.IntegerField(default=1, choices = docType_choice)
+    docName = models.CharField(max_length=200, blank=True, null=True)
+    docDescription = models.CharField(max_length=200, blank=True, null=True)
+    document = models.FileField(null=True, upload_to="dailys") 
+    Status = models.IntegerField(default=1, choices = prodStatus_choice)     
+    isAuthorized = models.BooleanField(default=False)
+    authorized_date = models.DateTimeField(null=True, blank=True)
+    autorizedID = models.ForeignKey(authorizedBilling, on_delete=models.SET_NULL, db_column ='autorizedID', null=True, blank=True)
+    created_date = models.DateTimeField(null=True, blank=True)
+    createdBy = models.CharField(max_length=60, blank=True, null=True)
+    updated_date = models.DateTimeField(null=True, blank=True)
+    updatedBy = models.CharField(max_length=60, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.DailyID) + " - " + str(self.docType) + " - " + str(self.docName)
 
 
 class DailyAudit(models.Model):

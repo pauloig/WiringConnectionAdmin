@@ -1293,6 +1293,8 @@ def approve_timesheet(request, id):
 
     dailyItem = DailyMobItem.objects.filter(DailyID = obj)
 
+    dailyDocs = DailyMobDocs.objects.filter(DailyID = obj)
+
     dailyTotal = 0
     ovT = 0
     for di in dailyItem:
@@ -1391,6 +1393,22 @@ def approve_timesheet(request, id):
                     updatedBy = None
                 )
 
+            for doc in dailyDocs:
+                catalogModel.DailyDocs.objects.create(
+                    DailyID = newDaily,
+                    docType = doc.docType,
+                    docName = doc.docName,
+                    docDescription = doc.docDescription,
+                    document = doc.document,
+                    Status = 1,   
+                    isAuthorized = False,
+                    authorized_date = None,
+                    autorizedID = None,
+                    created_date = datetime.now(),
+                    createdBy = request.user.username,
+                    updated_date = None,
+                    updatedBy = None
+                )
 
             
             

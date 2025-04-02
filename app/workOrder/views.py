@@ -43,6 +43,9 @@ from django.db.models import Max
 from django.db.models import Sum
 from .models import status_choice, prodStatus_choice, estimateStatus_choice
 from mobile import models as MobileModel
+from django.views.generic import View
+from django.views.generic import CreateView
+from django.http import JsonResponse
 
 
 @login_required(login_url='/home/')
@@ -4357,7 +4360,11 @@ def payroll(request, perID, dID, crewID, LocID):
         
         granTotal = dailyTotal + ovT
 
+
+        dailyDocs = DailyDocs.objects.filter(DailyID = dailyID).order_by('created_date')
+
         context["dailyItem"] = dailyItem
+        context["dailyDocs"] = dailyDocs
         context["TotalItem"] = dailyTotal
         context["ovTotal"] = ovT
         context["GranTotalItem"] = granTotal
@@ -4830,6 +4837,77 @@ def delete_daily_item(request, id, LocID):
 
    
     return render(request, "delete_daily_item.html", context)
+
+
+#*********************** documents upload ***********************
+
+class BulkUploadView(View):
+    def post(self, request,id, LocID, *args, **kwargs):
+        form = DailyDocsForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            daily_id = form.cleaned_data['DailyID']
+            doc_type = form.cleaned_data['docType']
+            files = self.request.FILES.getlist('files')
+            
+            dailyIDobj = Daily.objects.filter(id = 19199).first()
+
+            created_docs = []
+            for file in files:
+                doc = DailyDocs(
+                    DailyID=daily_id,
+                    docType=doc_type,
+                    docName=os.path.splitext(file.name)[0],
+                    document=file,
+                    createdBy=self.request.user.username,
+                    Status = 1,
+                    created_date=datetime.now()
+                )
+                doc.save()
+                created_docs.append({
+                    'id': doc.id,
+                    'name': doc.docName,
+                    'url': doc.document.url
+                })
+            
+            return JsonResponse({'success': True, 'documents': created_docs})   
+        return JsonResponse({'success': False, 'errors': "Errorrrrrrr"}, status=400)
+        #return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
+    def get(self, request, id, LocID, *args, **kwargs):
+        emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+        context ={}
+
+        per = period.objects.filter(status__in=(1,2)).first()
+        context["per"] = per
+
+        dailyID = Daily.objects.filter(id = id).first()
+
+        # Add this if you need a GET handler for the form page
+        form = DailyDocsForm(initial={
+            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
+        })
+
+        return render(request, 'create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
+
+@login_required(login_url='/home/')
+def delete_daily_docs(request, id, LocID):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyDocs, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+    if obj:
+        
+        obj.delete()
+
+    return HttpResponseRedirect('/payroll/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
 
 @login_required(login_url='/home/')
 def upload_daily(request, id, LocID):
