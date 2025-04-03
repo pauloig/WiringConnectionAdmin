@@ -1,12 +1,46 @@
-{% extends 'base_modal.html' %} 
+{% extends 'index.html' %} 
 {%load static%}
 {% block title %} Order List {% endblock %} 
 {% load humanize %}
 {% block container %}
 {% load widget_tweaks%}
 
+
+<script>
+  
+    function delete_daily_emp(id, selectedLocation){
+      event.preventDefault();
+      if (confirm(`Are you sure to remove this Employee?`))
+      {           
+          window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
+  
+          
+      }  
+  }
+
+  function delete_daily_item(id, selectedLocation){
+    event.preventDefault();
+    if (confirm(`Are you sure to remove this Item?`))
+    {           
+        window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
+
+        
+    }  
+}
+
+function delete_daily_docs(id, selectedLocation){
+    event.preventDefault();
+    if (confirm(`Are you sure to remove this attachment?`))
+    {           
+        window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
+
+        
+    }  
+}
+</script>
+
 <div class="container">
-    <form method='post' action="{{request.path}}" class="modal-content" id="rejectedTimseheet">
+    <form method='post' action="{{request.path}}"  id="rejectedTimseheet">
         {% csrf_token %}
 
         <div class="modal-header">
@@ -149,23 +183,26 @@
             <div class="row">                           
                 <div class="col-sm-8 px-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if dailyWO.total_pay > 0 %}{{dailyWO.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+                        <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12 px-1">
                                     <table class="table table-sm table-bordered table-striped">
                                         <thead>
                                             <tr class="table-primary">                                                  
-                                                <td width="25%" class="p-1">Name</td>
+                                                <td width="20%" class="p-1">Name</td>
                                                 <td width="8%" class="p-1">% Pay</td>
                                                 <td width="8%" class="p-1">On Call</td>
                                                 <td width="8%" class="p-1">Bonus</td>                                     
-                                                <td width="10%" class="p-1">Total Hrs</td>
+                                                <td width="8%" class="p-1">Total Hrs</td>
                                                 <td width="9%" class="p-1">Reg Hrs</td>
                                                 <td width="8%" class="p-1">OT Hrs</td>
                                                 <td width="8%" class="p-1">DT Hrs</td>
-                                                <td width="8%" class="p-1">OV</td>                                                                                            
-                                                <td width="8%" class="p-1">Payout</td>                                                                                            
+                                                <td width="8%" class="p-1">OV</td>
+                                                <td width="8%" class="p-1">Payout</td>
+                                                <td width="8%" class="p-1">
+                                                    <a hx-get="/mobile/create_daily_emp_sup/{{daily.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>                                                  
+                                                </td>                                                
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -185,7 +222,12 @@
                                                     <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
                                                     <td class="p-1" style="color: red;">{%if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
                                                     <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                                                                    
+                                                    <td class="p-1">                                                        
+                                                        <a hx-get="/mobile/update_daily_emp_sup/{{emp.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
+                                                        <a hx-get="/delete_daily_emp/{{emp.id}}/{{per.periodID}}" onclick="delete_daily_emp({{emp.id}},{{selectedLocation}})"> <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
+
+                                                                                                               
+                                                    </td>                                                        
                                                 </tr>
                                             {%endfor%}
                                         </tbody>                                                
@@ -209,7 +251,9 @@
                                                 <td width="20%" class="p-1">Qty.</td>
                                                 <td width="20%" class="p-1">Price</td>
                                                 <td width="20%" class="p-1">Total</td>  
-                                               
+                                                <td width="20%" class="p-1">                                                   
+                                                    <a hx-get="/mobile/create_daily_item_sup/{{daily.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
+                                                </td>                                                 
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -218,7 +262,11 @@
                                                     <td class="p-1">{{itemd.itemID.item.itemID}}</td>
                                                     <td class="p-1">{{itemd.quantity}}</td>
                                                     <td class="p-1">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
-                                                    <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>                                                       
+                                                    <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>   
+                                                    <td class="p-1">                                                        
+                                                                <a hx-get="/mobile/update_daily_item_sup/{{itemd.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                                                <a hx-get="/delete_daily_item/{{itemd.id}}/{{selectedLocation}}" onclick="delete_daily_item({{itemd.id}},{{per.periodID}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>                                                                                                                                                                                         
+                                                    </td> 
                                                 </tr>
                                             {%endfor%}
                                         </tbody>                                                
@@ -226,36 +274,77 @@
                                 </div>
                             </div>                                                
                         </div>
-                    </div>  
-                    
-                </div>  
-                
-                
-                <div class="row mt-4">
-                    <div class="col-lg-12">
-                        <span class="d-flex justify-content-center">
-                            <h4>Are you sure to Approve and Move to Production this Daily?</h4>
-                        </span>
+                    </div>                                          
+                </div>                                     
+            </div> 
+        </br>
+        <div clas="row">
+            <div class="col-sm-8 px-1">
+                <div class="card">
+                    <h6 class="card-header card-header-wc" >Docs List</h6>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-12 px-1">
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead>
+                                        <tr class="table-primary">                                                  
+                                            <td width="20%" class="p-1">Name</td>
+                                            <td width="20%" class="p-1">Type</td>
+                                            
+                                            <td width="8%" class="p-1">                                                
+                                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}"><i class="fa-solid fa-circle-plus"></i></a>
+                                            </td>
+
+                                            
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {%for doc in dailyDocs %}
+                                            <tr>                                                       
+                                                <td class="p-1">{{doc.docName}}</td>
+                                                <td class="p-1">{{doc.get_docType_display}}</td>
+                                                
+                                                <td class="p-1">                                                 
+                                                        <a href="/static/media/{{doc.document}}"><i class="fa-solid fa-magnifying-glass" style="color: green;"></i></a>
+                                                        <a href="#" onclick="delete_daily_docs({{doc.id}},{{selectedLocation}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>  
+                                                </td>                                                        
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>                                                
+                                </table>
+                            </div>
+                        </div>                                                
                     </div>
-                </div>  
-                <div class="col-lg-12 pt-4">
-                    <div class="">
-                        <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
-                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
-                        
-                        <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
-                    </div>    
                 </div>    
+            </div>
+        </div>    
+
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <span class="d-flex justify-content-center">
+                        <h4>Are you sure to Approve and Move to Production this Daily?</h4>
+                    </span>
+                </div>
             </div>  
+            <div class="col-lg-12 pt-4">
+                <div class="">
+                    <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
+                    {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                    
+                    <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
+                </div>    
+            </div>    
+        </div>  
         
 
-        
+        </div>
 
         
         
         <div class="modal-footer">   
             <input class="btn btn-primary" type="submit" value="Approve">       
-            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button> 
+            <a href="/mobile/supervisor_list" type="button" class="btn btn-danger">Close</a>
+            
         </div>
    
     </form>

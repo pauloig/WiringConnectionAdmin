@@ -40,6 +40,19 @@ urlpatterns = [
      path('supervisor_list/',views.supervisor_list), 
      path('approve_timesheet/<id>',views.approve_timesheet),
      path('reject_timesheet/<id>',views.reject_timesheet),
+
+     path('create_daily_emp_sup/<id>/<LocID>',views.create_daily_emp_sup),
+     path('update_daily_emp_sup/<id>/<LocID>',views.update_daily_emp_sup),
+     path('delete_daily_emp_sup/<id>/<LocID>',views.delete_daily_emp_sup),
+
+     path('delete_daily_item_sup/<id>/<LocID>',views.delete_daily_item_sup),
+     path('create_daily_item_sup/<id>/<LocID>',views.create_daily_item_sup),
+     path('update_daily_item_sup/<id>/<LocID>',views.update_daily_item_sup),
+     
+     path('create_daily_docs_sup/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload'),
+     path('delete_daily_docs_sup/<id>/<LocID>',views.delete_daily_docs_sup),
+
+
      
      # ****** Crew  Supervisor **********************
      path('create/',views.create),

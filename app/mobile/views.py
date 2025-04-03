@@ -547,6 +547,50 @@ def create_daily_emp(request, id, LocID):
     context["selectedLocation"] = LocID
     return render(request, "mobile/create_daily_emp.html", context)
 
+@login_required(login_url='/home/')    
+def create_daily_emp_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    dailyID = DailyMob.objects.filter(id = id).first()
+
+    dailyE = DailyMobEmployee.objects.filter(DailyID = dailyID)
+    empList = []
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    for i in dailyE:
+       empList.append(i.EmployeeID.employeeID) 
+
+    EmpLocation = catalogModel.Employee.objects.filter(is_active = True, is_supervisor = False).exclude(employeeID__in = empList)
+
+    form = DailyMobEmpForm(request.POST or None, initial={'DailyID': dailyID}, qs = EmpLocation)
+    if form.is_valid():                
+        startTime = form.instance.start_time
+        endTime = form.instance.end_time
+        lunch_startTime = form.instance.start_lunch_time
+        lunch_endTime = form.instance.end_lunch_time
+
+        form.instance.total_hours, form.instance.regular_hours,form.instance.ot_hour, form.instance.double_time = calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime)
+        form.instance.created_date = datetime.now()
+
+        empid = request.POST.get('EmployeeID')
+        
+        selectedEmp = catalogModel.Employee.objects.filter(employeeID = empid).first()
+        form.instance.EmployeeID = selectedEmp
+        form.save()  
+          
+        update_ptp_Emp(id, dailyID.split_paymet)             
+        return HttpResponseRedirect('/mobile/approve_timesheet/' + str(dailyID.id) )        
+         
+    
+    context['form']= form
+    context["emp"] = emp
+    context["daily"] = dailyID
+    context["empList"] = EmpLocation
+    context["selectedLocation"] = LocID
+    return render(request, "mobile/create_daily_emp_sup.html", context)
+
 @login_required(login_url='/home/')
 def update_daily_emp(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
@@ -594,6 +638,53 @@ def update_daily_emp(request, id, LocID):
     
     return render(request, "mobile/update_daily_emp.html", context)
 
+@login_required(login_url='/home/')
+def update_daily_emp_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}    
+    obj = get_object_or_404(DailyMobEmployee, id = id)
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per    
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
+
+    EmpLocation = catalogModel.Employee.objects.all()
+    empSelected = catalogModel.Employee.objects.filter(employeeID = obj.EmployeeID.employeeID ).first()
+ 
+    form = DailyMobEmpForm(request.POST or None, instance = obj, qs = EmpLocation)
+ 
+    if form.is_valid():      
+        startTime = form.instance.start_time
+        endTime = form.instance.end_time
+        lunch_startTime = form.instance.start_lunch_time
+        lunch_endTime = form.instance.end_lunch_time
+
+        form.instance.total_hours, form.instance.regular_hours,form.instance.ot_hour, form.instance.double_time = calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime)
+
+        empid = request.POST.get('EmployeeID')
+        
+        selectedEmp = catalogModel.Employee.objects.filter(employeeID = empid).first()
+        form.instance.EmployeeID = selectedEmp
+
+        form.save()       
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+        context["emp"] = emp       
+        return HttpResponseRedirect('/mobile/approve_timesheet/' + str(obj.DailyID.id)) 
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
+
+    context["form"] = form
+    context["emp"] = emp
+    context["daily"] = dailyID
+    context["empList"] = EmpLocation
+    context["empSelected"] = empSelected
+    context["selectedLocation"] = LocID
+    
+    return render(request, "mobile/update_daily_emp_sup.html", context)
+
 
 @login_required(login_url='/home/')
 def delete_daily_emp(request, id, LocID):
@@ -613,6 +704,25 @@ def delete_daily_emp(request, id, LocID):
         update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet)        
        
     return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+
+@login_required(login_url='/home/')
+def delete_daily_emp_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    obj = get_object_or_404(DailyMobEmployee, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+ 
+    if obj:
+        obj.delete()
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet)        
+       
+    return HttpResponseRedirect('/mobile/approve_timesheet/' + str(obj.DailyID.id) ) 
 
    
 
@@ -680,6 +790,69 @@ def create_daily_item(request, id, LocID):
     return render(request, "mobile/create_daily_item.html", context)
 
 @login_required(login_url='/home/')
+def create_daily_item_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    dailyID = DailyMob.objects.filter(id = id).first()
+
+    dailyI = DailyMobItem.objects.filter(DailyID = dailyID)
+    itemList = []
+
+    for i in dailyI:
+       itemList.append(i.itemID.item.itemID) 
+
+
+    #Validate if the WO was created after the Prices Update
+    priceUpdate = "2025-03-03"
+    priceCreated = dailyID.woID.created_date
+
+    #if priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date():
+    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= True).exclude(item__itemID__in = itemList)
+    #else:
+    #    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = dailyID.Location.LocationID, item__is_new= False).exclude(item__itemID__in = itemList)
+
+    #context["is_new"] = priceCreated.date() >= datetime.strptime(priceUpdate, "%Y-%m-%d").date()
+    #context["created"] = datetime.strftime(priceCreated.date(), "%Y-%m-%d")
+
+    form = DailyMobItemForm(request.POST or None, initial={'DailyID': dailyID}, qs = itemLocation)
+    if form.is_valid():    
+        
+        itemid = request.POST.get('itemID')
+        
+        selectedItem = catalogModel.itemPrice.objects.filter(id = itemid).first()
+        form.instance.itemID = selectedItem
+
+        price = form.instance.itemID.price   
+        Emppayout = form.instance.itemID.emp_payout 
+        
+        form.instance.emp_payout = float(Emppayout)
+        if form.instance.itemID.price != None and form.instance.itemID.price != "":
+            price = form.instance.itemID.price   
+        else:
+            price = 0
+            
+        form.instance.price = float(price)
+        form.instance.total = form.instance.quantity * float(Emppayout)
+        form.instance.created_date = datetime.now()
+
+        form.save()      
+        
+        update_ptp_Emp(id, dailyID.split_paymet)
+
+        return HttpResponseRedirect('/mobile/approve_timesheet/' + str(dailyID.id) )        
+         
+    context['form']= form
+    context["emp"] = emp
+    context["DailyID"] = dailyID
+    context["itemList"] = itemLocation
+    context["selectedLocation"] = LocID
+    return render(request, "mobile/create_daily_item_sup.html", context)
+
+@login_required(login_url='/home/')
 def update_daily_item(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
@@ -722,6 +895,48 @@ def update_daily_item(request, id, LocID):
     return render(request, "mobile/update_daily_item.html", context)
 
 @login_required(login_url='/home/')
+def update_daily_item_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobItem, id = id)
+
+    dailyID = DailyMob.objects.filter(id = obj.DailyID.id).first()
+
+    itemLocation = catalogModel.itemPrice.objects.filter(location__LocationID = obj.DailyID.Location.LocationID)
+    
+    itemSelected = catalogModel.itemPrice.objects.filter(id = obj.itemID.id ).first()
+
+    form = DailyMobItemForm(request.POST or None, instance = obj, qs = itemLocation)
+ 
+    if form.is_valid():
+        price = form.instance.itemID.emp_payout    
+        form.instance.price = float(price)
+        form.instance.total = form.instance.quantity * float(price)
+        
+        itemid = request.POST.get('itemID')
+        
+        selectedItem = catalogModel.itemPrice.objects.filter(id = itemid).first()
+        form.instance.itemID = selectedItem
+
+        form.save()
+        context["emp"] = emp    
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+        return HttpResponseRedirect('/mobile/approve_timesheet/' + str(obj.DailyID.id)) 
+
+    context["form"] = form
+    context["emp"] = emp
+    context["itemSelected"] = itemSelected
+    context["DailyID"] = dailyID
+    context["selectedLocation"] = LocID
+    return render(request, "mobile/update_daily_item_sup.html", context)
+
+@login_required(login_url='/home/')
 def delete_daily_item(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
@@ -741,6 +956,27 @@ def delete_daily_item(request, id, LocID):
         update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
 
     return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+
+@login_required(login_url='/home/')
+def delete_daily_item_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobItem, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+    if obj:
+        
+        obj.delete()
+
+        update_ptp_Emp(obj.DailyID.id, obj.DailyID.split_paymet) 
+
+    return HttpResponseRedirect('/mobile/approve_timesheet/' + str(obj.DailyID.id) ) 
 
 
 #************** DAILY DOCS ***********************
@@ -790,6 +1026,52 @@ class BulkUploadView(View):
 
         return render(request, 'mobile/create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
     
+class BulkUploadView(View):
+    def post(self, request, *args, **kwargs):
+        form = DailyMobDocsForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            daily_id = form.cleaned_data['DailyID']
+            doc_type = form.cleaned_data['docType']
+            files = self.request.FILES.getlist('files')
+            
+            created_docs = []
+            for file in files:
+                doc = DailyMobDocs(
+                    DailyID=daily_id,
+                    docType=doc_type,
+                    docName=os.path.splitext(file.name)[0],
+                    document=file,
+                    createdBy=self.request.user.username,
+                    Status = 1,
+                    created_date=datetime.now()
+                )
+                doc.save()
+                created_docs.append({
+                    'id': doc.id,
+                    'name': doc.docName,
+                    'url': doc.document.url
+                })
+            
+            return JsonResponse({'success': True, 'documents': created_docs})   
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
+    def get(self, request, id, LocID, *args, **kwargs):
+        emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+        context ={}
+
+        per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+        context["per"] = per
+
+        dailyID = DailyMob.objects.filter(id = id).first()
+
+        # Add this if you need a GET handler for the form page
+        form = DailyMobDocsForm(initial={
+            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
+        })
+
+        return render(request, 'mobile/create_daily_doc_sup.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
+    
 @login_required(login_url='/home/')
 def delete_daily_docs(request, id, LocID):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
@@ -808,6 +1090,24 @@ def delete_daily_docs(request, id, LocID):
         obj.delete()
 
     return HttpResponseRedirect('/mobile/crew/' + str(obj.DailyID.Period.id) + '/' + obj.DailyID.day.strftime("%d") + '/' + str(obj.DailyID.crew) +'/' + str(LocID)) 
+       
+def delete_daily_docs_sup(request, id, LocID):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMobDocs, id = id)
+ 
+    context["form"] = obj
+    context["emp"] = emp
+ 
+    if obj:
+        
+        obj.delete()
+
+    return HttpResponseRedirect('/mobile/approve_timesheet/' + str(obj.DailyID.id) ) 
        
 
 @login_required(login_url='/home/')
@@ -1307,6 +1607,9 @@ def approve_timesheet(request, id):
     granTotal = dailyTotal + ovT
 
     context["dailyItem"] = dailyItem
+    context["daily"] = obj
+    context["dailyDocs"] = dailyDocs
+
     context["TotalItem"] = dailyTotal
     context["ovTotal"] = ovT
     context["GranTotalItem"] = granTotal
