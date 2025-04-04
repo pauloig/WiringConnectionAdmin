@@ -187,11 +187,10 @@
                                         <td class="text-center">
                                             {% if data.Status == 2%}  
                                                 {%if emp.is_superAdmin or user.is_staff%}
-                                                    <!--<a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
-                                                        class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a> -->
+                                                    <a hx-get="/mobile/reject_timesheet/{{data.id}}" hx-target="#dialog"><i
+                                                        class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a> 
                                                     
-                                                        <a href="/mobile/reject_timesheet/{{data.id}}"><i
-                                                            class="fa-solid fa-magnifying-glass mr-1" style="color: blue;"></i></a> 
+                                                     
                                                     
                                                 {% else %}
                                                     <!--<a hx-get="/mobile/approve_timesheet/{{data.id}}" hx-target="#dialog"><i
