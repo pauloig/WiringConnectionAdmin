@@ -17,6 +17,11 @@ from workOrder import models as catalogModel
 from datetime import datetime, timedelta
 from django.db import transaction
 import os
+from utils.email import send_email_with_attachment
+from django.core.files.base import ContentFile
+import tempfile
+from django.views.decorators.csrf import csrf_exempt
+
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -262,10 +267,20 @@ def crew(request, perID, dID, crewID, LocID):
         
         granTotal = dailyTotal + ovT
 
-        dailyDocs = DailyMobDocs.objects.filter(DailyID = dailyID).order_by('created_date')
+        #Adding the documents Maps
+        dailyDocs = DailyMobDocs.objects.filter(DailyID = dailyID, docType=1).order_by('created_date')
+
+        #Adding the documents Pictures
+        dailyDocsPic = DailyMobDocs.objects.filter(DailyID = dailyID, docType=2).order_by('created_date')
+
+        #Adding the documents Material Backup
+        dailyDocsMB = DailyMobDocs.objects.filter(DailyID = dailyID, docType=3).order_by('created_date')
+        
 
         context["dailyItem"] = dailyItem
         context["dailyDocs"] = dailyDocs
+        context["dailyDocsPic"] = dailyDocsPic
+        context["dailyDocsMB"] = dailyDocsMB
         context["TotalItem"] = dailyTotal
         context["ovTotal"] = ovT
         context["GranTotalItem"] = granTotal
@@ -520,12 +535,27 @@ def create_daily_emp(request, id, LocID):
 
     EmpLocation = catalogModel.Employee.objects.filter(is_active = True, is_supervisor = False).exclude(employeeID__in = empList)
 
-    form = DailyMobEmpForm(request.POST or None, initial={'DailyID': dailyID}, qs = EmpLocation)
+    #Get Schedule from the first Daily Employee
+    dailyEmp1st = DailyMobEmployee.objects.filter(DailyID = dailyID).exclude(start_time=None).order_by('id').first()
+
+    if dailyEmp1st:
+        startTime = dailyEmp1st.start_time
+        endTime = dailyEmp1st.end_time
+        lunch_startTime = dailyEmp1st.start_lunch_time
+        lunch_endTime = dailyEmp1st.end_lunch_time
+        
+        form = DailyMobEmpForm(request.POST or None, initial={'DailyID': dailyID, 'start_time': startTime, 'end_time': endTime,'start_lunch_time': lunch_startTime, 'end_lunch_time':lunch_endTime}, qs = EmpLocation)
+
+    else:
+        form = DailyMobEmpForm(request.POST or None, initial={'DailyID': dailyID}, qs = EmpLocation)
+
+
     if form.is_valid():                
         startTime = form.instance.start_time
         endTime = form.instance.end_time
         lunch_startTime = form.instance.start_lunch_time
         lunch_endTime = form.instance.end_lunch_time
+
 
         form.instance.total_hours, form.instance.regular_hours,form.instance.ot_hour, form.instance.double_time = calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime)
         form.instance.created_date = datetime.now()
@@ -981,7 +1011,55 @@ def delete_daily_item_sup(request, id, LocID):
 
 #************** DAILY DOCS ***********************
 class BulkUploadView(View):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, id, LocID, docType, *args, **kwargs):
+        form = DailyMobDocsForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            daily_id = form.cleaned_data['DailyID']
+            doc_type = form.cleaned_data['docType']            
+            files = self.request.FILES.getlist('files')
+            
+            created_docs = []
+            for file in files:
+                doc = DailyMobDocs(
+                    DailyID=daily_id,
+                    docType=docType,
+                    docName=os.path.splitext(file.name)[0],
+                    document=file,
+                    createdBy=self.request.user.username,
+                    Status = 1,
+                    created_date=datetime.now()
+                )
+                doc.save()
+                created_docs.append({                    
+                    'id': doc.id,
+                    'name': doc.docName,
+                    'url': doc.document.url,
+                    'docType': docType,
+                })
+            
+            return JsonResponse({'success': True, 'documents': created_docs})   
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    
+    def get(self, request, id, LocID, docType, *args, **kwargs):
+        emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+        context ={}
+
+        per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+        context["per"] = per
+
+        dailyID = DailyMob.objects.filter(id = id).first()
+
+        # Add this if you need a GET handler for the form page
+        form = DailyMobDocsForm(initial={
+            'DailyID': dailyID , # Auto-set DailyID from URL parameter if needed
+            'docType': docType
+        })
+
+        return render(request, 'mobile/create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'docType': docType,'selectedLocation': LocID})
+    
+class BulkUploadViewSup(View):
+    def post(self, request, id, LocID, docType, *args, **kwargs):
         form = DailyMobDocsForm(request.POST, request.FILES)
 
         if form.is_valid():
@@ -993,7 +1071,7 @@ class BulkUploadView(View):
             for file in files:
                 doc = DailyMobDocs(
                     DailyID=daily_id,
-                    docType=doc_type,
+                    docType=docType,
                     docName=os.path.splitext(file.name)[0],
                     document=file,
                     createdBy=self.request.user.username,
@@ -1001,16 +1079,17 @@ class BulkUploadView(View):
                     created_date=datetime.now()
                 )
                 doc.save()
-                created_docs.append({
+                created_docs.append({                    
                     'id': doc.id,
                     'name': doc.docName,
-                    'url': doc.document.url
+                    'url': doc.document.url,
+                    'docType': docType,
                 })
             
             return JsonResponse({'success': True, 'documents': created_docs})   
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
-    def get(self, request, id, LocID, *args, **kwargs):
+    def get(self, request, id, LocID, docType, *args, **kwargs):
         emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
         context ={}
 
@@ -1021,56 +1100,11 @@ class BulkUploadView(View):
 
         # Add this if you need a GET handler for the form page
         form = DailyMobDocsForm(initial={
-            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
+            'DailyID': dailyID, # Auto-set DailyID from URL parameter if needed
+            'docType': docType
         })
 
-        return render(request, 'mobile/create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
-    
-class BulkUploadView(View):
-    def post(self, request, *args, **kwargs):
-        form = DailyMobDocsForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            daily_id = form.cleaned_data['DailyID']
-            doc_type = form.cleaned_data['docType']
-            files = self.request.FILES.getlist('files')
-            
-            created_docs = []
-            for file in files:
-                doc = DailyMobDocs(
-                    DailyID=daily_id,
-                    docType=doc_type,
-                    docName=os.path.splitext(file.name)[0],
-                    document=file,
-                    createdBy=self.request.user.username,
-                    Status = 1,
-                    created_date=datetime.now()
-                )
-                doc.save()
-                created_docs.append({
-                    'id': doc.id,
-                    'name': doc.docName,
-                    'url': doc.document.url
-                })
-            
-            return JsonResponse({'success': True, 'documents': created_docs})   
-        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-    
-    def get(self, request, id, LocID, *args, **kwargs):
-        emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
-        context ={}
-
-        per = catalogModel.period.objects.filter(status__in=(1,2)).first()
-        context["per"] = per
-
-        dailyID = DailyMob.objects.filter(id = id).first()
-
-        # Add this if you need a GET handler for the form page
-        form = DailyMobDocsForm(initial={
-            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
-        })
-
-        return render(request, 'mobile/create_daily_doc_sup.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
+        return render(request, 'mobile/create_daily_doc_sup.html', {'form': form, 'dailyID': dailyID, 'emp': emp,  'docType': docType, 'selectedLocation': LocID})
     
 @login_required(login_url='/home/')
 def delete_daily_docs(request, id, LocID):
@@ -1553,6 +1587,8 @@ def reject_timesheet(request, id):
     context["ovTotal"] = ovT
     context["GranTotalItem"] = granTotal
 
+    errorMessage = ""
+
     if form.is_valid():
         
         form.instance.Status = 5
@@ -1560,9 +1596,52 @@ def reject_timesheet(request, id):
         form.instance.rejected_date = datetime.now()
         form.save()
 
+        day = obj.day.strftime("%m-%d-%Y")
 
-        # Return to Locations List
-        return HttpResponseRedirect('/mobile/supervisor_list/')
+        for emp in dailyEmp:
+            empD = catalogModel.Employee.objects.filter(employeeID = emp.EmployeeID.employeeID).first()
+
+            
+            if empD:
+                # Send email to notify rejection
+                message_body = f" <html> <p>Hello {empD.first_name} {empD.last_name}, <u></u><u></u></p>\n\n" \
+                    f"<p>I would like to bring to your attention that the <strong>daily form submitted on {day}</strong> has been found to contain\n" \
+                    f"errors and unfortunately, has been rejected. <u></u><u></u></p>\n\n" \
+                    f"<p>Please review the comments that the supervisor wrote before making any corrections.\n\n" \
+                    f"If you have any question, please contact your supervisor.<u></u><u></u></p>\n\n" \
+                    f"<p>HHRR. </p></html>\n\n" \
+
+                if empD.email != None:
+                    is_error, errorMessage = send_email_with_attachment(
+                        subject="Action Required: Daily Form Submission Rejected",
+                        message=message_body,
+                        html_message=message_body,
+                        recipient_list=[empD.email],)
+                    
+                    if is_error:
+                        errorMessage +=  "Error sending email to employee: " + empD.email + " - " + errorMessage
+                    
+                    
+            
+        if is_error:
+            context["errorMessage"] = errorMessage            
+        else:
+            # Return to Locations List
+            return HttpResponseRedirect('/mobile/supervisor_list/')
+        
+
+    #Adding the documents Maps
+    dailyDocs = DailyMobDocs.objects.filter(DailyID = obj, docType=1).order_by('created_date')
+
+    #Adding the documents Pictures
+    dailyDocsPic = DailyMobDocs.objects.filter(DailyID = obj, docType=2).order_by('created_date')
+
+    #Adding the documents Material Backup
+    dailyDocsMB = DailyMobDocs.objects.filter(DailyID = obj, docType=3).order_by('created_date')
+    
+    context["dailyDocs"] = dailyDocs
+    context["dailyDocsPic"] = dailyDocsPic
+    context["dailyDocsMB"] = dailyDocsMB
 
     context['form']= form     
     context["emp"] = emp
@@ -1593,7 +1672,18 @@ def approve_timesheet(request, id):
 
     dailyItem = DailyMobItem.objects.filter(DailyID = obj)
 
-    dailyDocs = DailyMobDocs.objects.filter(DailyID = obj)
+    #Adding the documents Maps
+    dailyDocs = DailyMobDocs.objects.filter(DailyID = obj).order_by('created_date')
+
+    #Adding the documents Maps
+    dailyDocsMap = DailyMobDocs.objects.filter(DailyID = obj, docType=1).order_by('created_date')
+
+    #Adding the documents Pictures
+    dailyDocsPic = DailyMobDocs.objects.filter(DailyID = obj, docType=2).order_by('created_date')
+
+    #Adding the documents Material Backup
+    dailyDocsMB = DailyMobDocs.objects.filter(DailyID = obj, docType=3).order_by('created_date')
+    
 
     dailyTotal = 0
     ovT = 0
@@ -1608,7 +1698,9 @@ def approve_timesheet(request, id):
 
     context["dailyItem"] = dailyItem
     context["daily"] = obj
-    context["dailyDocs"] = dailyDocs
+    context["dailyDocs"] = dailyDocsMap
+    context["dailyDocsPic"] = dailyDocsPic
+    context["dailyDocsMB"] = dailyDocsMB
 
     context["TotalItem"] = dailyTotal
     context["ovTotal"] = ovT
@@ -1720,6 +1812,36 @@ def approve_timesheet(request, id):
             form.instance.approved_date = datetime.now()
             form.save()
 
+            # Send email to notify approval
+            for emp in dailyEmp:
+                empD = catalogModel.Employee.objects.filter(employeeID = emp.EmployeeID.employeeID).first()
+                day = obj.day.strftime("%m-%d-%Y")
+
+                if empD:
+                    # Send email to notify rejection
+                    message_body = f" <html> <p>Hello {empD.first_name} {empD.last_name}, <u></u><u></u></p>\n\n" \
+                        f"<p>Attached you will find the daily report dated <strong> {day}</strong>. \n" \
+                        f"Please review it and let me know if you have any questions or issues.</p>\n\n" \
+                        f"<p>Best regards, <u></u><u></u></p>\n\n" \
+                        f"<p>HR Department </p></html>\n\n" \
+
+                    if empD.email != None:
+                        is_error, errorMessage = send_email_with_attachment(
+                            subject="Daily Report – " + obj.day.strftime("%m-%d-%Y"),
+                            message=message_body,
+                            html_message=message_body,
+                            recipient_list=[empD.email],
+                            attachment_paths=[
+                                obj.pdfDaily.path],)
+                    
+                    
+            
+            if is_error:
+                context["errorMessage"] = errorMessage            
+            else:
+                # Return to Locations List
+                return HttpResponseRedirect('/mobile/supervisor_list/')
+
         except Exception as e:
             raise
 
@@ -1735,6 +1857,40 @@ def approve_timesheet(request, id):
     context["dailyWO"] = obj
     context["id"] = id
     return render(request, "mobile/approve_timesheet.html", context)
+
+
+@login_required(login_url='/home/')
+@transaction.atomic
+@csrf_exempt 
+def save_pdf_daily(request, id):
+    
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    context ={}
+    context["per"] = per
+
+    obj = get_object_or_404(DailyMob, id = id)
+
+
+    if request.method == 'POST' and request.FILES.get('pdfDaily'):
+
+        pdf_file = request.FILES['pdfDaily']
+        pdf_file.name = f'daily_report_{obj.crew_by_user}.pdf'
+
+        obj.pdfDaily.save(
+            pdf_file.name,
+            ContentFile(pdf_file.read()),
+            save=True
+        )
+
+        return JsonResponse({'status': 'success'})
+  
+    context["emp"] = emp
+    context["dailyWO"] = obj
+    context["id"] = id
+
+    return JsonResponse({'status': 'error'}, status = 400)
+
 
 """
 ****************  REPORTS *********************************

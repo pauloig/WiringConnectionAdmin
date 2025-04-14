@@ -27,6 +27,7 @@ class EmployeesForm(forms.ModelForm):
 
     supervisor_name = forms.ModelChoiceField(queryset=Employee.objects.filter(is_supervisor=True, is_active=True),required=False)
     employeeID = forms.CharField(required=False)
+    signature = forms.ImageField(label="employee_signature", widget=forms.FileInput(), required=False)
 
     class Meta:
         model = Employee
@@ -42,6 +43,7 @@ class EmployeesForm(forms.ModelForm):
              "email",
              "Location",
              "user",
+             "signature",
              "is_active",
              "is_supervisor",
              "is_admin",

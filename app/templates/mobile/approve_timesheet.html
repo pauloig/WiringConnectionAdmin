@@ -6,41 +6,339 @@
 {% load widget_tweaks%}
 
 
-<script>
-  
-    function delete_daily_emp(id, selectedLocation){
-      event.preventDefault();
-      if (confirm(`Are you sure to remove this Employee?`))
-      {           
-          window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
-  
-          
-      }  
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+<style>
+   /* CSS will go here */
+   :root {
+      --thumbnail-width: 200px;
+      --thumbnail-height: 145px;
   }
-
-  function delete_daily_item(id, selectedLocation){
-    event.preventDefault();
-    if (confirm(`Are you sure to remove this Item?`))
-    {           
-        window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
-
-        
-    }  
+  
+  .documents-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+  }
+  
+  .document-thumbnail {
+      position: relative;
+      width: var(--thumbnail-width);
+      height: var(--thumbnail-height);
+      transition: transform 0.2s ease;
+      border-radius: 4px;
+      overflow: hidden;
+  }
+  
+  .document-thumbnail:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .thumbnail-content {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+  }
+  
+  .thumbnail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+  
+  .pdf-thumbnail {
+      width: 100%;
+      height: 100%;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+  }
+  
+  .pdf-thumbnail canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+  }
+  
+  .pdf-icon {
+      font-size: 2rem;
+      color: #e74c3c;
+      margin-bottom: 5px;
+  }
+  
+  .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+  }
+  
+  .document-thumbnail:hover .overlay {
+      opacity: 1;
+  }
+  
+  .overlay-icon {
+      color: white;
+      font-size: 1.5rem;
+  }
+  
+  .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+  }
+  
+  .delete-btn:hover {
+      opacity: 1;
+  }
+  
+  .delete-icon {
+      color: #e74c3c;
+      font-size: 14px;
+  }
+  
+  /* Modal Styles */
+  .preview-modal .modal-content {
+      background-color: rgba(0,0,0,0.9);
+  }
+  
+  .preview-modal .modal-body {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 40vh;
+  }
+  
+  .modal-img {
+      max-height: 60vh;
+      max-width: 80%;
+      object-fit: contain;
+  }
+  
+  .pdf-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+  }
+  
+  .pdf-controls button {
+      background: none;
+      border: 1px solid white;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  
+  .pdf-controls button:hover {
+      background: rgba(255,255,255,0.1);
+  }
+  
+  .page-counter {
+      color: white;
+      font-size: 1rem;
+      min-width: 80px;
+      text-align: center;
+  }
+  
+  .btn-close-white {
+      filter: invert(1);
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      z-index: 1;
+  }
+  
+  .preview-modal .modal-dialog {
+   max-width: 800px; /* Smaller fixed width */
 }
 
-function delete_daily_docs(id, selectedLocation){
-    event.preventDefault();
-    if (confirm(`Are you sure to remove this attachment?`))
-    {           
-        window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
-
-        
-    }  
+.preview-modal .modal-content {
+   max-height: 80vh;
+   overflow: auto;
 }
-</script>
+
+#pdfCanvas {
+   border: 1px solid #444;
+   max-height: 55vh !important; /* Reduced canvas height */
+   width: auto !important; /* Allow natural width */
+}
+
+.pdf-controls {
+   padding: 8px;
+   background: rgba(0,0,0,0.7);
+   border-radius: 4px;
+   margin-top: 10px !important;
+}
+
+.pdf-controls button {
+   padding: 3px 10px;
+   font-size: 0.85rem;
+   border-radius: 3px;
+}
+
+
+/*CSS to Daily Preview*/
+    /* Base Styles */
+ 
+    
+    .preview-button {
+        background-color: #4a6baf;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    /* Modal Styles 
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }*/
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 900px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close:hover {
+        color: black;
+    }
+    
+    /* Work Order Styles */
+    .work-order {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    
+    .work-order h1 {
+        color: #4a6baf;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .work-order table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+    }
+    
+    .work-order th, .work-order td {
+        border: 1px solid #ddd;
+        padding: 6px;
+        text-align: left;
+    }
+    
+    .work-order th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    
+    .work-order .section-title {
+        background-color: #4a6baf;
+        color: white;
+        padding: 8px;
+        margin: 15px 0 10px 0;
+        font-weight: bold;
+    }
+    
+    .work-order .signature-line {
+        margin-top: 30px;
+        border-top: 1px solid #000;
+        width: 200px;
+        display: inline-block;
+    }
+    
+    .work-order .comments-section {
+        margin-top: 20px;
+    }
+    
+    .work-order .total-row {
+        font-weight: bold;
+        background-color: #f2f2f2;
+    }
+    
+    .work-order .checkbox-item {
+        margin-right: 20px;
+        display: inline-block;
+    }
+
+
+  </style>
+
+
+  
+    
 
 <div class="container">
-    <form method='post' action="{{request.path}}"  id="rejectedTimseheet">
+    <form method='post' action="{{request.path}}"  id="approveTimesheet">
         {% csrf_token %}
 
         <div class="modal-header">
@@ -100,7 +398,9 @@ function delete_daily_docs(id, selectedLocation){
                         <label for="PID" class="form-label">PID - Work Order - PO</label>               
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{dailyWO.woID.prismID}} - {{dailyWO.woID.workOrderId}} - {{dailyWO.woID.PO}}" disabled>                                                                                             
-                               
+                              <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.id}}"> 
+                              <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.pdfDaily}}"> 
+
                             </div>                                      
                     </div>        
                 </div>                                  
@@ -158,19 +458,10 @@ function delete_daily_docs(id, selectedLocation){
                 </div> 
           
     
-                {% comment %} <div class="col-sm-4 pt-3">
-                    
-                    <a class="btn btn-success p-3 " hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</i></a>
-                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                        <button type="button" class="btn btn-primary p-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                            upload daily
-                        </button> 
-                        
-                    {%endif%}
-                    {% if item.pdfDaily != '' and item.pdfDaily != None %}                                        
-                        <a class="btn btn-primary p-3" href="/static/media/{{item.pdfDaily}}" target="_blank"> View Daily</a>  
-                    {% endif %}                                          
-                </div> {% endcomment %}
+                 <!-- <div class="col-sm-4 pt-3">                       
+                    Change from submit to button type 
+                    <button type="button" class="preview-button" id="previewButton">Preview Daily</button>
+                </div> -->
             </div>   
             <div class="row">
                 <div class="col-sm-12">
@@ -276,77 +567,693 @@ function delete_daily_docs(id, selectedLocation){
                         </div>
                     </div>                                          
                 </div>                                     
-            </div> 
-        </br>
-        <div clas="row">
-            <div class="col-sm-8 px-1">
-                <div class="card">
-                    <h6 class="card-header card-header-wc" >Docs List</h6>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-12 px-1">
-                                <table class="table table-sm table-bordered table-striped">
-                                    <thead>
-                                        <tr class="table-primary">                                                  
-                                            <td width="20%" class="p-1">Name</td>
-                                            <td width="20%" class="p-1">Type</td>
-                                            
-                                            <td width="8%" class="p-1">                                                
-                                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}"><i class="fa-solid fa-circle-plus"></i></a>
-                                            </td>
-
-                                            
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {%for doc in dailyDocs %}
-                                            <tr>                                                       
-                                                <td class="p-1">{{doc.docName}}</td>
-                                                <td class="p-1">{{doc.get_docType_display}}</td>
-                                                
-                                                <td class="p-1">                                                 
-                                                        <a href="/static/media/{{doc.document}}"><i class="fa-solid fa-magnifying-glass" style="color: green;"></i></a>
-                                                        <a href="#" onclick="delete_daily_docs({{doc.id}},{{selectedLocation}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>  
-                                                </td>                                                        
-                                            </tr>
-                                        {%endfor%}
-                                    </tbody>                                                
-                                </table>
-                            </div>
-                        </div>                                                
-                    </div>
-                </div>    
             </div>
-        </div>    
+        </br>
+            <div class="row">
+                <div class="col-sm-12 px-1 mx-1">
+                    <div class="card">
+                        <h6 class="card-header card-header-wc" >Docs List</h6>
+                        <div class="card-body">
+                            <table class="table table-sm">                                 
+                                <h3 class="mb-3">Maps
+                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/1" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+                           
+                                </h3>
+                                <div class="documents-container">
+                                    {%if not dailyDocs %}
+                                        <p>No Maps Included</p>                                                 
+                                    {%endif%}
+                                    {% for itemd in dailyDocs %}
+                                    <div class="document-thumbnail" 
+                                         data-url="{{ itemd.document.url }}"
+                                         data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                        
+                                        <div class="thumbnail-content">
+                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                                <div class="pdf-thumbnail">
+                                                    <i class="fas fa-file-pdf pdf-icon"></i>
+                                                    <small class="text-muted">PDF Document</small>
+                                                    <canvas class="d-none"></canvas>
+                                                </div>
+                                            {% else %}
+                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                            {% endif %}
+                                            
+                                            <div class="overlay">
+                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                <i class="fas fa-times delete-icon"></i>
+                                            </div>
+                                        
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                           
+
+                                <h3 class="mb-3 mt-3">Pictures                                           
+                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/2" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+
+                                </h3>
+                                    <div class="documents-container">
+                                        {%if not dailyDocsPic %}
+                                            <p>No Pictures Included</p>     
+                                        {%endif%}
+                                        {% for itemd in dailyDocsPic %}
+                                        <div class="document-thumbnail" 
+                                            data-url="{{ itemd.document.url }}"
+                                            data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                            
+                                            <div class="thumbnail-content">
+                                                {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                                    <div class="pdf-thumbnail">
+                                                        <i class="fas fa-file-pdf pdf-icon"></i>
+                                                        <small class="text-muted">PDF Document</small>
+                                                        <canvas class="d-none"></canvas>
+                                                    </div>
+                                                {% else %}
+                                                    <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                                {% endif %}
+                                                
+                                                <div class="overlay">
+                                                    <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                                <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                    <i class="fas fa-times delete-icon"></i>
+                                                </div>
+                                            
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <h3 class="mb-3 mt-3">Material Backup      
+                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/3" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+
+                                </h3>       
+                                    <div class="documents-container">
+                                        {%if not dailyDocsMB %}
+                                            <p>No Material Backup Included</p>     
+                                        {%endif%}
+                                        {% for itemd in dailyDocsMB %}
+                                        <div class="document-thumbnail" 
+                                            data-url="{{ itemd.document.url }}"
+                                            data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                            
+                                            <div class="thumbnail-content">
+                                                {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                                    <div class="pdf-thumbnail">
+                                                        <i class="fas fa-file-pdf pdf-icon"></i>
+                                                        <small class="text-muted">PDF Document</small>
+                                                        <canvas class="d-none"></canvas>
+                                                    </div>
+                                                {% else %}
+                                                    <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                                {% endif %}
+                                                
+                                                <div class="overlay">
+                                                    <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                                <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                    <i class="fas fa-times delete-icon"></i>
+                                                </div>
+                                          
+                                        </div>
+                                        {% endfor %}
+                                    </div>                            
+                                </div>                                   
+                                
+                            </table>                                               
+                        </div>
+                    </div>    
+                </div>
+          </div>
 
             <div class="row mt-4">
                 <div class="col-lg-12">
                     <span class="d-flex justify-content-center">
                         <h4>Are you sure to Approve and Move to Production this Daily?</h4>
+                        <h4 style="color:red;"> {{errorMessage}}</h4>
                     </span>
                 </div>
             </div>  
-            <div class="col-lg-12 pt-4">
-                <div class="">
-                    <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
-                    {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
-                    
-                    <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
+            <div class="row mt-4">
+                <div class="col-lg-12 pt-4">
+                    <div class="">
+                        <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
+                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                        
+                        <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
+                    </div>    
                 </div>    
-            </div>    
-        </div>  
-        
-
+            </div>  
         </div>
 
         
+
         
-        <div class="modal-footer">   
-            <input class="btn btn-primary" type="submit" value="Approve">       
+        
+        <div class="mx-3"> 
+            <button type="button" class="preview-button" id="previewButton">Preview Daily</button>  
+            <!--<input class="btn btn-primary" type="submit" value="Approve">      
+            <button type="button" class="preview-button" id="generatePdfButton">Generate PDF</button> -->
             <a href="/mobile/supervisor_list" type="button" class="btn btn-danger">Close</a>
             
         </div>
    
     </form>
+
+     <!-- Preview Modal -->
+     <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Changed from modal-xl to modal-lg -->
+            <div class="modal-content">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-3"> <!-- Added padding -->
+                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;"> <!-- Reduced height -->
+                    <div id="pdfPreview" class="w-100 d-none">
+                        <div class="d-flex justify-content-center">
+                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas> <!-- Constrained dimensions -->
+                        </div>
+                        <div class="pdf-controls mt-2"> <!-- Smaller controls -->
+                            <button id="prevPage" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-chevron-left"></i> Prev
+                            </button>
+                            <span class="page-counter mx-2">
+                                Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
+                            </span>
+                            <button id="nextPage" class="btn btn-sm btn-outline-light">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily MOdal -->
+    <div id="workOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="work-order" id="workOrderContent">
+                
+                
+                <div class="section-title d-flex justify-content-between">
+                    
+                    <span>PO #: {{dailyWO.woID.PO}}</span>
+                    <span>Spectrum - MDU</span>
+                    <span>PID#: {{dailyWO.woID.prismID}}</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Job Address</th>
+                        <th>Date</th>
+                        <th>Zone</th>
+                        <th>Supervisor's Name</th>
+                    </tr>
+                    <tr>
+                        <td>{{dailyWO.woID.JobAddress}}</td>
+                        <td>{{dailyWO.day}}</td>
+                        <td></td>
+                        <td>{% for sup in superV %}    
+                                {% if sup.employeeID|slugify == dailyWO.supervisor %}                                                 
+                                    {{sup.first_name}} {{sup.last_name}}                        
+                                {%endif%}            
+                            {% endfor %}     
+                            </td>
+                    </tr>
+                </table>
+                
+                <table>
+                    <tr>
+                        <th>Employee Crew Names</th>
+                        <th>%</th>
+                        <th>Start Time</th>
+                        <th>Start Lunch</th>
+                        <th>End Lunch</th>
+                        <th>End Time</th>
+                        <th>Regular Mrs</th>
+                        <th>O.T. Mrs</th>
+                        <th>O.V.</th>
+                        <th>Signature</th>
+                    </tr>
+                    {%for emp in dailyEmp %}
+                        <tr>                                                       
+                            <td>{{emp.EmployeeID}} </td>
+                            <td>{{emp.per_to_pay}}</td>
+                            <td>{{emp.start_time}}</td>
+                            <td>{{emp.start_lunch_time}}</td>
+                            <td>{{emp.end_lunch_time}}</td>
+                            <td>{{emp.end_time}}</td>
+                            <td>{{emp.regular_hours}}</td>
+                            <td>{{emp.ot_hour}}</td>
+                            {% if emp.is_own_vehicle %}  
+                                <td class="text-center">X</td>
+                            {% else %}
+                                <td></td>
+
+                            {% endif %}    
+                            {% if emp.EmployeeID.signature %}                            
+                                <td><img id="signature-preview" src="{{emp.EmployeeID.signature.url}}" alt="Employee signature1" width="100" height="70" class="pb-2"></td>
+                            {%else%}
+                                <td><img id="signature-preview" src="{% static 'images/no_signature.png'%}" alt="Employee Signature" width="100" height="70" class="pb-2"> </td>
+                            {%endif%}
+                        </tr>
+
+                    {% endfor%}      
+                    
+                    <tr>
+                        <td colspan="9">By signing, the employee attests that the information above is true and accurate record of hours worked and that all breaks and read periods, as required by law, have been taken. Further acknowledge that any recorded overtime hours have been authorized.</td>
+                        <td>
+                            {% for sup in superV %}    
+                                {% if sup.employeeID|slugify == dailyWO.supervisor %}                                                 
+                                    {% if sup.signature %}                            
+                                        <img id="signature-preview" src="{{sup.signature.url}}" alt="Employee signature1" width="100" height="70" class="pb-2">
+                                    {%else%}
+                                        <img id="signature-preview" src="{% static 'images/no_signature.png'%}" alt="Employee Signature" width="100" height="70" class="pb-2"> 
+                                    {%endif%}      
+                                                  
+                                {%endif%}            
+                            {% endfor %}
+
+                            
+                            
+                            Supervisor Signature
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+                <p></p>
+                
+                <hr>
+                
+                <div>Comments / Notes</div>
+                <p></p>
+
+                <table>
+                    <tr>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>                        
+                    </tr>
+                    
+                        {%for itemd in dailyItem %}
+                            <tr>
+                                <td>{{itemd.itemID.item.itemID}}</td>
+                                <td>{{itemd.itemID.item.description}}</td>
+                                <td >{{itemd.quantity}}</td>
+                                <td>${{itemd.emp_payout|floatformat:2|intcomma}}</td>
+                                <td>${{itemd.total|floatformat:2|intcomma}}</td>                                 
+                            </tr>
+                        {%endfor%}
+                    
+                    
+                    <tr class="total-row">
+                        <td colspan="4">Total:</td>
+                     
+                        <td>${{TotalItem|floatformat:2|intcomma}}</td>
+                        
+               
+                    </tr>
+                </table>
+                
+                <hr>
+                
+                <div class="section-title">Materials PO #</div>
+                <div>
+                    <div class="checkbox-item">
+                        <strong>Check List</strong>
+                        <div>Is this the only production for this project? <input type="checkbox"> Yes <input type="checkbox"> No</div>
+                        <div>Date: _______________</div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <div class="checkbox-item"><input type="checkbox"> Production</div>
+                        <div class="checkbox-item"><input type="checkbox"> As - Built</div>
+                        <div class="checkbox-item"><input type="checkbox"> Pictures</div>
+                        <div class="checkbox-item"><input type="checkbox"> Make Ready</div>
+                        <div class="checkbox-item"><input type="checkbox"> Work Order</div>
+                        <div class="checkbox-item"><input type="checkbox"> Material Receipt</div>
+                        <div class="checkbox-item"><input type="checkbox"> Maps</div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <strong>Status:</strong>
+                        <div class="checkbox-item"><input type="checkbox"> Ready to bill</div>
+                        <div class="checkbox-item"><input type="checkbox"> Work in progress</div>
+                        <div class="checkbox-item"><input type="checkbox"> Construction Done</div>
+                        <div class="checkbox-item"><input type="checkbox"> Needs Fiber Spiking</div>
+                        <div class="checkbox-item"><input type="checkbox"> Fiber Done</div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <strong>Supervisor Comments:</strong>
+                        <div style="height: 50px; border: 1px solid #ddd; margin-top: 5px;"></div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                        <div>
+                            <div>Supervisor's Signature</div>
+                            <div class="signature-line"></div>
+                        </div>
+                        <div>
+                            <div>Signature of P.C.</div>
+                            <div class="signature-line"></div>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+            </div>
+            <div class="modal-footer">
+                <!-- Your existing modal and button -->
+                <button type="button" class="preview-button" id="generatePdfButton2">Approve Daily</button>
+    
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        
+        // Variables for PDF handling
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        const scale = 1.5;
+        
+        // DOM elements
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const ctx = pdfCanvas.getContext('2d');
+        const currentPageSpan = document.getElementById('currentPage');
+        const totalPagesSpan = document.getElementById('totalPages');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        
+        // Generate PDF thumbnails
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfThumbnails = document.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+            
+            pdfThumbnails.forEach(thumbnail => {
+                const pdfUrl = thumbnail.getAttribute('data-url');
+                const canvas = thumbnail.querySelector('canvas');
+                
+                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                    return pdf.getPage(1);
+                }).then(function(page) {
+                    const viewport = page.getViewport({ scale: 0.5 });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    const renderContext = {
+                        canvasContext: canvas.getContext('2d'),
+                        viewport: viewport
+                    };
+                    
+                    page.render(renderContext).promise.then(function() {
+                        thumbnail.querySelector('.pdf-thumbnail').innerHTML = '';
+                        thumbnail.querySelector('.pdf-thumbnail').appendChild(canvas);
+                        canvas.classList.remove('d-none');
+                    });
+                }).catch(function(error) {
+                    console.error('PDF thumbnail error:', error);
+                });
+            });
+            
+            // Set up click handlers for thumbnails
+            document.querySelectorAll('.thumbnail-content').forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    const parent = this.closest('.document-thumbnail');
+                    const url = parent.getAttribute('data-url');
+                    const type = parent.getAttribute('data-type');
+                    
+                    if (type === 'pdf') {
+                        showPdfPreview(url);
+                    } else {
+                        showImagePreview(url);
+                    }
+                });
+            });
+        });
+        
+        // Show PDF in modal
+        function showPdfPreview(url) {
+            document.getElementById('imagePreview').classList.add('d-none');
+            document.getElementById('pdfPreview').classList.remove('d-none');
+            
+            pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                pdfDoc = pdf;
+                totalPagesSpan.textContent = pdf.numPages;
+                pageNum = 1;
+                
+                // Reset UI
+                currentPageSpan.textContent = pageNum;
+                prevPageBtn.disabled = true;
+                nextPageBtn.disabled = pdf.numPages <= 1;
+                
+                // Render initial page
+                renderPage(pageNum);
+            }).catch(function(error) {
+                console.error('PDF preview error:', error);
+                alert('Error loading PDF document');
+            });
+            
+            previewModal.show();
+        }
+        
+        // Render PDF page
+        function renderPage(num) {
+            pageRendering = true;
+            
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
+                
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                
+                page.render(renderContext).promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+            
+            currentPageSpan.textContent = num;
+            prevPageBtn.disabled = num <= 1;
+            nextPageBtn.disabled = num >= pdfDoc.numPages;
+        }
+        
+        // Queue PDF page rendering
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+        
+        // Previous page button
+        prevPageBtn.addEventListener('click', function() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        });
+        
+        // Next page button
+        nextPageBtn.addEventListener('click', function() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        });
+        
+        // Show image in modal
+        function showImagePreview(url) {
+            document.getElementById('pdfPreview').classList.add('d-none');
+            const imgPreview = document.getElementById('imagePreview');
+            imgPreview.src = url;
+            imgPreview.classList.remove('d-none');
+            previewModal.show();
+        }
+
+
+        function delete_daily_emp(id, selectedLocation){
+            event.preventDefault();
+            if (confirm(`Are you sure to remove this Employee?`))
+            {           
+                window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
+        
+                
+            }  
+        }
+      
+        function delete_daily_item(id, selectedLocation){
+          event.preventDefault();
+          if (confirm(`Are you sure to remove this Item?`))
+          {           
+              window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
+      
+              
+          }  
+      }
+      
+      function delete_daily_docs(id, selectedLocation){
+          event.preventDefault();
+          if (confirm(`Are you sure to remove this attachment?`))
+          {           
+              window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
+      
+              
+          }  
+      }
+
+      //Functions to Daily Preview
+      // Get the modal
+      const modal = document.getElementById("workOrderModal");
+        
+      // Get the button that opens the modal
+      const btn = document.getElementById("previewButton");
+      
+      // Get the <span> element that closes the modal
+      const span = document.getElementsByClassName("close")[0];
+      
+      // When the user clicks the button, open the modal 
+      btn.onclick = function() {
+          modal.style.display = "block";
+      }
+      
+      // When the user clicks on <span> (x), close the modal
+      span.onclick = function() {
+          modal.style.display = "none";
+      }
+      
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function(event) {
+          if (event.target == modal) {
+              modal.style.display = "none";
+          }
+      }
+      
+      // Optional: Print functionality
+      function printWorkOrder() {
+          const printContent = document.getElementById("workOrderContent").innerHTML;
+          const originalContent = document.body.innerHTML;
+          
+          document.body.innerHTML = printContent;
+          window.print();
+          document.body.innerHTML = originalContent;
+      }
+
+      document.getElementById('generatePdfButton2').addEventListener('click', async function() {
+        const modalContent = document.getElementById('workOrderContent');
+        
+        // Use html2canvas to capture the modal as an image
+        const canvas = await html2canvas(modalContent, {
+            scale: 2, // Higher quality
+            logging: false,
+            useCORS: true
+        });
+        
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Calculate dimensions to fit A4
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth - 20; // Margin
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        
+        // Get PDF as buffer
+        const pdfBuffer = pdf.output('arraybuffer');
+        
+        // Send to Django backend
+        await sendPdfToDjango(pdfBuffer);
+    });
+    
+    async function sendPdfToDjango(pdfBuffer) {
+        // Convert ArrayBuffer to Blob
+        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+        
+        // Create FormData
+        const formData = new FormData();
+        formData.append('pdfDaily', blob, 'daily_report.pdf');
+
+        const dailyID2 = document.getElementById('dailyID2').value;
+        
+        // Dynamically construct the URL with the docTypeValue
+        const updatePDFUrl = `/mobile/update_daily_pdf/0`.replace('0', dailyID2);
+        const approveUrl = `/mobile/approve_timesheet/0`.replace('0', dailyID2);
+
+        
+        console.log('updatePDFUrl: ',updatePDFUrl);
+        console.log('approveUrl: ',approveUrl);
+
+        try {
+            const response = await fetch(updatePDFUrl , {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            });
+            
+            if (response.ok) {
+                console.log('Response', response);
+                document.getElementById("approveTimesheet").submit();
+            } else {
+                console.log('Error:', response);
+                throw new Error('Failed to save PDF');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving PDF');
+        }
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+      </script>
 </div>
 {% endblock %}

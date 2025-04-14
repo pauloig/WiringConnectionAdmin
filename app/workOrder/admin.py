@@ -68,14 +68,22 @@ class itemAdmin(admin.ModelAdmin):
 
 
 class itemPriceAdmin(admin.ModelAdmin):
-
     search_fields = ('item','location')
     list_filter = ('item','location')
+
+class EmployeeAdmin(admin.ModelAdmin):
+    search_fields = ('employeeID','first_name','last_name')
+    list_display = ('employeeID','first_name','last_name')
+
+class DailyDocsAdmin(admin.ModelAdmin):
+    list_display = ('id','Status', 'created_date')
+    search_fields = ('id','Status', 'created_date')
+    list_filter = ('Status','created_date')
 
 
 admin.site.register(workOrderDuplicate)
 admin.site.register(Locations)
-admin.site.register(Employee)
+admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(item, itemAdmin)
 admin.site.register(itemPrice,itemPriceAdmin)
 admin.site.register(payroll)
@@ -85,6 +93,7 @@ admin.site.register(period)
 admin.site.register(Daily, DailyAdmin)
 admin.site.register(DailyEmployee, DailyEmployeeAdmin)
 admin.site.register(DailyItem, DailyItemAdmin)
+admin.site.register(DailyDocs, DailyDocsAdmin)
 admin.site.register(employeeRecap, employeeRecapAdmin)
 admin.site.register(woStatusLog)
 admin.site.register(vendor)

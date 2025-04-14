@@ -59,6 +59,7 @@ class Employee(models.Model):
     email = models.CharField(max_length=200, blank=True, null= True)
     Location = models.ForeignKey(Locations, on_delete=models.SET_NULL, null=True, blank=True)
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL, db_column='user')
+    signature = models.ImageField(null=True, blank=True, upload_to="employee/signature")
     is_active = models.BooleanField(default=True)
     is_supervisor = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)

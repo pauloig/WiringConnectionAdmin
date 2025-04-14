@@ -78,6 +78,7 @@ class DailyMobDocsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['DailyID'].disabled = False
+        self.fields['docType'].disabled = True
         
 
 

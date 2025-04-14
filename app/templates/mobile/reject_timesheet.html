@@ -5,6 +5,223 @@
 {% block container %}
 {% load widget_tweaks%}
 
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+
+
+<style>
+   /* CSS will go here */
+   :root {
+      --thumbnail-width: 200px;
+      --thumbnail-height: 145px;
+  }
+  
+  .documents-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+  }
+  
+  .document-thumbnail {
+      position: relative;
+      width: var(--thumbnail-width);
+      height: var(--thumbnail-height);
+      transition: transform 0.2s ease;
+      border-radius: 4px;
+      overflow: hidden;
+  }
+  
+  .document-thumbnail:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .thumbnail-content {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+  }
+  
+  .thumbnail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+  
+  .pdf-thumbnail {
+      width: 100%;
+      height: 100%;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+  }
+  
+  .pdf-thumbnail canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+  }
+  
+  .pdf-icon {
+      font-size: 2rem;
+      color: #e74c3c;
+      margin-bottom: 5px;
+  }
+  
+  .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+  }
+  
+  .document-thumbnail:hover .overlay {
+      opacity: 1;
+  }
+  
+  .overlay-icon {
+      color: white;
+      font-size: 1.5rem;
+  }
+  
+  .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+  }
+  
+  .delete-btn:hover {
+      opacity: 1;
+  }
+  
+  .delete-icon {
+      color: #e74c3c;
+      font-size: 14px;
+  }
+  
+  /* Modal Styles */
+  .preview-modal .modal-content {
+      background-color: rgba(0,0,0,0.9);
+  }
+  
+  .preview-modal .modal-body {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 40vh;
+  }
+  
+  .modal-img {
+      max-height: 60vh;
+      max-width: 80%;
+      object-fit: contain;
+  }
+  
+  .pdf-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+  }
+  
+  .pdf-controls button {
+      background: none;
+      border: 1px solid white;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  
+  .pdf-controls button:hover {
+      background: rgba(255,255,255,0.1);
+  }
+  
+  .page-counter {
+      color: white;
+      font-size: 1rem;
+      min-width: 80px;
+      text-align: center;
+  }
+  
+  .btn-close-white {
+      filter: invert(1);
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      z-index: 1;
+  }
+  
+  .preview-modal .modal-dialog {
+   max-width: 800px; /* Smaller fixed width */
+}
+
+.preview-modal .modal-content {
+   max-height: 80vh;
+   overflow: auto;
+}
+
+#pdfCanvas {
+   border: 1px solid #444;
+   max-height: 55vh !important; /* Reduced canvas height */
+   width: auto !important; /* Allow natural width */
+}
+
+.pdf-controls {
+   padding: 8px;
+   background: rgba(0,0,0,0.7);
+   border-radius: 4px;
+   margin-top: 10px !important;
+}
+
+.pdf-controls button {
+   padding: 3px 10px;
+   font-size: 0.85rem;
+   border-radius: 3px;
+}
+
+
+  </style>
+
+
 <div class="container">
     <form method='post' action="{{request.path}}" class="modal-content" id="rejectedTimseheet">
         {% csrf_token %}
@@ -230,6 +447,152 @@
                     </div>  
                     
                 </div>  
+            </div>                                     
+        
+    </br>
+        <div class="row">
+            <div class="col-sm-12 px-1 mx-1">
+                <div class="card">
+                    <h6 class="card-header card-header-wc" >Docs List</h6>
+                    <div class="card-body">
+                        <table class="table table-sm">                                 
+                            <h3 class="mb-3">Maps
+                                {% if item.supervisor != None and item.woID != None %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                        {%if item.Status == 1 or item.Status == 5%}        
+                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/1" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+                                        {%endif%}
+                                    {%endif%}
+                                {% endif %}
+                            </h3>
+                            <div class="documents-container">
+                                {%if not dailyDocs %}
+                                    <p>No Maps Included</p>                                                 
+                                {%endif%}
+                                {% for itemd in dailyDocs %}
+                                <div class="document-thumbnail" 
+                                     data-url="{{ itemd.document.url }}"
+                                     data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                    
+                                    <div class="thumbnail-content">
+                                        {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                            <div class="pdf-thumbnail">
+                                                <i class="fas fa-file-pdf pdf-icon"></i>
+                                                <small class="text-muted">PDF Document</small>
+                                                <canvas class="d-none"></canvas>
+                                            </div>
+                                        {% else %}
+                                            <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                        {% endif %}
+                                        
+                                        <div class="overlay">
+                                            <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if item.Status == 1 or item.Status == 5 %}
+                                        <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                            <i class="fas fa-times delete-icon"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                       
+
+                            <h3 class="mb-3 mt-3">Pictures
+                                {% if item.supervisor != None and item.woID != None %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                        {%if item.Status == 1 or item.Status == 5%}        
+                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/2" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+                                        {%endif%}
+                                    {%endif%}
+                                {% endif %}
+                            </h3>
+                                <div class="documents-container">
+                                    {%if not dailyDocsPic %}
+                                        <p>No Pictures Included</p>     
+                                    {%endif%}
+                                    {% for itemd in dailyDocsPic %}
+                                    <div class="document-thumbnail" 
+                                        data-url="{{ itemd.document.url }}"
+                                        data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                        
+                                        <div class="thumbnail-content">
+                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                                <div class="pdf-thumbnail">
+                                                    <i class="fas fa-file-pdf pdf-icon"></i>
+                                                    <small class="text-muted">PDF Document</small>
+                                                    <canvas class="d-none"></canvas>
+                                                </div>
+                                            {% else %}
+                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                            {% endif %}
+                                            
+                                            <div class="overlay">
+                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if item.Status == 1 or item.Status == 5 %}
+                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                <i class="fas fa-times delete-icon"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <h3 class="mb-3 mt-3">Material Backup
+                                {% if item.supervisor != None and item.woID != None %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                        {%if item.Status == 1 or item.Status == 5%}        
+                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/3" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+                                        {%endif%}
+                                    {%endif%}
+                                {% endif %}
+                            </h3>       
+                                <div class="documents-container">
+                                    {%if not dailyDocsMB %}
+                                        <p>No Material Backup Included</p>     
+                                    {%endif%}
+                                    {% for itemd in dailyDocsMB %}
+                                    <div class="document-thumbnail" 
+                                        data-url="{{ itemd.document.url }}"
+                                        data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
+                                        
+                                        <div class="thumbnail-content">
+                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
+                                                <div class="pdf-thumbnail">
+                                                    <i class="fas fa-file-pdf pdf-icon"></i>
+                                                    <small class="text-muted">PDF Document</small>
+                                                    <canvas class="d-none"></canvas>
+                                                </div>
+                                            {% else %}
+                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
+                                            {% endif %}
+                                            
+                                            <div class="overlay">
+                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if item.Status == 1 or item.Status == 5 %}
+                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                <i class="fas fa-times delete-icon"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>                            
+                            </div>                                   
+                            
+                        </table>                                               
+                    </div>
+                </div>    
+            </div>
+      </div>    
                 
                 
                 <div class="row mt-4">
@@ -238,6 +601,7 @@
                             {% if dailyWO.Status == 2 %}
                                 {%if not emp.is_superAdmin and not user.is_staff %}
                                     <h4>Are you sure to Reject this Daily? </h4>
+                                    <h4 style="color:red;"> {{errorMessage}}</h4>
                                 {% endif %}  
                             {% endif %}  
                         </span>
@@ -286,5 +650,217 @@
             <a type="button" class="btn btn-danger" href="/mobile/supervisor_list/">Cancel</a> 
         </div>
     </form>
+    <!-- Preview Modal -->
+    <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Changed from modal-xl to modal-lg -->
+            <div class="modal-content">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-3"> <!-- Added padding -->
+                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;"> <!-- Reduced height -->
+                    <div id="pdfPreview" class="w-100 d-none">
+                        <div class="d-flex justify-content-center">
+                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas> <!-- Constrained dimensions -->
+                        </div>
+                        <div class="pdf-controls mt-2"> <!-- Smaller controls -->
+                            <button id="prevPage" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-chevron-left"></i> Prev
+                            </button>
+                            <span class="page-counter mx-2">
+                                Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
+                            </span>
+                            <button id="nextPage" class="btn btn-sm btn-outline-light">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Initialize PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    
+    // Variables for PDF handling
+    let pdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    const scale = 1.5;
+    
+    // DOM elements
+    const pdfCanvas = document.getElementById('pdfCanvas');
+    const ctx = pdfCanvas.getContext('2d');
+    const currentPageSpan = document.getElementById('currentPage');
+    const totalPagesSpan = document.getElementById('totalPages');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    
+    // Generate PDF thumbnails
+    document.addEventListener('DOMContentLoaded', function() {
+        const pdfThumbnails = document.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+        
+        pdfThumbnails.forEach(thumbnail => {
+            const pdfUrl = thumbnail.getAttribute('data-url');
+            const canvas = thumbnail.querySelector('canvas');
+            
+            pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                return pdf.getPage(1);
+            }).then(function(page) {
+                const viewport = page.getViewport({ scale: 0.5 });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                const renderContext = {
+                    canvasContext: canvas.getContext('2d'),
+                    viewport: viewport
+                };
+                
+                page.render(renderContext).promise.then(function() {
+                    thumbnail.querySelector('.pdf-thumbnail').innerHTML = '';
+                    thumbnail.querySelector('.pdf-thumbnail').appendChild(canvas);
+                    canvas.classList.remove('d-none');
+                });
+            }).catch(function(error) {
+                console.error('PDF thumbnail error:', error);
+            });
+        });
+        
+        // Set up click handlers for thumbnails
+        document.querySelectorAll('.thumbnail-content').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const parent = this.closest('.document-thumbnail');
+                const url = parent.getAttribute('data-url');
+                const type = parent.getAttribute('data-type');
+                
+                if (type === 'pdf') {
+                    showPdfPreview(url);
+                } else {
+                    showImagePreview(url);
+                }
+            });
+        });
+    });
+    
+    // Show PDF in modal
+    function showPdfPreview(url) {
+        document.getElementById('imagePreview').classList.add('d-none');
+        document.getElementById('pdfPreview').classList.remove('d-none');
+        
+        pdfjsLib.getDocument(url).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            totalPagesSpan.textContent = pdf.numPages;
+            pageNum = 1;
+            
+            // Reset UI
+            currentPageSpan.textContent = pageNum;
+            prevPageBtn.disabled = true;
+            nextPageBtn.disabled = pdf.numPages <= 1;
+            
+            // Render initial page
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('PDF preview error:', error);
+            alert('Error loading PDF document');
+        });
+        
+        previewModal.show();
+    }
+    
+    // Render PDF page
+    function renderPage(num) {
+        pageRendering = true;
+        
+        pdfDoc.getPage(num).then(function(page) {
+            const viewport = page.getViewport({ scale: scale });
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            
+            page.render(renderContext).promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+        
+        currentPageSpan.textContent = num;
+        prevPageBtn.disabled = num <= 1;
+        nextPageBtn.disabled = num >= pdfDoc.numPages;
+    }
+    
+    // Queue PDF page rendering
+    function queueRenderPage(num) {
+        if (pageRendering) {
+            pageNumPending = num;
+        } else {
+            renderPage(num);
+        }
+    }
+    
+    // Previous page button
+    prevPageBtn.addEventListener('click', function() {
+        if (pageNum <= 1) return;
+        pageNum--;
+        queueRenderPage(pageNum);
+    });
+    
+    // Next page button
+    nextPageBtn.addEventListener('click', function() {
+        if (pageNum >= pdfDoc.numPages) return;
+        pageNum++;
+        queueRenderPage(pageNum);
+    });
+    
+    // Show image in modal
+    function showImagePreview(url) {
+        document.getElementById('pdfPreview').classList.add('d-none');
+        const imgPreview = document.getElementById('imagePreview');
+        imgPreview.src = url;
+        imgPreview.classList.remove('d-none');
+        previewModal.show();
+    }
+
+
+    function delete_daily_emp(id, selectedLocation){
+        event.preventDefault();
+        if (confirm(`Are you sure to remove this Employee?`))
+        {           
+            window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
+    
+            
+        }  
+    }
+  
+    function delete_daily_item(id, selectedLocation){
+      event.preventDefault();
+      if (confirm(`Are you sure to remove this Item?`))
+      {           
+          window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
+  
+          
+      }  
+  }
+  
+  function delete_daily_docs(id, selectedLocation){
+      event.preventDefault();
+      if (confirm(`Are you sure to remove this attachment?`))
+      {           
+          window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
+  
+          
+      }  
+  }
+  </script>
 </div>
 {% endblock %}

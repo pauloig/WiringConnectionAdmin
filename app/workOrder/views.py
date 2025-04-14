@@ -1287,7 +1287,7 @@ def create_employee(request):
     per = period.objects.filter(status__in=(1,2)).first()
     context["per"] = per
 
-    form = EmployeesForm(request.POST or None)
+    form = EmployeesForm(request.POST or None, request.FILES)
 
     if form.is_valid():
         empSeq = Sequence("emp", initial_value=1500) 
@@ -1313,7 +1313,7 @@ def update_employee(request, id):
 
     obj = get_object_or_404(Employee, employeeID = id)
  
-    form = EmployeesForm(request.POST or None, instance = obj)
+    form = EmployeesForm(request.POST or None, request.FILES or None, instance = obj)
  
     if form.is_valid():
         form.save()
@@ -4361,10 +4361,22 @@ def payroll(request, perID, dID, crewID, LocID):
         granTotal = dailyTotal + ovT
 
 
-        dailyDocs = DailyDocs.objects.filter(DailyID = dailyID).order_by('created_date')
+        #Adding the documents Maps
+        dailyDocs = DailyDocs.objects.filter(DailyID = dailyID, docType=1).order_by('created_date')
 
-        context["dailyItem"] = dailyItem
+        #Adding the documents Pictures
+        dailyDocsPic = DailyDocs.objects.filter(DailyID = dailyID, docType=2).order_by('created_date')
+
+        #Adding the documents Material Backup
+        dailyDocsMB = DailyDocs.objects.filter(DailyID = dailyID, docType=3).order_by('created_date')
+        
+
+  
         context["dailyDocs"] = dailyDocs
+        context["dailyDocsPic"] = dailyDocsPic
+        context["dailyDocsMB"] = dailyDocsMB
+
+        context["dailyItem"] = dailyItem        
         context["TotalItem"] = dailyTotal
         context["ovTotal"] = ovT
         context["GranTotalItem"] = granTotal
@@ -4842,20 +4854,19 @@ def delete_daily_item(request, id, LocID):
 #*********************** documents upload ***********************
 
 class BulkUploadView(View):
-    def post(self, request,id, LocID, *args, **kwargs):
+    def post(self, request, id, LocID, docType, *args, **kwargs):
         form = DailyDocsForm(request.POST, request.FILES)
 
         if form.is_valid():
             daily_id = form.cleaned_data['DailyID']
-            doc_type = form.cleaned_data['docType']
+            doc_type = form.cleaned_data['docType']            
             files = self.request.FILES.getlist('files')
-            
             
             created_docs = []
             for file in files:
                 doc = DailyDocs(
                     DailyID=daily_id,
-                    docType=doc_type,
+                    docType=docType,
                     docName=os.path.splitext(file.name)[0],
                     document=file,
                     createdBy=self.request.user.username,
@@ -4863,16 +4874,17 @@ class BulkUploadView(View):
                     created_date=datetime.now()
                 )
                 doc.save()
-                created_docs.append({
+                created_docs.append({                    
                     'id': doc.id,
                     'name': doc.docName,
-                    'url': doc.document.url
+                    'url': doc.document.url,
+                    'docType': docType,
                 })
             
-            return JsonResponse({'success': True, 'documents': created_docs})  
+            return JsonResponse({'success': True, 'documents': created_docs})   
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
-    def get(self, request, id, LocID, *args, **kwargs):
+    def get(self, request, id, LocID, docType, *args, **kwargs):
         emp = Employee.objects.filter(user__username__exact = request.user.username).first()
         context ={}
 
@@ -4883,10 +4895,11 @@ class BulkUploadView(View):
 
         # Add this if you need a GET handler for the form page
         form = DailyDocsForm(initial={
-            'DailyID': dailyID  # Auto-set DailyID from URL parameter if needed
+            'DailyID': dailyID , # Auto-set DailyID from URL parameter if needed
+            'docType': docType
         })
 
-        return render(request, 'create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'selectedLocation': LocID})
+        return render(request, 'create_daily_doc.html', {'form': form, 'dailyID': dailyID, 'emp': emp, 'docType': docType,'selectedLocation': LocID})
 
 @login_required(login_url='/home/')
 def delete_daily_docs(request, id, LocID):

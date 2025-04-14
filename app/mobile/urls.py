@@ -29,7 +29,7 @@ urlpatterns = [
      path('delete_daily_item/<id>/<LocID>',views.delete_daily_item),
 
      # ****** Daily Docs **********************
-     path('create_daily_docs/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload'),
+     path('create_daily_docs/<id>/<LocID>/<docType>', views.BulkUploadView.as_view(), name='bulk-upload'),
      path('delete_daily_docs/<id>/<LocID>',views.delete_daily_docs),
 
      # ****** Employee **********************
@@ -39,6 +39,8 @@ urlpatterns = [
      # ****** Supervisor **********************
      path('supervisor_list/',views.supervisor_list), 
      path('approve_timesheet/<id>',views.approve_timesheet),
+     path('update_daily_pdf/<id>',views.save_pdf_daily),
+     path('save-pdf/<id>', views.save_pdf_daily, name='save_pdf'),
      path('reject_timesheet/<id>',views.reject_timesheet),
 
      path('create_daily_emp_sup/<id>/<LocID>',views.create_daily_emp_sup),
@@ -49,7 +51,7 @@ urlpatterns = [
      path('create_daily_item_sup/<id>/<LocID>',views.create_daily_item_sup),
      path('update_daily_item_sup/<id>/<LocID>',views.update_daily_item_sup),
      
-     path('create_daily_docs_sup/<id>/<LocID>', views.BulkUploadView.as_view(), name='bulk-upload'),
+     path('create_daily_docs_sup/<id>/<LocID>/<docType>', views.BulkUploadViewSup.as_view(), name='bulk-upload-sup'),
      path('delete_daily_docs_sup/<id>/<LocID>',views.delete_daily_docs_sup),
 
 

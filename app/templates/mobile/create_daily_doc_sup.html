@@ -5,6 +5,20 @@
 {% block container %}
 {% load widget_tweaks%}
 
+<style>
+    .file-preview .card {
+        width: 100%;
+        transition: transform 0.2s;
+    }
+    .file-preview .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-footer small {
+        font-size: 0.7rem;
+    }
+    </style>
+
 <div class="container">
     <form method='post' action="{{request.path}}"  id="bulkUploadForm" enctype="multipart/form-data">
         {% csrf_token %}          
@@ -22,15 +36,20 @@
             
             <div class="mb-3">
                 <label for="id_docType" class="form-label">Document Type</label>
+                <input type="text" name="docType2" id="docType2"  class="form-control d-none" value="{{docType}}" disabled>
                 {{ form.docType }}
             </div>
             
             <div class="mb-3">
                 <label for="id_files" class="form-label">Files</label>
                 <input type="file" name="files" id="id_files" class="form-control" multiple 
-                    accept=".pdf,.docx,.xlsx, .jpeg, .jpg, .png">
+                    accept=".pdf,.docx,.xlsx, .jpeg, .jpg, .png" onchange="previewFiles()">
+
+                <!-- Preview container -->
+                <div id="filePreviews" class="d-flex flex-wrap gap-2 mt-3"></div>
                 
                 <div class="form-text">Select multiple files (PDF, Images)</div>
+
                 <button type="submit" class="btn btn-primary">Upload All</button>
             </div>
             
@@ -38,8 +57,8 @@
 
             <div class="d-flex justify-content-center pb-5 mb-5">           
                 
-                <a type="button" class="btn btn-danger" href="/mobile/approve_timesheet/{{dailyID.id}}">Close</a>  
-
+                 
+                <a type="button" class="btn btn-danger" href="/mobile/approve_timesheet/{{dailyID.id}}">Close</a>
             </div>
             
         </div>    
@@ -56,6 +75,77 @@
 </div>
 
 <script>
+
+    function previewFiles() {
+        const previewContainer = document.getElementById('filePreviews');
+        previewContainer.innerHTML = ''; // Clear previous previews
+        const files = document.getElementById('id_files').files;
+        
+        Array.from(files).forEach(file => {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'file-preview';
+            previewDiv.style.width = '120px';
+            previewDiv.innerHTML = `
+                <div class="card">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-1" 
+                            aria-label="Remove" onclick="removePreview(this)"></button>
+                    ${getPreviewContent(file)}
+                    <div class="card-footer p-2">
+                        <small class="d-block text-truncate">${file.name}</small>
+                        <small class="text-muted">${formatFileSize(file.size)}</small>
+                    </div>
+                </div>
+            `;
+            previewContainer.appendChild(previewDiv);
+        });
+
+        
+    }
+
+    function removePreview(button) {
+        const fileInput = document.getElementById('id_files');
+        const previewDiv = button.closest('.file-preview');
+        const fileName = previewDiv.querySelector('.text-truncate').textContent;
+        
+        // Remove from preview
+        previewDiv.remove();
+        
+        // Create new FileList without the removed file
+        const dt = new DataTransfer();
+        Array.from(fileInput.files).forEach(file => {
+            if (file.name !== fileName) dt.items.add(file);
+        });
+        fileInput.files = dt.files;
+    }
+
+    function getPreviewContent(file) {
+        if (file.type.startsWith('image/')) {
+            return `<img src="${URL.createObjectURL(file)}" class="card-img-top" style="height: 80px; object-fit: cover">`;
+        } else {
+            const icon = getFileIcon(file);
+            return `
+                <div class="card-body text-center py-3">
+                    <i class="bi ${icon} display-6 text-secondary"></i>
+                </div>
+            `;
+        }
+    }
+    
+    function getFileIcon(file) {
+        if (file.type.includes('pdf')) return 'bi-file-earmark-pdf';
+        if (file.type.includes('word')) return 'bi-file-earmark-word';
+        if (file.type.includes('excel') || file.type.includes('spreadsheet')) return 'bi-file-earmark-excel';
+        return 'bi-file-earmark';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
     document.getElementById('bulkUploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -63,13 +153,20 @@
         const progressDiv = document.getElementById('uploadProgress');
         const progressBar = document.getElementById('progressBar');
         const fileList = document.getElementById('fileList');
+        const docTypeValue = document.getElementById('docType2').value;
         
+        // Dynamically construct the URL with the docTypeValue
+        const uploadUrl = `{% url 'bulk-upload-sup' id=0 LocID=0 docType=3 %}`.replace('3', docTypeValue);
+        console.log('uploadUrl: ',uploadUrl);
+    
+        console.log('docType: ',docTypeValue);
+
         progressDiv.style.display = 'block';
         fileList.innerHTML = '';
 
         
         
-        fetch("{% url 'bulk-upload' id=0 LocID=0%}", {
+        fetch(uploadUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -86,19 +183,20 @@
                 data.documents.forEach(doc => {
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between';
-                    li.innerHTML = `
-                        
-                            <p>${doc.name} </p>
+                    li.innerHTML = `                           
+                            <p>${doc.name} </p>                            
                             <p><strong>loaded successfully</strong></p>
                         
                     `;
                     fileList.appendChild(li);
+                    console.log(doc);
                 });
             } else {
                 alert('Error: ' + JSON.stringify(data.errors));
             }
         })
         .catch(error => {
+           
             console.error('Error:', error);
             alert('Upload failed');
         });
