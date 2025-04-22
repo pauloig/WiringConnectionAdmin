@@ -6263,6 +6263,8 @@ def get_summary(request, perID):
                     else:
                         own_vehicle = 0
 
+                    own_vehicle = validate_decimals(itemEmp.own_vehicle_pay)
+
                     rtTotal += rt
                     otTotal += ot
                     dtTotal += dt               
@@ -6297,6 +6299,8 @@ def get_summary(request, perID):
                 ws2.write(row_num, 12,validate_print_decimals(ovTotal), font_style)
                 ws2.write(row_num, 13,validate_print_decimals(ocTotal), font_style)
                 ws2.write(row_num, 14,validate_print_decimals(payTotal), font_style)
+
+
                 ws2.write(2, 13,'Invoice', font_style)
                 ws2.write(2, 14,validate_decimals(InvoiceGeneral), font_style)
                 ws2.write(3, 13,'% pay', font_style)   
@@ -6304,6 +6308,8 @@ def get_summary(request, perID):
                     ws2.write(3, 14,validate_decimals((validate_decimals(payTotalTotal)*100) / validate_decimals(InvoiceGeneral)), font_style)
                 else:
                     ws2.write(3, 14,0, font_style)
+
+
     except Exception as e:       
         ws2.write(0,0,str(e), font_style) 
     

@@ -4,6 +4,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login as login_process
 from django.contrib.auth.decorators import login_required
 from workOrder import models as woModels
+from mobile import models as mobModels
 from workOrder import views as woViews
 from . import views
 
@@ -111,6 +112,8 @@ def home(request):
     OrderStatusValues = []
     status = []
     totalOrders = 0
+    dailies = 0
+
     if emp:
 
         if emp.is_mobile:
@@ -174,6 +177,12 @@ def home(request):
                         OrderStatus.append('Invoiced')
                         OrderStatusValues.append(s5)
                         status.append({'status':'Invoiced', 'total': s5})
+
+
+            #Getting Pending dailies to Approve
+            dailies = mobModels.DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3)).count()
+
+       
         
     context["emp"] = emp
     context["per"] = per
@@ -186,6 +195,7 @@ def home(request):
     context["title"] ='Home Page'
     context["status"] = status
     context["year"] = datetime.now().year
+    context["dailies"] = dailies
 
     return render(
         request,

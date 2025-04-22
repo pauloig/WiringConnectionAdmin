@@ -724,8 +724,8 @@
         
         <div class="mx-3"> 
             <button type="button" class="preview-button" id="previewButton">Preview Daily</button>  
-            <!--<input class="btn btn-primary" type="submit" value="Approve">      
-            <button type="button" class="preview-button" id="generatePdfButton">Generate PDF</button> -->
+            <!--<input class="btn btn-primary" type="submit" value="Approve">    -->  
+            <button type="button" class="preview-button" id="ApproveButton">Approve Daily</button> 
             <a href="/mobile/supervisor_list" type="button" class="btn btn-danger">Close</a>
             
         </div>
@@ -945,6 +945,44 @@
             </div>
         </div>
         
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        ">
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        ">
+            <div class="spinner" style="
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            "></div>
+            <p style="font-size: 18px; margin: 0;">Approving Daily and sending the PDF, please wait...</p>
+        </div>
+        </div>
+
+        <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        </style>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1169,6 +1207,10 @@
 
       document.getElementById('generatePdfButton2').addEventListener('click', async function() {
         const modalContent = document.getElementById('workOrderContent');
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        // Show loader
+        loadingOverlay.style.display = 'flex';
         
         // Use html2canvas to capture the modal as an image
         const canvas = await html2canvas(modalContent, {
@@ -1181,6 +1223,47 @@
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
         const imgData = canvas.toDataURL('image/png');
+        
+        // Calculate dimensions to fit A4
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth - 20; // Margin
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        
+        // Get PDF as buffer
+        const pdfBuffer = pdf.output('arraybuffer');
+        
+        // Send to Django backend
+        await sendPdfToDjango(pdfBuffer);
+    });
+
+    document.getElementById('ApproveButton').addEventListener('click', async function() {
+
+        modal.style.display = "block";
+
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        // Show loader
+        loadingOverlay.style.display = 'flex';
+
+
+        const modalContent = document.getElementById('workOrderContent');
+        
+        // Use html2canvas to capture the modal as an image
+        const canvas = await html2canvas(modalContent, {
+            scale: 2, // Higher quality
+            logging: false,
+            useCORS: true
+        });
+        
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+
+        //modal.style.display = "none";
         
         // Calculate dimensions to fit A4
         const pdfWidth = pdf.internal.pageSize.getWidth();
