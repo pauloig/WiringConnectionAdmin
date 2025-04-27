@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'sequences.apps.SequencesConfig',
     'django.contrib.humanize',
     'widget_tweaks',
+    'xhtml2pdf',
 ]
 
 MIDDLEWARE = [

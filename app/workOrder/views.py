@@ -982,7 +982,11 @@ def order(request, orderID):
     context["per"] = per
     obj = get_object_or_404(workOrder, id = orderID)
  
-    form = workOrderForm(request.POST or None, instance = obj)
+
+    if emp.is_superAdmin or request.user.is_staff:
+        form = workOrderFormAdmin(request.POST or None, instance = obj)
+    else:
+        form = workOrderForm(request.POST or None, instance = obj)
 
     status_update = (
     ('1', 'Not Started'),

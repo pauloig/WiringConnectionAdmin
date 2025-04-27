@@ -117,6 +117,66 @@ class workOrderForm(forms.ModelForm):
         self.fields['createdBy'].disabled = True 
 
 
+class workOrderFormAdmin(forms.ModelForm):
+    prismID = forms.CharField(label="Prism ID", max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}))
+    workOrderId = forms.CharField(label="Work Order ID", max_length=200, widget=forms.TextInput(attrs={'class':'form-control'})) 
+    PO = forms.CharField(label="Purchase Order", max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}))
+    POAmount= forms.CharField(label="Purchase Order Amount",max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    ConstType= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    ConstCoordinator= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'size':60}), required=False)
+    WorkOrderDate= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    EstCompletion= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    IssuedBy= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    JobName= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    JobAddress= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    SiteContactName= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    SitePhoneNumber= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    Comments= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    #Status= forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}))
+    CloseDate= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    UploadDate= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    UserName= forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+
+    WCSup = forms.ModelChoiceField(label="Supervisor",queryset=Employee.objects.filter(is_supervisor=True, is_active=True, user__isnull=False), widget=forms.Select(attrs={'class': 'form-control'}), required=False)
+    createdBy = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    created_date = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+
+    class Meta:
+        model = workOrder
+        fields = [
+            'prismID',
+            'workOrderId',
+            'PO',
+            'POAmount',
+            'ConstType',
+            'ConstCoordinator',
+            'WorkOrderDate',
+            'EstCompletion',
+            'IssuedBy',
+            'JobName',
+            'JobAddress',
+            'SiteContactName',
+            'SitePhoneNumber',
+            'Comments',
+            'Status',
+            'CloseDate',
+            'WCSup',
+            'UploadDate',
+            'UserName',
+            "Location",
+            "created_date",
+            "createdBy"
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['prismID'].disabled = True
+        self.fields['workOrderId'].disabled = True
+        self.fields['PO'].disabled = True       
+        self.fields['created_date'].disabled = False
+        self.fields['createdBy'].disabled = True 
+
+
 
 class ItemForm(forms.ModelForm):
     itemID = forms.CharField(max_length=10, widget=forms.TextInput(attrs={'class':'form-control'}))

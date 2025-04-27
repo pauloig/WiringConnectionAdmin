@@ -21,7 +21,9 @@ from utils.email import send_email_with_attachment
 from django.core.files.base import ContentFile
 import tempfile
 from django.views.decorators.csrf import csrf_exempt
-
+from io import BytesIO
+from xhtml2pdf import pisa
+import base64
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -1709,6 +1711,23 @@ def approve_timesheet(request, id):
     if form.is_valid():
         try:
 
+            #Get the pdf daily Html
+            htlmDaily = request.POST.get('htmlDaily')
+
+            #convert the html to pdf
+            is_success, errorMessage = html_to_pdf_save(htlmDaily, obj)
+
+            if not is_success:
+                context['form']= form     
+                context["emp"] = emp
+                context["dailyEmp"] = dailyEmp
+                context["dailyItem"] = dailyItem
+                context["superV"] = superV
+                context["dailyWO"] = obj
+                context["id"] = id
+                context["errorMessage"] = errorMessage 
+                return render(request, "mobile/approve_timesheet.html", context)
+
             crewNumber = catalogModel.Daily.objects.filter( Period = per, day = obj.day, Location = obj.Location).last()
             if crewNumber:
                 crewNo = crewNumber.crew
@@ -1830,7 +1849,7 @@ def approve_timesheet(request, id):
                             subject="Daily Report – " + obj.day.strftime("%m-%d-%Y"),
                             message=message_body,
                             html_message=message_body,
-                            recipient_list=[empD.email],
+                            recipient_list=[empD.email],                            
                             attachment_paths=[
                                 obj.pdfDaily.path],)
                     
@@ -2227,3 +2246,272 @@ def calculate_hours(startTime, endTime, lunch_startTime, lunch_endTime):
     total_hours = regular_hours + ot_hours + double_time
 
     return total_hours, regular_hours, ot_hours, double_time
+
+def html_to_pdf_save(html_content, daily_obj):
+    """
+    Convert HTML content to PDF and save it to Daily model's pdfDaily field
+    Args:
+        html_content (str): Plain text HTML content
+        daily_obj: Daily model instance to save the PDF to
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+
+        supervisor_name = ''
+        if daily_obj.supervisor:
+            supervisor = catalogModel.Employee.objects.filter(employeeID=daily_obj.supervisor).first()
+            if supervisor:
+                supervisor_name = f"{supervisor.first_name} {supervisor.last_name}"
+
+        supervisor_signature_html = ""
+        if daily_obj.supervisor:
+            supervisor = catalogModel.Employee.objects.filter(employeeID=daily_obj.supervisor).first()
+            if supervisor and hasattr(supervisor, 'signature') and supervisor.signature:
+                try:
+                    with open(supervisor.signature.path, 'rb') as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode()
+                        supervisor_signature_html = f'<img src="data:image/png;base64,{encoded_string}" style="max-height: 30px;">'
+                except Exception as e:
+                    supervisor_signature_html = '<span style="color: #666; font-style: italic;">Signature not available</span>'
+            else:
+                supervisor_signature_html = '<span style="color: #666; font-style: italic;">No signature on file</span>'
+
+
+                # Get related data
+        dailyEmp = DailyMobEmployee.objects.filter(DailyID=daily_obj)
+        dailyItem = DailyMobItem.objects.filter(DailyID=daily_obj)
+        
+        # Calculate totals
+        dailyTotal = sum(di.total for di in dailyItem)
+        ovT = (dailyTotal * daily_obj.own_vehicle / 100) if daily_obj.own_vehicle else 0
+        granTotal = dailyTotal + ovT
+
+        # Generate the complete HTML content
+        html_content = f"""
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <tr style="background-color: #4a6baf; color: white;">
+                <td style="padding: 2px; width: 40%;">PO #: {daily_obj.woID.PO if daily_obj.woID else ''}</td>
+                <td style="padding: 2px; width: 35%;">Spectrum - MDU</td>
+                <td style="padding: 2px; width: 25%; text-align: right;">PID#: {daily_obj.woID.prismID if daily_obj.woID else ''}</td>
+            </tr>
+        </table>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
+            <tr style="background-color: #f2f2f2;">
+                <td style="border: 0.5px solid #666; padding: 4px; width: 40%;">Job Address</td>
+                <td style="border: 0.5px solid #666; padding: 4px; width: 20%;">Date</td>
+                <td style="border: 0.5px solid #666; padding: 4px; width: 10%;">Zone</td>
+                <td style="border: 0.5px solid #666; padding: 4px; width: 30%;">Supervisor's Name</td>
+            </tr>
+            <tr>
+                <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.woID.JobAddress if daily_obj.woID else ''}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.day.strftime('%m/%d/%Y')}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">&nbsp;</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">
+                    {supervisor_name}
+                </td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
+            <tr style="background-color: #f2f2f2;">
+                <td style="border: 0.5px solid #666; padding: 4px;">Employee Crew Names</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">%</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Start Time</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Start Lunch</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">End Lunch</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">End Time</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Regular Hrs</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">O.T. Hrs</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">O.V.</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Signature</td>
+            </tr>
+        """
+
+        # Add employee rows
+        for emp in dailyEmp:
+            signature_html = ""
+            if hasattr(emp.EmployeeID, 'signature') and emp.EmployeeID.signature:
+                try:
+                    with open(emp.EmployeeID.signature.path, 'rb') as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode()
+                        signature_html = f'<img src="data:image/png;base64,{encoded_string}" style="max-height: 30px;">'
+                except Exception as e:
+                    signature_html = '<span style="color: #666; font-style: italic;">Signature not available</span>'
+            else:
+                signature_html = '<span style="color: #666; font-style: italic;">No signature on file</span>'
+
+            html_content += f"""
+            <tr>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.EmployeeID}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.per_to_pay}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.start_time or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.start_lunch_time or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.end_lunch_time or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.end_time or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.regular_hours or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{emp.ot_hour or '&nbsp;'}</td>
+                <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
+                    {'X' if emp.is_own_vehicle else '&nbsp;'}
+                </td>
+                <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">{signature_html}</td>
+            </tr>
+            """
+
+        # Add signature disclaimer
+        html_content += f"""
+            <tr>
+                <td colspan="9" style="border: 0.5px solid #666; padding: 4px; font-size: 10px;">
+                    By signing, the employee attests that the information above is true and accurate record of hours worked and that all breaks and read periods, as required by law, have been taken. Further acknowledge that any recorded overtime hours have been authorized.
+                </td>
+                <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
+                    {supervisor_signature_html}<br>
+                    Supervisor Signature
+                </td>
+            </tr>
+        </table>
+
+        <div style="margin: 10px 0; border-bottom: 0.5px solid #666;"></div>
+        
+        <div style="margin: 10px 0;">Comments / Notes</div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
+            <tr style="background-color: #f2f2f2;">
+                <td style="border: 0.5px solid #666; padding: 4px;">Code</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Description</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Qty</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Price</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">Total</td>
+            </tr>
+        """
+
+        # Add items
+        for item in dailyItem:
+            html_content += f"""
+            <tr>
+                <td style="border: 0.5px solid #666; padding: 4px;">{item.itemID.item.itemID}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{item.itemID.item.description}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{item.quantity}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">${item.emp_payout:.2f}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">${item.total:.2f}</td>
+            </tr>
+            """
+
+        # Add totals
+        html_content += f"""
+            <tr style="background-color: #f2f2f2;">
+                <td colspan="4" style="border: 0.5px solid #666; padding: 4px; text-align: right;"><strong>Total:</strong></td>
+                <td style="border: 0.5px solid #666; padding: 4px;"><strong>${dailyTotal:.2f}</strong></td>
+            </tr>
+        </table>
+
+        <div style="margin: 10px 0; border-bottom: 0.5px solid #666;"></div>
+
+        <div style="background-color: #4a6baf; color: white; padding: 8px; margin: 10px 0;">Materials PO #</div>
+        
+        <div style="margin: 10px 0;">
+            <strong>Check List</strong><br>
+            Is this the only production for this project? ☐ Yes ☐ No<br>
+            Date: _______________ <br><br>
+
+            ☐ Production &nbsp;&nbsp;&nbsp;
+            ☐ As - Built &nbsp;&nbsp;&nbsp;
+            ☐ Pictures &nbsp;&nbsp;&nbsp;
+            ☐ Make Ready &nbsp;&nbsp;&nbsp;
+            ☐ Work Order &nbsp;&nbsp;&nbsp;
+            ☐ Material Receipt &nbsp;&nbsp;&nbsp;
+            ☐ Maps<br><br>
+
+            <strong>Status:</strong><br>
+            ☐ Ready to bill &nbsp;&nbsp;&nbsp;
+            ☐ Work in progress &nbsp;&nbsp;&nbsp;
+            ☐ Construction Done &nbsp;&nbsp;&nbsp;
+            ☐ Needs Fiber Spiking &nbsp;&nbsp;&nbsp;
+            ☐ Fiber Done<br><br>
+
+            <strong>Supervisor Comments:</strong><br>
+            <div style="height: 50px; border: 0.5px solid #666; margin: 5px 0;"></div>
+
+            <table style="width: 100%; margin-top: 20px;">
+                <tr>
+                    <td style="width: 50%;">
+                        Supervisor's Signature<br>
+                        <div style="border-top: 0.5px solid #666; width: 200px; margin-top: 30px;"></div>
+                    </td>
+                    <td style="width: 50%;">
+                        Signature of P.C.<br>
+                        <div style="border-top: 0.5px solid #666; width: 200px; margin-top: 30px;"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        """
+
+        # Wrap the content with HTML structure and CSS
+        final_html = f"""
+        <!DOCTYPE HTML>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @page {{
+                    size: letter;
+                    margin: 0.15in;
+                }}
+                body {{
+                    font-family: Helvetica, Arial, sans-serif;
+                    font-size: 10px;
+                }}
+                table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 5px;
+                }}
+                th, td {{
+                    border: 0.5px solid #666;
+                    padding: 4px;
+                    text-align: left;
+                }}
+                img {{
+                    max-width: 100%;
+                    height: auto;
+                }}
+            </style>
+        </head>
+        <body>
+            {html_content}
+        </body>
+        </html>
+        """
+
+        
+
+        # Create a BytesIO buffer to receive PDF data
+        result = BytesIO()
+
+        # Convert HTML to PDF
+        pisa.CreatePDF(
+            src=html_content,  # the HTML to convert
+            dest=result,       # the BytesIO buffer
+            encoding='utf-8'
+        )
+
+        # Get the value of the BytesIO buffer
+        pdf = result.getvalue()
+        result.close()
+        # Create a unique filename for the PDF
+        pdf_filename = f'daily_report_{daily_obj.crew}_{daily_obj.day.strftime("%Y%m%d")}.pdf'
+
+        # Save PDF to model's pdfDaily field
+        daily_obj.pdfDaily.save(
+            pdf_filename,
+            ContentFile(pdf),
+            save=True
+        )
+
+        return True, ""
+
+    except Exception as e:
+        print(f"Error converting HTML to PDF: {str(e)}")
+        return False, f"Error converting HTML to PDF: {str(e)}"
