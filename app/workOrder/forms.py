@@ -139,7 +139,7 @@ class workOrderFormAdmin(forms.ModelForm):
 
     WCSup = forms.ModelChoiceField(label="Supervisor",queryset=Employee.objects.filter(is_supervisor=True, is_active=True, user__isnull=False), widget=forms.Select(attrs={'class': 'form-control'}), required=False)
     createdBy = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
-    created_date = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
+    created_date = forms.DateField(widget=forms.DateInput(format=('%Y-%m-%d'),attrs={'class': 'form-control','type': 'date'}))
 
     class Meta:
         model = workOrder
