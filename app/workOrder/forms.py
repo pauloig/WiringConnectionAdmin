@@ -180,8 +180,8 @@ class workOrderFormAdmin(forms.ModelForm):
 
 class ItemForm(forms.ModelForm):
     itemID = forms.CharField(max_length=10, widget=forms.TextInput(attrs={'class':'form-control'}))
-    name = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class':'form-control'}))
-    description = forms.CharField(max_length=150, widget=forms.Textarea(attrs={'class':'form-control'}))
+    name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control'}))
+    description = forms.CharField(max_length=250, widget=forms.Textarea(attrs={'class':'form-control'}))
     is_active= forms.BooleanField(required=False)
     createdBy = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
     created_date = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
