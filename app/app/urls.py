@@ -37,6 +37,7 @@ urlpatterns = [
     path('item_list/',views.item_list),
     path('create_item/',views.create_item),
     path('update_item/<id>',views.update_item),
+    path('delete_item/<id>',views.delete_item),
     path('item_price/<id>',views.item_price),
     path('create_item_price/<id>',views.create_item_price),
     path('update_item_price/<id>',views.update_item_price),

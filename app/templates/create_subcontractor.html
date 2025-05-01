@@ -35,6 +35,36 @@
                                 }
                             }
 
+                            // Add this to run when page loads
+                            document.addEventListener('DOMContentLoaded', function() {
+                                var pay70Percent = document.getElementById("pay70Percent");
+                                var payPercent = document.getElementById("id_payPercent"); // Get the payPercent input
+                                
+                                if (pay70Percent) {
+                                    muestraPayPercent(pay70Percent); // Initialize visibility based on initial checkbox state
+                                }
+
+                                // Add this to run when the checkbox state changes // Add validation for payPercent
+                                if (payPercent) {
+                                    payPercent.addEventListener('input', function() {
+                                        let value = parseInt(this.value);
+                                        if (isNaN(value)) {
+                                            this.setCustomValidity('Please enter a number');
+                                        } else if (value < 1 || value > 99) {
+                                            this.setCustomValidity('Value must be between 1 and 99');
+                                        } else {
+                                            this.setCustomValidity('');
+                                        }
+                                        this.reportValidity();
+                                    });
+
+                                    // Add type and min/max attributes to the input
+                                    payPercent.setAttribute('type', 'number');
+                                    payPercent.setAttribute('min', '1');
+                                    payPercent.setAttribute('max', '99');
+                                }
+                            });
+
                         </script>
 
                         

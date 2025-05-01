@@ -46,6 +46,7 @@ from mobile import models as MobileModel
 from django.views.generic import View
 from django.views.generic import CreateView
 from django.http import JsonResponse
+from django.db import transaction
 
 
 @login_required(login_url='/home/')
@@ -1477,14 +1478,73 @@ def update_item(request, id):
     obj = get_object_or_404(item, itemID = id)
  
     form = ItemForm(request.POST or None, instance = obj)
- 
+
+    is_used = False
+    included_in = ""
+
+    #validate if the item is used in any work order
+    item_price = itemPrice.objects.filter(item = id)
+
+    for ip in item_price:
+
+        #validate if item_price is used in any authorizedBilling
+        authorized_billing = authorizedBilling.objects.filter(itemID = ip)
+        if authorized_billing:
+            is_used = True
+            included_in = "Authorized Billing"
+        #validate if item_price is used in any DailyItem
+        daily_item = DailyItem.objects.filter(itemID = ip)
+        if daily_item:
+            is_used = True
+            included_in = "Daily Items"
+          #validate if item_price is used in any externalProdItem   
+        external_prod_item = externalProdItem.objects.filter(itemID = ip)
+        if external_prod_item:
+            is_used = True
+            included_in = "External Production Items"
+        #validate if item_price is used in any DailyMobItem
+        daily_mob_item = MobileModel.DailyMobItem.objects.filter(itemID = ip)
+        if daily_mob_item:
+            is_used = True
+            included_in = "Daily Mobile Items"
+
     if form.is_valid():
-        form.save()
+        form.save() 
         return HttpResponseRedirect("/item_list/")
 
     context["form"] = form
     context["emp"] = emp
+    context["is_used"] = is_used
+    context["included_in"] = included_in   
+    
     return render(request, "update_item.html", context)
+
+@login_required(login_url='/home/')
+@transaction.atomic
+def delete_item(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    try:
+        obj = get_object_or_404(item, itemID = id)
+
+        item_price = itemPrice.objects.filter(item = obj)
+        
+        for ip in item_price:
+            #validate if the item is used in any work order
+            item_price = itemPrice.objects.filter(id = ip.id)
+
+            item_price.delete()
+        
+
+        obj.delete()
+
+        return HttpResponseRedirect("/item_list/")
+    except Exception as e:
+        return render(request, "update_item.html", context)
+    
 
 @login_required(login_url='/home/')
 def item_price(request, id):
