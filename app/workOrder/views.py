@@ -47,7 +47,7 @@ from django.views.generic import View
 from django.views.generic import CreateView
 from django.http import JsonResponse
 from django.db import transaction
-
+from workOrder import models as catalogModel
 
 @login_required(login_url='/home/')
 def simple_upload(request):
@@ -1001,6 +1001,78 @@ def order(request, orderID):
     if obj.Status != '5':
         form.fields['Status'].choices = status_update
 
+    is_used = False
+    included_in = ""   
+
+
+    #validate if WO is used in any Payroll   
+    PayObj = catalogModel.payroll.objects.filter(woId = obj)
+    if PayObj:
+        is_used = True
+        included_in = "Payroll"
+
+    #validate if WO is used in any Authorized Billing   
+    authorized_billing = authorizedBilling.objects.filter(woID = obj)
+    if authorized_billing:
+        is_used = True
+        included_in = "Authorized Billing"
+
+    #validate if WO is used in any Daily   
+    daily = Daily.objects.filter(woID = obj)
+    if daily:
+        is_used = True
+        included_in = "Daily"
+
+    #validate if WO is used in any Status Log   
+    """status_log = woStatusLog.objects.filter(woID = obj)
+    if status_log:
+        is_used = True
+        included_in = "Status Log"""
+
+    #validate if WO is used in any Comment Log   
+    comment_log = woCommentLog.objects.filter(woID = obj)
+    if comment_log:
+        is_used = True
+        included_in = "Comment Log"
+
+    #validate if WO is used in any internalPO   
+    internal_PO = internalPO.objects.filter(woID = obj)
+    if internal_PO:
+        is_used = True
+        included_in = "Internal PO"
+
+    
+    #validate if WO is used in any External Production   
+    external_production = externalProduction.objects.filter(woID = obj)
+    if external_production:
+        is_used = True
+        included_in = "External Production"    
+
+    #validate if WO is used in any woEstimate   
+    wo_Estimate = woEstimate.objects.filter(woID = obj)
+    if wo_Estimate:
+        is_used = True
+        included_in = "Estimate"    
+
+    #validate if WO is used in any woInvoice   
+    wo_Invoice = woInvoice.objects.filter(woID = obj)
+    if wo_Invoice:
+        is_used = True
+        included_in = "Invoice"    
+
+    #validate if WO is used in any woAdjustment    
+    wo_Adjustment = woAdjustment.objects.filter(woID = obj)
+    if wo_Adjustment:
+        is_used = True
+        included_in = "Adjustment"    
+
+    #validate if WO is used in any DailyMobile     
+    daily_Mobile = MobileModel.DailyMob.objects.filter(woID = obj)
+    if daily_Mobile:
+        is_used = True
+        included_in = "Daily Mobile"    
+
+
 
     if form.is_valid(): 
         anterior = workOrder.objects.filter(id = orderID).first()    
@@ -1020,7 +1092,32 @@ def order(request, orderID):
  
     context["form"] = form
     context["emp"] = emp
+    context["is_used"] = is_used
+    context["included_in"] = included_in
     return render(request, "order.html", context)
+
+@login_required(login_url='/home/')
+@transaction.atomic
+def delete_order(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    try:        
+        obj = get_object_or_404(workOrder, id = id)
+
+        status_log = woStatusLog.objects.filter(woID = obj)
+        status_log.delete()
+
+        obj.delete()
+        
+        return HttpResponseRedirect('/order_list/')
+    except Exception as e:
+        
+        context["message"] = "Somenthing went Wrong! " + str(e)
+        return render(request, "order.html", context)
+    
 
 @login_required(login_url='/home/')
 def order_supervisor(request, orderID):

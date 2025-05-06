@@ -18,6 +18,7 @@ urlpatterns = [
     path('order_list_sup/',views.order_list_sup),
     path('create_order/',views.create_order),
     path('order/<str:orderID>',views.order),
+    path('delete_order/<str:id>',views.delete_order),
     path('order_supervisor/<str:orderID>',views.order_supervisor),
     path('truncateData/',views.truncateData),
     path('updateDupOrder/<str:pID>/<str:dupID>',views.updateDupOrder),
