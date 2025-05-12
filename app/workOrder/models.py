@@ -109,6 +109,7 @@ class workOrder(models.Model):
     linkedOrder = models.CharField(max_length=600, null=True, blank=True)
     pre_invoice = models.CharField(max_length=200, null=True, blank=True)
     invoice = models.CharField(max_length=200, null=True, blank=True)
+    invoiceFile = models.FileField(null=True, upload_to="InvoiceWO")
     created_date = models.DateTimeField(blank=True, null=True)
     createdBy = models.CharField(max_length=60, blank=True, null=True)
     

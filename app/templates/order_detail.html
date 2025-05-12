@@ -4,6 +4,15 @@
 {% block container %}
 
 <div class="container">
+    <!-- Message display section -->
+    {% if messages %}
+        <div class="alert alert-info" role="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
 
@@ -74,7 +83,8 @@
                                     <input type="text" name="location" id="location" class="form-control" value="{{order.Comments}}" disabled>                                                                       
                                 </div>
                             </div>                           
-                        </div>             
+                        </div>          
+                         
                         <div class="row">
                             <div class="col-sm-12">
                                 <div class="mb-3">
@@ -83,16 +93,30 @@
                             </div>                           
                         </div>                                                                                             
                         <div class="row">
-                            <div class="col-sm-7">
+                            
+                            <div class="col-sm-12">
+                                <div class="d-flex justify-content-end">     
+                                    <button hx-get="/wo_comment_log/{{order.id}}/{{isSupervisor}}" class="btn btn-success py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="View Comments">
+                                        <i class="fa-solid fa-comment"></i>
+                                    </button>
+                                    <button hx-get="/get_wo_comment_log/{{order.id}}" class="btn btn-primary py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Comment">
+                                        <i class="fa-solid fa-comment-medical"></i>
+                                    </button>  
+                                    <button type="button" class="btn btn-warning py-2 mx-1" data-bs-toggle="modal" data-bs-target="#uploadInvoiceModal" data-bs-toggle="tooltip" data-bs-placement="top" title="Upload Invoice">
+                                        <i class="fa-solid fa-file-upload"></i>
+                                    </button>  
+                                    {% if order.invoiceFile %}
+                                        <button type="button" class="btn btn-info py-2 mx-1" data-bs-toggle="modal" data-bs-target="#viewInvoiceModal" data-bs-toggle="tooltip" data-bs-placement="top" title="View Invoice">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                    
+                                        <a href="/order_list/" class="btn btn-danger ml-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Go Back">
+                                            <i class="fa-solid fa-right-from-bracket"></i>
+                                        </a>
+                                    
+                                </div>
                                 
-                            </div>
-                            <div class="col-sm-4">
-                                
-                                <button hx-get="/wo_comment_log/{{order.id}}/{{isSupervisor}}" class="btn btn-success py-2" hx-target="#dialog" > Add Comment Log</button>
-                                <button hx-get="/get_wo_comment_log/{{order.id}}" class="btn btn-primary py-2" hx-target="#dialog" > Comment Log</button>
-                            </div>
-                            <div class="col-sm-1">
-                                <a href="/order_list/" type="button" class="btn btn-danger">Close</a>
                             </div>
                         </div>
                                 
@@ -155,4 +179,49 @@
         </div>
     </form>
 </div>
+
+<!-- Modal for uploading invoice -->
+<div class="modal fade" id="uploadInvoiceModal" data-bs-backdrop="static" data-bs-keyboard="false"  tabindex="-1" aria-labelledby="uploadInvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadInvoiceModalLabel">Upload Invoice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'upload_invoice' order.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="invoiceFile" class="form-label">Select PDF File</label>
+                        <input type="file" class="form-control" id="invoiceFile" name="invoice_file" accept="application/pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing invoice -->
+<div class="modal fade" id="viewInvoiceModal" tabindex="-1" aria-labelledby="viewInvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewInvoiceModalLabel">View Invoice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if order.invoiceFile %}
+                    <!-- Correctly reference the invoiceFile field -->
+                    <iframe src="{{ order.invoiceFile.url }}" width="100%" height="500px" frameborder="0"></iframe>
+                {% else %}
+                    <p>No invoice uploaded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
 {% endblock %}

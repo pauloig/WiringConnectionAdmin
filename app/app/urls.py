@@ -12,14 +12,18 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('upload/',views.simple_upload),
     path('upload_payroll/',views.upload_payroll),
+    ## URL's for Work Order
+    path('upload_invoice/<int:order_id>/', views.upload_invoice, name='upload_invoice'),
     path('order_list/',views.listOrders),
-    path('order_detail/<id>/<isSupervisor>',views.order_detail ),
+    path('order_detail/<id>/<isSupervisor>',views.order_detail, name='order_detail'), 
     path('order_list_location/<str:userID>',views.order_list_location),
     path('order_list_sup/',views.order_list_sup),
     path('create_order/',views.create_order),
     path('order/<str:orderID>',views.order),
     path('delete_order/<str:id>',views.delete_order),
     path('order_supervisor/<str:orderID>',views.order_supervisor),
+
+
     path('truncateData/',views.truncateData),
     path('updateDupOrder/<str:pID>/<str:dupID>',views.updateDupOrder),
     path('insertDupOrder/<str:dupID>',views.insertDupOrder),
@@ -177,7 +181,4 @@ urlpatterns = [
     ]
 
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT,
-    )
+    urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT, )

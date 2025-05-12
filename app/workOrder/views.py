@@ -8806,6 +8806,26 @@ def order_detail(request, id,isSupervisor):
     return render(request, "order_detail.html", context)
 
 @login_required(login_url='/home/')
+def upload_invoice(request, order_id):
+    if request.method == 'POST':
+        form = WorkOrderFileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            work_order = workOrder.objects.filter(id=order_id).first()            
+            work_order.invoiceFile = form.cleaned_data['invoice_file']
+            work_order.save()
+            
+            messages.success(request, 'Invoice uploaded successfully.')
+            return redirect('order_detail', id=order_id, isSupervisor=False)
+        else:
+            messages.error(request, 'Failed to upload the invoice. Please try again.')
+    else:
+        form = WorkOrderFileUploadForm()
+    return render(request, 'upload_invoice.html', {'form': form})
+
+
+### Employees Views
+
+@login_required(login_url='/home/')
 def employee_location_list(request, empID):
     
     context = {} 

@@ -177,6 +177,10 @@ class workOrderFormAdmin(forms.ModelForm):
         self.fields['createdBy'].disabled = True 
 
 
+class WorkOrderFileUploadForm(forms.Form):
+    invoice_file = forms.FileField(label='Select PDF File', required=True)
+
+
 
 class ItemForm(forms.ModelForm):
     itemID = forms.CharField(max_length=10, widget=forms.TextInput(attrs={'class':'form-control'}))
