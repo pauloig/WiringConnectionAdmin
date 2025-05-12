@@ -5588,7 +5588,7 @@ def send_recap(request, perID):
                     message += '\n \n best regards,'
                     emailTo = item.EmployeeID.email
                     if emailTo != None:
-                        email =  EmailMessage(subject,message, 'recaps@wiringconnection.com' ,[emailTo])
+                        email =  EmailMessage(subject,message, 'hrdepartment@wiringconnection.com' ,[emailTo])
                         email.attach_file(item.recap.path)                    
                         email.send()
 
@@ -5643,7 +5643,7 @@ def send_recap_emp(request, perID, empID):
                 emailTo = item.EmployeeID.email              
                 
                 if emailTo != None:
-                    email = EmailMessage(subject,message, 'recaps@wiringconnection.com' ,[emailTo])
+                    email = EmailMessage(subject,message, 'hrdepartment@wiringconnection.com' ,[emailTo])
                     email.attach_file(item.recap.path)                
                     email.send()
 
