@@ -9,8 +9,9 @@ class  workOrderAdmin(admin.ModelAdmin):
 
 
 class  authorizedBillingAdmin(admin.ModelAdmin):
-    list_display = ('id','woID','itemID')
-    search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO')
+    list_display = ('id','woID','itemID', 'estimate','invoice', 'quantity','total')
+    search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO', 'estimate')
+   
 
 class  internalPOAdmin(admin.ModelAdmin):
     list_display = ('id','poNumber')
