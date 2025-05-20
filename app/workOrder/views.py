@@ -439,6 +439,7 @@ def listOrders(request):
 
     """Adding  Order List with Problems"""
     woProblemList = []
+    woPList = []
     if emp:
         if emp.is_superAdmin and request.user.username == "pismalej":
             ab = authorizedBilling.objects.filter(Status=1)       
