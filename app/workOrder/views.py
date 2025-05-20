@@ -437,6 +437,30 @@ def listOrders(request):
     logInAuditLog(request, opType, opDetail)
 
 
+    """Adding  Order List with Problems"""
+
+    ab = authorizedBilling.objects.filter(Status=1)
+    woProblemList = []
+
+    for i in ab:
+        if i.quantity != 0:
+            iPriceA =  validate_decimals(i.total) / validate_decimals(i.quantity) 
+        else:
+            iPriceA = 0
+
+        woA = workOrder.objects.filter(id = i.woID.id).first()  
+        itemD = DailyItem.objects.filter(DailyID__woID = woA, itemID = i.itemID).first()
+
+        
+        if itemD:
+            if  validate_decimals(iPriceA) != validate_decimals(itemD.price):
+                woProblemList.append(i.woID.id)
+            
+
+    woPList = workOrder.objects.filter(id__in = woProblemList, Status = 2)
+        
+
+
     """try:"""
     context={}
 
@@ -530,7 +554,8 @@ def listOrders(request):
 
                     orders = workOrder.objects.filter(id__in = woInvLits ).exclude(linkedOrder__isnull = False, uploaded = False) 
                 else:  
-                    orders = workOrder.objects.filter(id = -1)   
+                    orders = workOrder.objects.filter(id = -1)  
+                    orders = woPList 
             else:
                 if estatus != "0" and loc != "0":
                     orders = workOrder.objects.filter(Status = estatus, Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )     

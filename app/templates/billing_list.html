@@ -392,8 +392,21 @@
                                     <tbody>
                                         {%for itemd in itemResume %}
                                         <tr>
-                                            <td class="p-1">{{itemd.item}}</td>
-                                            <td class="p-1">{{itemd.name}}</td>
+
+                                            {%if itemd.quantityA == itemd.quantity   %}
+                                                {% if  itemd.amount|floatformat:2 == itemd.amountA|floatformat:2 %}
+                                                    <td class="p-1">{{itemd.item}}</td>
+                                                    <td class="p-1">{{itemd.name}}</td>
+                                                {% else %}
+                                                    <td class="p-1 bg-danger">{{itemd.item}}</td>
+                                                    <td class="p-1 bg-danger">{{itemd.name}} Diff. {{itemd.amount}} -- {{itemd.amountA}}</td>
+                                                {% endif %}
+                                                
+                                            {% else %}
+                                                <td class="p-1">{{itemd.item}}</td>
+                                                <td class="p-1">{{itemd.name}}</td>
+                                            {% endif %}
+                                            
 
                                             {% if itemd.quantity == None %}
                                                     {% if itemd.transferFrom == None %}
