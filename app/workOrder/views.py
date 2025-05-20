@@ -438,26 +438,25 @@ def listOrders(request):
 
 
     """Adding  Order List with Problems"""
-
-    ab = authorizedBilling.objects.filter(Status=1)
     woProblemList = []
+    if emp:
+        if emp.is_superAdmin and request.user.username == "pismalej":
+            ab = authorizedBilling.objects.filter(Status=1)       
+            for i in ab:
+                if i.quantity != 0:
+                    iPriceA =  validate_decimals(i.total) / validate_decimals(i.quantity) 
+                else:
+                    iPriceA = 0
 
-    for i in ab:
-        if i.quantity != 0:
-            iPriceA =  validate_decimals(i.total) / validate_decimals(i.quantity) 
-        else:
-            iPriceA = 0
+                woA = workOrder.objects.filter(id = i.woID.id).first()  
+                itemD = DailyItem.objects.filter(DailyID__woID = woA, itemID = i.itemID).first()
 
-        woA = workOrder.objects.filter(id = i.woID.id).first()  
-        itemD = DailyItem.objects.filter(DailyID__woID = woA, itemID = i.itemID).first()
-
-        
-        if itemD:
-            if  validate_decimals(iPriceA) != validate_decimals(itemD.price):
-                woProblemList.append(i.woID.id)
-            
-
-    woPList = workOrder.objects.filter(id__in = woProblemList, Status = 2)
+                
+                if itemD:
+                    if  validate_decimals(iPriceA) != validate_decimals(itemD.price):
+                        woProblemList.append(i.woID.id)
+                    
+            woPList = workOrder.objects.filter(id__in = woProblemList, Status = 2)
         
 
 
