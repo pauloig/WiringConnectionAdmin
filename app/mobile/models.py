@@ -25,6 +25,13 @@ docType_choice = (
     (3, 'Material Backup'),
 )
 
+dailyStatus_choice = (
+    (1, 'Work in Progress'),    
+    (2, 'Done'),    
+    
+)
+ 
+
 class Timesheet(models.Model):
     EmployeeID = models.ForeignKey(catalogModel.Employee, on_delete=models.CASCADE, db_column ='EmployeeID', null=False, blank=False)
     date = models.DateField(null=False, blank=False)
@@ -74,6 +81,10 @@ class DailyMob(models.Model):
     pdfDaily = models.FileField(null=True, upload_to="dailys") 
     Status = models.IntegerField(default=1, choices = prodStatus_choice)     
     comments = models.CharField(max_length=800, blank=True, null=True)
+    daily_Status = models.IntegerField(default=1, choices = dailyStatus_choice)  
+    daily_date = models.DateField(null=True, blank=True)
+    daily_zone = models.CharField(max_length=100, blank=True, null=True)
+    daily_comments = models.CharField(max_length=800, blank=True, null=True)
     created_date = models.DateTimeField(null=True, blank=True)
     created_by = models.CharField(max_length=60, blank=True, null=True)
     crew_by_user = models.IntegerField(null=True , blank=True)

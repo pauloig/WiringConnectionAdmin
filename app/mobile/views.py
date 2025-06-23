@@ -1588,6 +1588,8 @@ def reject_timesheet(request, id):
     context["TotalItem"] = dailyTotal
     context["ovTotal"] = ovT
     context["GranTotalItem"] = granTotal
+    context["id"] = id
+
 
     errorMessage = ""
 
@@ -1710,6 +1712,8 @@ def approve_timesheet(request, id):
 
     if form.is_valid():
         try:
+
+            form.save()
 
             #Get the pdf daily Html
             htlmDaily = request.POST.get('htmlDaily')
@@ -2292,7 +2296,7 @@ def html_to_pdf_save(html_content, daily_obj):
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
             <tr style="background-color: #4a6baf; color: white;">
                 <td style="padding: 2px; width: 40%;">PO #: {daily_obj.woID.PO if daily_obj.woID else ''}</td>
-                <td style="padding: 2px; width: 35%;">Spectrum - MDU</td>
+                <td style="padding: 2px; width: 35%;">Spectrum</td>
                 <td style="padding: 2px; width: 25%; text-align: right;">PID#: {daily_obj.woID.prismID if daily_obj.woID else ''}</td>
             </tr>
         </table>
@@ -2307,7 +2311,7 @@ def html_to_pdf_save(html_content, daily_obj):
             <tr>
                 <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.woID.JobAddress if daily_obj.woID else ''}</td>
                 <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.day.strftime('%m/%d/%Y')}</td>
-                <td style="border: 0.5px solid #666; padding: 4px;">&nbsp;</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.daily_zone if daily_obj.daily_zone else ''}</td>
                 <td style="border: 0.5px solid #666; padding: 4px;">
                     {supervisor_name}
                 </td>
@@ -2413,7 +2417,7 @@ def html_to_pdf_save(html_content, daily_obj):
         <div style="margin: 10px 0;">
             <strong>Check List</strong><br>
             Is this the only production for this project? ☐ Yes ☐ No<br>
-            Date: _______________ <br><br>
+            Date:  {daily_obj.daily_date.strftime('%m/%d/%Y')} <br><br>
 
             ☐ Production &nbsp;&nbsp;&nbsp;
             ☐ As - Built &nbsp;&nbsp;&nbsp;
@@ -2424,11 +2428,37 @@ def html_to_pdf_save(html_content, daily_obj):
             ☐ Maps<br><br>
 
             <strong>Status:</strong><br>
-            ☐ Ready to bill &nbsp;&nbsp;&nbsp;
-            ☐ Work in progress &nbsp;&nbsp;&nbsp;
-            ☐ Construction Done &nbsp;&nbsp;&nbsp;
-            ☐ Needs Fiber Spiking &nbsp;&nbsp;&nbsp;
-            ☐ Fiber Done<br><br>
+            """
+        empty_box = "&#x25A1;"  # □
+        checked_box = "&#x2713;"  # ✓
+
+        if daily_obj.daily_Status == 1:
+            html_content += f""" 
+                                {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
+                                {checked_box} Work in progress &nbsp;&nbsp;&nbsp;
+                                {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
+                                {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
+                                {empty_box} Fiber Done<br><br>
+            """
+        elif daily_obj.daily_Status == 2:
+                html_content += f""" 
+                                {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
+                                {empty_box} Work in progress &nbsp;&nbsp;&nbsp;
+                                {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
+                                {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
+                                {checked_box} Fiber Done<br><br>
+            """
+        else: 
+            html_content += f"""
+
+           {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
+            {empty_box} Work in progress &nbsp;&nbsp;&nbsp;
+            {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
+            {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
+            {empty_box} Fiber Done<br><br>"""
+
+
+        html_content += f"""
 
             <strong>Supervisor Comments:</strong><br>
             <div style="height: 50px; border: 0.5px solid #666; margin: 5px 0;"></div>
@@ -2447,6 +2477,33 @@ def html_to_pdf_save(html_content, daily_obj):
             </table>
         </div>
         """
+
+
+         # Add DailyMobDocs images section
+        dailyDocs = DailyMobDocs.objects.filter(DailyID=daily_obj).order_by('docType')
+        html_content += """
+        <div style="margin: 10px 0; "></div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+           
+        """
+        for doc in dailyDocs:
+            doc_preview_html = ""
+            if doc.document:
+                try:
+                    with open(doc.document.path, 'rb') as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode()
+                        doc_preview_html = f'<img src="data:image/png;base64,{encoded_string}" style="max-height: 100px;">'
+                except Exception as e:
+                    doc_preview_html = '<span style="color: #666; font-style: italic;">Preview not available</span>'
+            else:
+                doc_preview_html = '<span style="color: #666; font-style: italic;">No file available</span>'
+            html_content += f"""
+            <tr>                
+                <td style=" padding: 4px; text-align: center;">{doc_preview_html}</td>
+            </tr>
+            """
+        html_content += "</table>"
 
         # Wrap the content with HTML structure and CSS
         final_html = f"""

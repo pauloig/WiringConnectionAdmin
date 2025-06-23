@@ -15,6 +15,45 @@
             
         }  
     }
+
+    function downloadFile(url) {
+        // If the file is a PDF, just download it directly
+        if (url.toLowerCase().endsWith('.pdf')) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = url.split('/').pop();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+        }
+        // ...existing code for image download as PDF...
+        // Create an image element to load the image
+        const img = new Image();
+        img.crossOrigin = "anonymous"; // Handle cross-origin issues
+        img.src = url;
+
+        img.onload = function () {
+            // Create a jsPDF instance
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            // Calculate dimensions to fit the image in the PDF
+            const imgWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (img.height * imgWidth) / img.width;
+
+            // Add the image to the PDF
+            pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+            // Save the PDF
+            const fileName = url.split('/').pop().split('.')[0] + '.pdf'; // Extract file name and change extension to .pdf
+            pdf.save(fileName);
+        };
+
+        img.onerror = function () {
+            alert('Failed to load the image. Please try again.');
+        };
+    }
   </script>
 
 
@@ -22,6 +61,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
 <style>
@@ -229,6 +269,32 @@
    border-radius: 3px;
 }
 
+
+.download-btn {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+
+    .download-btn:hover {
+        opacity: 1;
+    }
+
+    .download-icon {
+        color: #3498db;
+        font-size: 14px;
+    }
 
   </style>
 
@@ -501,6 +567,10 @@
                                                     <div class="overlay">
                                                         <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
                                                     </div>
+
+                                                     <div class="download-btn" onclick="downloadFile('{{ item.pdfDaily.url }}'); event.stopPropagation();">
+                                                                    <i class="fas fa-download download-icon"></i>
+                                                                </div>
                                                 </div>
                                                 
                                                 {% if item.Status == 1 or item.Status == 5 %}
@@ -681,6 +751,10 @@
                                                                         <i class="fas fa-times delete-icon"></i>
                                                                     </div>
                                                                 {% endif %}
+
+                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                                    <i class="fas fa-download download-icon"></i>
+                                                                </div>
                                                                     
                                                             </div>
                                                         {% endfor %}
@@ -726,6 +800,10 @@
                                                                         <i class="fas fa-times delete-icon"></i>
                                                                     </div>
                                                                 {% endif %}
+
+                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                                    <i class="fas fa-download download-icon"></i>
+                                                                </div>
                                                             </div>
                                                             {% endfor %}
                                                         </div>
@@ -770,6 +848,10 @@
                                                                         <i class="fas fa-times delete-icon"></i>
                                                                     </div>
                                                                 {% endif %}
+
+                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                                    <i class="fas fa-download download-icon"></i>
+                                                                </div>
                                                             </div>
                                                             {% endfor %}
                                                         </div>                            
@@ -990,6 +1072,7 @@
                     }
                 });
             });
+
         });
         
         // Show PDF in modal
@@ -1077,6 +1160,8 @@
             previewModal.show();
         }
 
+
+        
 
       
       </script>

@@ -271,6 +271,32 @@
         color: black;
     }
     
+
+    .download-btn {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+
+    .download-btn:hover {
+        opacity: 1;
+    }
+
+    .download-icon {
+        color: #3498db;
+        font-size: 14px;
+    }
     /* Work Order Styles 
     .work-order {
         width: 100%;
@@ -448,14 +474,32 @@
                 </div>                                    
                 <div class="col-sm-2">
                     <div class="mb-3">
-                        <!--<label class="form-label" id="ov_l">% own Vehicle</label> 
-                        <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if dailyWO.own_vehicle > 0 %}{{dailyWO.own_vehicle}}{%endif%}" min="0" max="100" disabled>                                  
-                        -->
+                        <label for="{{ form.daily_Status.id_for_label }}" class="form-label">Daily Status</label>
+                        {% render_field form.daily_Status|attr:"required:required" class="form-control" %}
+                        <div class="invalid-feedback">{{ form.daily_Status.errors|first }}</div>
                     </div> 
                 </div>
-                <div class="col-sm-2 pt-4">
+                <div class="col-sm-2">
+                    <div class="mb-3">
+                        <label for="{{ form.daily_date.id_for_label }}" class="form-label">Date</label>
+                        {% render_field form.daily_date|attr:"required:required" type="date" class="form-control" %}
+                        <div class="invalid-feedback">{{ form.daily_date.errors|first }}</div>
+                    </div> 
+                </div>
+                <div class="col-sm-2">
+                    <div class="mb-3">
+                        <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Zone</label>
+                        {% render_field form.daily_zone|attr:"required:required" class="form-control" %}
+                        <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
+                    </div> 
+                </div>
+             
+                <div class="col-sm-1 pt-4">
                     <input type="text" class="form-control d-none" id="daily" name="daily" value="{{dailyWO.id}}">                                         
                 </div> 
+                
+               
+            
           
     
                  <!-- <div class="col-sm-4 pt-3">                       
@@ -608,6 +652,10 @@
                                             <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
                                                 <i class="fas fa-times delete-icon"></i>
                                             </div>
+
+                                            <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                <i class="fas fa-download download-icon"></i>
+                                            </div>
                                         
                                     </div>
                                     {% endfor %}
@@ -646,6 +694,10 @@
                                             
                                                 <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
                                                     <i class="fas fa-times delete-icon"></i>
+                                                </div>
+
+                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                    <i class="fas fa-download download-icon"></i>
                                                 </div>
                                             
                                         </div>
@@ -687,6 +739,9 @@
                                                     <i class="fas fa-times delete-icon"></i>
                                                 </div>
                                           
+                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
+                                                    <i class="fas fa-download download-icon"></i>
+                                                </div>
                                         </div>
                                         {% endfor %}
                                     </div>                            
@@ -716,6 +771,7 @@
                     </div>    
                 </div>    
             </div>  
+            
         </div>
 
         
@@ -809,11 +865,13 @@
     <div id="workOrderModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
+            <!-- Add this div to show the zone value -->
+            
             <div class="work-order" id="workOrderContent">
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                     <tr style="background-color: #4a6baf; color: white;">
                         <td style="padding: 8px; width: 40%;">PO #: {{dailyWO.woID.PO}}</td>
-                        <td style="padding: 8px; width: 35%;">Spectrum - MDU</td>
+                        <td style="padding: 8px; width: 35%;">Spectrum</td>
                         <td style="padding: 8px; width: 25%; text-align: right;">PID#: {{dailyWO.woID.prismID}}</td>
                     </tr>
                 </table>
@@ -828,7 +886,7 @@
                     <tr>
                         <td style="border: 0.5px solid #666; padding: 4px;">{{dailyWO.woID.JobAddress}}</td>
                         <td style="border: 0.5px solid #666; padding: 4px;">{{dailyWO.day}}</td>
-                        <td style="border: 0.5px solid #666; padding: 4px;"><br/>
+                        <td style="border: 0.5px solid #666; padding: 4px;"> <div id="zoneDisplay"></div>
                             &nbsp;</td>
                         <td style="border: 0.5px solid #666; padding: 4px;">
                             {% for sup in superV %}    
@@ -921,7 +979,7 @@
                 <div style="margin: 10px 0;">
                     <strong>Check List</strong><br>
                     Is this the only production for this project? ☐ Yes ☐ No<br>
-                    Date: _______________ <br><br>
+                     <div id="dateDisplay">Date:</div> <br><br>
             
                     ☐ Production &nbsp;&nbsp;&nbsp;
                     ☐ As - Built &nbsp;&nbsp;&nbsp;
@@ -932,11 +990,14 @@
                     ☐ Maps<br><br>
             
                     <strong>Status:</strong><br>
-                    ☐ Ready to bill &nbsp;&nbsp;&nbsp;
-                    ☐ Work in progress &nbsp;&nbsp;&nbsp;
-                    ☐ Construction Done &nbsp;&nbsp;&nbsp;
-                    ☐ Needs Fiber Spiking &nbsp;&nbsp;&nbsp;
-                    ☐ Fiber Done<br><br>
+                    <div id="statusDisplay">
+                        ☐ Ready to bill &nbsp;&nbsp;&nbsp;
+                        ☐ Work in progress &nbsp;&nbsp;&nbsp;
+                        ☐ Construction Done &nbsp;&nbsp;&nbsp;
+                        ☐ Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
+                        ☐ Fiber Done<br><br>
+                    </div>
+                    
             
                     <strong>Supervisor Comments:</strong><br>
                     <div style="height: 50px; border: 0.5px solid #666; margin: 5px 0;"></div>
@@ -1031,6 +1092,35 @@
             });
         });
         
+
+        function downloadFile(url) {
+            // Create an image element to load the image
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // Handle cross-origin issues
+            img.src = url;
+
+            img.onload = function () {
+                // Create a jsPDF instance
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+
+                // Calculate dimensions to fit the image in the PDF
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (img.height * imgWidth) / img.width;
+
+                // Add the image to the PDF
+                pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+                // Save the PDF
+                const fileName = url.split('/').pop().split('.')[0] + '.pdf'; // Extract file name and change extension to .pdf
+                pdf.save(fileName);
+            };
+
+            img.onerror = function () {
+                alert('Failed to load the image. Please try again.');
+            };
+        }
+
         // Show PDF in modal
         function showPdfPreview(url) {
             document.getElementById('imagePreview').classList.add('d-none');
@@ -1159,6 +1249,34 @@
       
       // When the user clicks the button, open the modal 
       btn.onclick = function() {
+          // Get the value of the daily_zone field
+          var zoneValue = document.getElementById('id_daily_zone') ? document.getElementById('id_daily_zone').value : '';
+          var dateValue = document.getElementById('id_daily_date') ? "Date: " + document.getElementById('id_daily_date').value : '____________________';
+          var statusValue = document.getElementById('id_daily_Status') ? document.getElementById('id_daily_Status').value : '';
+
+        var StatusText = "☐ Ready to bill   ";
+
+        if (statusValue ==1)
+            StatusText += '☑ Work in progress   ';
+        else 
+            StatusText += '☐ Work in progress   ';
+    
+        StatusText += "  ☐ Construction Done   ☐ Needs Fiber Splicing  ";
+
+        if (statusValue ==2)
+            StatusText += '☑ Fiber Done   ';
+        else 
+            StatusText += '☐ Fiber Done   ';
+                        
+                               
+                        
+
+
+          // Show it at the top of the modal
+          document.getElementById('zoneDisplay').textContent = zoneValue;
+          document.getElementById('dateDisplay').textContent = dateValue;
+          document.getElementById('statusDisplay').textContent =  StatusText;
+          // ...existing code...
           modal.style.display = "block";
       }
       
@@ -1184,82 +1302,6 @@
           document.body.innerHTML = originalContent;
       }
 
-      /*
-      document.getElementById('generatePdfButton2').addEventListener('click', async function() {
-        const modalContent = document.getElementById('workOrderContent');
-
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        // Show loader
-        loadingOverlay.style.display = 'flex';
-        
-        // Use html2canvas to capture the modal as an image
-        const canvas = await html2canvas(modalContent, {
-            scale: 2, // Higher quality
-            logging: false,
-            useCORS: true
-        });
-        
-        // Create PDF
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Calculate dimensions to fit A4
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pdfWidth - 20; // Margin
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-        
-        // Get PDF as buffer
-        const pdfBuffer = pdf.output('arraybuffer');
-        
-        // Send to Django backend
-        await sendPdfToDjango(pdfBuffer);
-    });
-      */
-    /*document.getElementById('ApproveButton').addEventListener('click', async function() {
-
-        modal.style.display = "block";
-
-
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        // Show loader
-        loadingOverlay.style.display = 'flex';
-
-
-        const modalContent = document.getElementById('workOrderContent');
-        
-        // Use html2canvas to capture the modal as an image
-        const canvas = await html2canvas(modalContent, {
-            scale: 2, // Higher quality
-            logging: false,
-            useCORS: true
-        });
-        
-        // Create PDF
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-
-        //modal.style.display = "none";
-        
-        // Calculate dimensions to fit A4
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pdfWidth - 20; // Margin
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-        
-        // Get PDF as buffer
-        const pdfBuffer = pdf.output('arraybuffer');
-        
-        // Send to Django backend
-        await sendPdfToDjango(pdfBuffer);
-    });*/
-    
     async function sendPdfToDjango(pdfBuffer) {
         // Convert ArrayBuffer to Blob
         const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
