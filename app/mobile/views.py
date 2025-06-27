@@ -1590,7 +1590,7 @@ def reject_timesheet(request, id):
     context["GranTotalItem"] = granTotal
     context["id"] = id
 
-
+    is_error = False
     errorMessage = ""
 
     if form.is_valid():
@@ -1631,8 +1631,19 @@ def reject_timesheet(request, id):
             context["errorMessage"] = errorMessage            
         else:
             # Return to Locations List
-            return HttpResponseRedirect('/mobile/supervisor_list/')
+            return HttpResponseRedirect('/mobile/supervisor_list/')     
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                print(f"Error en {field}: {error}")
+                errorMessage += f"Error en {field}: {error}"
+        if form.non_field_errors():
+            print("Errores no relacionados con campos:")
+            errorMessage += f"Errores no relacionados con campos:\n"
+            for error in form.non_field_errors():
+                errorMessage += error
         
+        context["errorMessage"] = errorMessage                                                                            
 
     #Adding the documents Maps
     dailyDocs = DailyMobDocs.objects.filter(DailyID = obj, docType=1).order_by('created_date')

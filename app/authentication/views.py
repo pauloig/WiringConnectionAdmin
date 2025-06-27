@@ -180,7 +180,11 @@ def home(request):
 
 
             #Getting Pending dailies to Approve
-            dailies = mobModels.DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3)).count()
+            if emp.is_supervisor:
+                dailies = mobModels.DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3)).count()
+            elif emp.is_manager or emp.is_admin:
+                dailies = mobModels.DailyMob.objects.filter(Location = emp.Location, Status__in = (2,3)).count()
+            
 
        
         

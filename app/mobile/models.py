@@ -81,7 +81,7 @@ class DailyMob(models.Model):
     pdfDaily = models.FileField(null=True, upload_to="dailys") 
     Status = models.IntegerField(default=1, choices = prodStatus_choice)     
     comments = models.CharField(max_length=800, blank=True, null=True)
-    daily_Status = models.IntegerField(default=1, choices = dailyStatus_choice)  
+    daily_Status = models.IntegerField(default=1, choices = dailyStatus_choice, null=True, blank=True)  
     daily_date = models.DateField(null=True, blank=True)
     daily_zone = models.CharField(max_length=100, blank=True, null=True)
     daily_comments = models.CharField(max_length=800, blank=True, null=True)
