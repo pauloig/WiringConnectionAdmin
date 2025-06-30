@@ -24,6 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 from io import BytesIO
 from xhtml2pdf import pisa
 import base64
+from django.views.decorators.http import require_POST
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -279,6 +280,7 @@ def crew(request, perID, dID, crewID, LocID):
         dailyDocsMB = DailyMobDocs.objects.filter(DailyID = dailyID, docType=3).order_by('created_date')
         
 
+        context["dailyactual"] = dailyID
         context["dailyItem"] = dailyItem
         context["dailyDocs"] = dailyDocs
         context["dailyDocsPic"] = dailyDocsPic
@@ -1668,6 +1670,22 @@ def reject_timesheet(request, id):
     return render(request, "mobile/reject_timesheet.html", context)
 
 
+
+
+@login_required(login_url='/home/')
+@require_POST
+def save_daily_comment(request, daily_id):
+    """
+    Receives a POST with 'comment' and saves it to DailyMob.comments field.
+    """
+    comment = request.POST.get('comment','').strip()
+    if comment is None or comment.strip() == "":
+        return JsonResponse({'success': False, 'message': 'No comment provided.'})
+    daily = get_object_or_404(DailyMob, id=daily_id)
+    daily.daily_comments = comment
+    daily.save()
+    return JsonResponse({'success': True, 'message': 'Comment saved.'})
+
 @login_required(login_url='/home/')
 @transaction.atomic
 def approve_timesheet(request, id):
@@ -1843,7 +1861,7 @@ def approve_timesheet(request, id):
 
             
             
-            #form.instance.Status = 4
+            form.instance.Status = 4
             form.instance.approved_by = request.user.username
             form.instance.approved_date = datetime.now()
             form.save()

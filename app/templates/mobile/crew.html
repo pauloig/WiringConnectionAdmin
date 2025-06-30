@@ -468,7 +468,12 @@
                                 
                             </div>
                             <div class="card-body">  
-                                <textarea class="form-control" name="comments" id="comments" rows="4" placeholder="Enter comments here..."></textarea>
+                                <form id="daily-comment-form">
+                                    <textarea class="form-control mb-3" name="comment" id="comment" rows="4" placeholder="Enter comments here..." >{{ dailyactual.daily_comments }}</textarea>
+                                    {%if item.Status == 1 or item.Status == 5%}
+                                        <button class="button btn-success" type="submit">Save Comment</button>
+                                    {%endif%}
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -693,7 +698,29 @@
             </div>
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script>
+
+
+                $('#daily-comment-form').on('submit', function(e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: '/mobile/save_daily_comment/{{ dailyactual.id }}',
+                        type: 'POST',
+                        data: {
+                            comment: $('#comment').val(),
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                        },
+                        error: function(xhr) {
+                            alert('Error saving comment.');
+                        }
+                    });
+                });
+             
+
                 // Initialize PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
         
@@ -897,7 +924,8 @@
             }  
         };
         
-               
+        
+        
               
     </script>
 </div>

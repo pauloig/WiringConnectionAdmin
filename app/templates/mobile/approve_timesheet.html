@@ -539,6 +539,16 @@
                     <button type="button" class="preview-button" id="previewButton">Preview Daily</button>
                 </div> -->
             </div>   
+            <div class="row">                                                                       
+                <div class="col-sm-12">
+                    <div class="mb-3">
+                        <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Tech. Comments</label>
+                        {% render_field form.daily_comments class="form-control" %}
+                        <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
+                    </div> 
+                </div>
+            </div
+
             <div class="row">
                 <div class="col-sm-12">
                     {%if dailyWO.total_pay != 100 %}

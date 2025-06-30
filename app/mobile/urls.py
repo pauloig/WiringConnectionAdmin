@@ -17,6 +17,7 @@ urlpatterns = [
      path('update_order_daily/<woID>/<dailyID>/<LocID>',views.update_order_daily),
      path('orders_payroll/<dailyID>/<LocID>',views.orders_payroll),   
      path('send_payroll/<id>/<LocID>',views.send_payroll),   
+     path('save_daily_comment/<daily_id>', views.save_daily_comment),
 
      # ****** DAILY EMPLOYEE**********************
      path('create_daily_emp/<id>/<LocID>',views.create_daily_emp),
