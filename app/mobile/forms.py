@@ -272,10 +272,16 @@ class DailyMobApprovedForm(forms.ModelForm):
                   'Period',
                   'crew',                  
                   'comments',
+                  'daily_production',
                   'daily_Status',
                   'daily_date',
                   'daily_zone',
-                  'daily_comments',             
+                  'daily_comments',  
+                  'daily_rtb',
+                  'daily_wp',
+                  'daily_cd',
+                  'daily_nfs',
+                  'daily_fd',           
                   ]
         
     def __init__(self, *args, **kwargs):        

@@ -1721,9 +1721,11 @@ def approve_timesheet(request, id):
     context["ovTotal"] = ovT
     context["GranTotalItem"] = granTotal
 
+    is_error = False
+
     if form.is_valid():
         try:
-
+            form.instance.daily_date = datetime.now()
             form.save()
 
             #Get the pdf daily Html
@@ -1841,7 +1843,7 @@ def approve_timesheet(request, id):
 
             
             
-            form.instance.Status = 4
+            #form.instance.Status = 4
             form.instance.approved_by = request.user.username
             form.instance.approved_date = datetime.now()
             form.save()
@@ -2412,6 +2414,9 @@ def html_to_pdf_save(html_content, daily_obj):
                 <td style="border: 0.5px solid #666; padding: 4px;">${item.total:.2f}</td>
             </tr>
             """
+        
+        empty_box = "&#x25A1;"  # □
+        checked_box = "&#x2713;"  # ✓
 
         # Add totals
         html_content += f"""
@@ -2427,7 +2432,7 @@ def html_to_pdf_save(html_content, daily_obj):
         
         <div style="margin: 10px 0;">
             <strong>Check List</strong><br>
-            Is this the only production for this project? ☐ Yes ☐ No<br>
+            {"Is this the only production for this project? &#x2713; Yes ☐ No<br>" if getattr(daily_obj, "daily_production", False) else "Is this the only production for this project? ☐ Yes &#x2713;  No<br>"}            
             Date:  {daily_obj.daily_date.strftime('%m/%d/%Y')} <br><br>
 
             ☐ Production &nbsp;&nbsp;&nbsp;
@@ -2440,33 +2445,43 @@ def html_to_pdf_save(html_content, daily_obj):
 
             <strong>Status:</strong><br>
             """
-        empty_box = "&#x25A1;"  # □
-        checked_box = "&#x2713;"  # ✓
+        
 
-        if daily_obj.daily_Status == 1:
+        if daily_obj.daily_rtb:
             html_content += f""" 
-                                {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
-                                {checked_box} Work in progress &nbsp;&nbsp;&nbsp;
-                                {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
-                                {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
-                                {empty_box} Fiber Done<br><br>
-            """
-        elif daily_obj.daily_Status == 2:
-                html_content += f""" 
-                                {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
-                                {empty_box} Work in progress &nbsp;&nbsp;&nbsp;
-                                {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
-                                {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
-                                {checked_box} Fiber Done<br><br>
-            """
-        else: 
-            html_content += f"""
+                                 {checked_box} Ready to bill &nbsp;&nbsp;&nbsp;"""
+        else:
+            html_content += f""" 
+                                {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;"""
+            
+        if daily_obj.daily_wp:
+            html_content += f""" 
+                                {checked_box} Work in progress &nbsp;&nbsp;&nbsp;"""
+        else:
+            html_content += f""" 
+                                {empty_box} Work in progress &nbsp;&nbsp;&nbsp;"""
 
-           {empty_box} Ready to bill &nbsp;&nbsp;&nbsp;
-            {empty_box} Work in progress &nbsp;&nbsp;&nbsp;
-            {empty_box} Construction Done &nbsp;&nbsp;&nbsp;
-            {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
-            {empty_box} Fiber Done<br><br>"""
+
+        if daily_obj.daily_cd:
+            html_content += f""" 
+                                {checked_box} Construction Done &nbsp;&nbsp;&nbsp;"""
+        else:
+            html_content += f""" 
+                                {empty_box} Construction Done &nbsp;&nbsp;&nbsp;"""
+            
+        if daily_obj.daily_nfs:
+            html_content += f""" 
+                                {checked_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;"""
+        else:
+            html_content += f""" 
+                                {empty_box} Needs Fiber Splicing &nbsp;&nbsp;&nbsp;"""
+            
+        if daily_obj.daily_fd:
+            html_content += f""" 
+                                {checked_box} Fiber Done<br><br>"""
+        else:
+            html_content += f""" 
+                                {empty_box} Fiber Done<br><br>"""
 
 
         html_content += f"""

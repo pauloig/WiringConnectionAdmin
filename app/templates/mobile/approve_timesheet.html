@@ -383,7 +383,7 @@
                 </div>                    
             </div>    {% endcomment %}
             <div class="row">               
-                <div class="col-sm-5">               
+                <div class="col-sm-2">               
                     <div class="mb3-mobile">
                         <label for="{{ form.Period.id_for_label }}" class="form-label">Period</label>
                         {% render_field form.Period name="Period" id="Period" class="form-control" %}
@@ -391,35 +391,21 @@
                     </div>    
                 </div>
                       
-                <div class="col-sm-5">               
+                <div class="col-sm-2">               
                     <div class="mb3-mobile">
                         <label for="{{ form.day.id_for_label }}" class="form-label">Date</label>
                         {% render_field form.day type="date" name="day" id="day" class="form-control" %}
                         <div class="invalid-feedback">{{ form.day.errors|first }}</div>
                     </div>    
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-1">
                     <div class="mb3-mobile">
                         <label for="{{ form.crew.id_for_label }}" class="form-label">Crew</label>
                         {% render_field form.crew  name="crew" id="crew" class="form-control" %}
                         <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
                     </div>    
                 </div>     
-            </div>  
-            {% comment %} <div class="row">
-                <div class="col-lg-12">
-
-                    <div class="mb3-mobile">
-                        <label for="{{ form.comments.id_for_label }}" class="form-label">Comments</label>
-                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.date.errors|first }}</div>
-                    </div>    
-                
-                </div>
-            </div> {% endcomment %}
-            <div class="row">                           
-                                    
-                <div class="col-sm-5">
+                <div class="col-sm-3">
                     <div class="mb-3">    
                         <label for="PID" class="form-label">PID - Work Order - PO</label>               
                         <div class="input-group mb-3">
@@ -429,16 +415,7 @@
 
                             </div>                                      
                     </div>        
-                </div>                                  
-                <div class="col-sm-7">
-                    <div class="mb-3">
-                        <label for="PID" class="form-label">Address</label>
-                        <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{dailyWO.woID.JobAddress}}" disabled>                                    
-                    </div>     
-                </div>
-            </div>
-            </br>     
-            <div class="row">                                                                       
+                </div> 
                 <div class="col-sm-3">      
                     <div class="mb-3">                                                                                                                                                                                      
                         <label for="supervisor" class="form-label">Supervisor</label>
@@ -471,25 +448,80 @@
                           Split
                         </label>
                       </div>
-                </div>                                    
-                <div class="col-sm-2">
+                </div>    
+            </div>  
+            {% comment %} <div class="row">
+                <div class="col-lg-12">
+
+                    <div class="mb3-mobile">
+                        <label for="{{ form.comments.id_for_label }}" class="form-label">Comments</label>
+                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" class="form-control" %}
+                        <div class="invalid-feedback">{{ form.date.errors|first }}</div>
+                    </div>    
+                
+                </div>
+            </div> {% endcomment %}
+            <div class="row">                           
+                                    
+                                                 
+                <div class="col-sm-7">
+                    <div class="mb-3">
+                        <label for="PID" class="form-label">Address</label>
+                        <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{dailyWO.woID.JobAddress}}" disabled>
+                        <!-- Add this block for the radio buttons -->
+                        
+                    </div>     
+                </div>
+                <div class="col-sm-5 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">this is the only production:  </label> 
+                            {% render_field form.daily_production class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_production.id_for_label }}"></label>  
+                </div>
+            </div>
+            </br>     
+            <div class="row">                                                                       
+                <div class="col-sm-2 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">Ready to Bill  </label> 
+                            {% render_field form.daily_rtb class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
+                </div>    
+                <div class="col-sm-2 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">Work in Progress</label> 
+                            {% render_field form.daily_wp class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
+                </div>      
+                <div class="col-sm-2 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">Construction Done</label> 
+                            {% render_field form.daily_cd class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
+                </div> 
+                <div class="col-sm-2 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">Needs Fiber Spacing</label> 
+                            {% render_field form.daily_nfs class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
+                </div>   
+                <div class="col-sm-2 pt-5">
+                        
+                            <label class="form-label mr-4 pr-2">Fiber Done</label> 
+                            {% render_field form.daily_fd class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
+                </div>         
+                <!--<div class="col-sm-2">
                     <div class="mb-3">
                         <label for="{{ form.daily_Status.id_for_label }}" class="form-label">Daily Status</label>
                         {% render_field form.daily_Status|attr:"required:required" class="form-control" %}
                         <div class="invalid-feedback">{{ form.daily_Status.errors|first }}</div>
                     </div> 
-                </div>
-                <div class="col-sm-2">
-                    <div class="mb-3">
-                        <label for="{{ form.daily_date.id_for_label }}" class="form-label">Date</label>
-                        {% render_field form.daily_date|attr:"required:required" type="date" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.daily_date.errors|first }}</div>
-                    </div> 
-                </div>
+                </div>-->
                 <div class="col-sm-2">
                     <div class="mb-3">
                         <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Zone</label>
-                        {% render_field form.daily_zone|attr:"required:required" class="form-control" %}
+                        {% render_field form.daily_zone class="form-control" %}
                         <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
                     </div> 
                 </div>
@@ -765,7 +797,7 @@
                 <div class="col-lg-12 pt-4">
                     <div class="">
                         <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
-                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20" name="crew" id="crew" class="form-control" %}
                         <textarea name="htmlDaily" id="htmlDaily" class="form-control" rows="5" cols="20" hidden></textarea>
                         <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
                     </div>    
@@ -978,8 +1010,28 @@
                 
                 <div style="margin: 10px 0;">
                     <strong>Check List</strong><br>
-                    Is this the only production for this project? ☐ Yes ☐ No<br>
-                     <div id="dateDisplay">Date:</div> <br><br>
+                    <span id="onlyProductionText">
+                        Is this the only production for this project? ☐ Yes ☐ No<br>
+                    </span>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            function updateOnlyProductionText() {
+                                var onlyProd = document.getElementById("{{ form.daily_production.id_for_label }}");
+                                var textSpan = document.getElementById("onlyProductionText");
+                                if (onlyProd && onlyProd.checked) {
+                                    textSpan.innerHTML = 'Is this the only production for this project? ☑ Yes ☐ No<br>';
+                                } else {
+                                    textSpan.innerHTML = 'Is this the only production for this project? ☐ Yes ☑ No<br>';
+                                }
+                            }
+                            var onlyProd = document.getElementById("{{ form.daily_production.id_for_label }}");
+                            if (onlyProd) {
+                                onlyProd.addEventListener('change', updateOnlyProductionText);
+                                updateOnlyProductionText();
+                            }
+                        });
+                    </script>
+                    <div id="dateDisplay">Date:</div> <br><br>
             
                     ☐ Production &nbsp;&nbsp;&nbsp;
                     ☐ As - Built &nbsp;&nbsp;&nbsp;
@@ -1251,19 +1303,49 @@
       btn.onclick = function() {
           // Get the value of the daily_zone field
           var zoneValue = document.getElementById('id_daily_zone') ? document.getElementById('id_daily_zone').value : '';
-          var dateValue = document.getElementById('id_daily_date') ? "Date: " + document.getElementById('id_daily_date').value : '____________________';
-          var statusValue = document.getElementById('id_daily_Status') ? document.getElementById('id_daily_Status').value : '';
+          // Use system date for dateValue
+          var today = new Date();
+          var yyyy = today.getFullYear();
+          var mm = String(today.getMonth() + 1).padStart(2, '0');
+          var dd = String(today.getDate()).padStart(2, '0');
+          var formattedDate = mm + '-' + dd + '-' + yyyy;
+          var dateValue = "Date: " + formattedDate;
+          var statusWP = document.getElementById('id_daily_wp') ? document.getElementById('id_daily_wp').checked : false;
+          var statusRTB = document.getElementById('id_daily_rtb') ? document.getElementById('id_daily_rtb').checked : false;
+          var statusCD = document.getElementById('id_daily_cd') ? document.getElementById('id_daily_cd').checked : false;
+          var statusNFS = document.getElementById('id_daily_nfs') ? document.getElementById('id_daily_nfs').checked : false;
+          var statusFD = document.getElementById('id_daily_fd') ? document.getElementById('id_daily_fd').checked : false;
 
-        var StatusText = "☐ Ready to bill   ";
+          console.log('statusWP: ',statusWP);
+          console.log('statusRTB: ',statusRTB);
 
-        if (statusValue ==1)
+
+        var StatusText = "";
+
+        if (statusRTB == true )
+            StatusText += '☑ Ready to bill   ';
+        else 
+            StatusText += '☐ Ready to bill   ';
+
+        if (statusWP == true )
             StatusText += '☑ Work in progress   ';
         else 
             StatusText += '☐ Work in progress   ';
-    
-        StatusText += "  ☐ Construction Done   ☐ Needs Fiber Splicing  ";
 
-        if (statusValue ==2)
+        if (statusCD == true )
+            StatusText += '☑ Construction Done   ';
+        else 
+            StatusText += '☐ Construction Done   ';
+
+        if (statusNFS == true )
+            StatusText += '☑ Needs Fiber Splicing   ';
+        else 
+            StatusText += '☐ Needs Fiber Splicing   ';
+
+    
+    
+
+        if (statusFD == true)
             StatusText += '☑ Fiber Done   ';
         else 
             StatusText += '☐ Fiber Done   ';
@@ -1405,5 +1487,52 @@
     
 
     </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make daily_rtb and daily_wp mutually exclusive
+    var rtb = document.getElementById('{{ form.daily_rtb.id_for_label }}');
+    var wp = document.getElementById('{{ form.daily_wp.id_for_label }}');
+    if (rtb && wp) {
+        rtb.addEventListener('change', function() {
+            if (rtb.checked) {
+                wp.checked = false;
+            }
+            else if (!rtb.checked) {
+                wp.checked = true;
+            }
+        });
+        wp.addEventListener('change', function() {
+            if (wp.checked) {
+                rtb.checked = false;
+            }
+             else if (!wp.checked) {
+                rtb.checked = true;
+            }
+        });
+    }
+
+    var nfs = document.getElementById('{{ form.daily_nfs.id_for_label }}');
+    var fd = document.getElementById('{{ form.daily_fd.id_for_label }}');
+    if (nfs && fd) {
+        nfs.addEventListener('change', function() {
+            if (nfs.checked) {
+                fd.checked = false;
+            }
+            else if (!nfs.checked) {
+                fd.checked = true;
+            }
+        });
+        fd.addEventListener('change', function() {
+            if (fd.checked) {
+                nfs.checked = false;
+            }
+             else if (!fd.checked) {
+                nfs.checked = true;
+            }
+        });
+    }
+
+});
+</script>
 </div>
 {% endblock %}
