@@ -25,6 +25,7 @@ from io import BytesIO
 from xhtml2pdf import pisa
 import base64
 from django.views.decorators.http import require_POST
+from django.db.models import Sum
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -1466,6 +1467,17 @@ def supervisor_list(request):
             ts = DailyMob.objects.filter()
         else:
             ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
+
+
+    ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
+
+    #for t in ts:
+        #add the Payout Total to every record
+        #d_emp_payout = DailyMobEmployee.objects.filter(DailyID = t).sum('payout')
+
+
+
+
         
     context["emp"] = emp
     context["dataset"] = ts

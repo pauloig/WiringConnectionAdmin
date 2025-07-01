@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 {%load static%}
-
+{% load humanize %}
 {% block container %}
 
 <script src="{% static 'js/supervisor.js' %}"></script>
@@ -181,7 +181,7 @@
                                         <td>{{data.Location}}</td>
                                         <td>{{data.Period}}</td>
                                         <td>{{data.woID}}</td>
-                                        <td>{{data.total_pay}}</td>
+                                        <td>{{data.total_payout|floatformat:2|intcomma}}</td>
                                         <td>{{data.get_Status_display}}</td>
                                         <td>{{data.created_by}}</td>
                                         <td class="text-center">
