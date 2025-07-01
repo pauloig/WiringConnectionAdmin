@@ -4978,7 +4978,8 @@ def update_daily_item(request, id, LocID):
     form = DailyItemForm(request.POST or None, instance = obj, qs = itemLocation)
  
     if form.is_valid():
-        price = form.instance.itemID.emp_payout    
+        #PJIG Aqui se modifico antes estaba price = form.instance.itemID.emp_payout
+        price = form.instance.itemID.price
         form.instance.price = float(price)
         form.instance.total = form.instance.quantity * float(price)
         

@@ -906,7 +906,8 @@ def update_daily_item(request, id, LocID):
     form = DailyMobItemForm(request.POST or None, instance = obj, qs = itemLocation)
  
     if form.is_valid():
-        price = form.instance.itemID.emp_payout    
+        #PJIG Aqui se modifico antes estaba price = form.instance.itemID.emp_payout
+        price = form.instance.itemID.price    
         form.instance.price = float(price)
         form.instance.total = form.instance.quantity * float(price)
         
@@ -948,7 +949,8 @@ def update_daily_item_sup(request, id, LocID):
     form = DailyMobItemForm(request.POST or None, instance = obj, qs = itemLocation)
  
     if form.is_valid():
-        price = form.instance.itemID.emp_payout    
+        #PJIG Aqui se modifico antes estaba price = form.instance.itemID.emp_payout
+        price = form.instance.itemID.price    
         form.instance.price = float(price)
         form.instance.total = form.instance.quantity * float(price)
         
@@ -1470,14 +1472,6 @@ def supervisor_list(request):
 
 
     ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
-
-    #for t in ts:
-        #add the Payout Total to every record
-        #d_emp_payout = DailyMobEmployee.objects.filter(DailyID = t).sum('payout')
-
-
-
-
         
     context["emp"] = emp
     context["dataset"] = ts
