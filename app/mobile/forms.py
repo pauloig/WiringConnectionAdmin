@@ -290,3 +290,22 @@ class DailyMobApprovedForm(forms.ModelForm):
         self.fields['Period'].disabled = True
         self.fields['crew'].disabled = True
 
+class DailyMobRejectedForm(forms.ModelForm):
+
+    Period = forms.ModelChoiceField(queryset= catalogModel.period.objects.filter(status=1),required=True)
+    
+
+    class Meta:
+        model = DailyMob
+        fields = [
+                  'day',                 
+                  'Period',
+                  'crew',                  
+                  'comments',                           
+                  ]
+        
+    def __init__(self, *args, **kwargs):        
+        super().__init__(*args, **kwargs)
+        self.fields['day'].disabled = True
+        self.fields['Period'].disabled = True
+        self.fields['crew'].disabled = True

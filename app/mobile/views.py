@@ -178,6 +178,7 @@ def crew(request, perID, dID, crewID, LocID):
     context["per"] = per    
     context["period"] = per    
     context["emp"]= emp
+    context["dailyactual"] =""
 
     #Select the location
     loca = catalogModel.Locations.objects.filter(LocationID = LocID).first()
@@ -1431,7 +1432,9 @@ def supervisor_list(request):
                                     if loc != "0":
                                         ts = DailyMob.objects.filter(Location__LocationID = loc) 
                                     else:
-                                        ts = DailyMob.objects.filter(EmployeeID__employeeID = employee) 
+                                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                        ts = DailyMob.objects.filter(created_by = empFilter.user) 
         else:
             if status == "0" and loc == "0" and employee == "0":
                 #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
@@ -1463,7 +1466,9 @@ def supervisor_list(request):
                                     if loc != "0":
                                         ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc) 
                                     else:
-                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,EmployeeID__employeeID = employee) 
+                                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID, created_by = empFilter.user) 
     else:
         if request.user.is_staff or emp.is_superAdmin:
             ts = DailyMob.objects.filter()
@@ -1575,7 +1580,7 @@ def reject_timesheet(request, id):
 
     superV = catalogModel.Employee.objects.filter(is_supervisor=True)
 
-    form = DailyMobApprovedForm(request.POST or None, instance = obj) 
+    form = DailyMobRejectedForm(request.POST or None, instance = obj) 
     
     dailyEmp = DailyMobEmployee.objects.filter(DailyID = obj)
 
@@ -2348,7 +2353,7 @@ def html_to_pdf_save(html_content, daily_obj):
             <tr>
                 <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.woID.JobAddress if daily_obj.woID else ''}</td>
                 <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.day.strftime('%m/%d/%Y')}</td>
-                <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.daily_zone if daily_obj.daily_zone else ''}</td>
+                <td style="border: 0.5px solid #666; padding: 4px;">{daily_obj.daily_zone if daily_obj.daily_zone else '-'}</td>
                 <td style="border: 0.5px solid #666; padding: 4px;">
                     {supervisor_name}
                 </td>
