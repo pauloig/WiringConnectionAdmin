@@ -1756,7 +1756,7 @@ def approve_timesheet(request, id):
             htlmDaily = request.POST.get('htmlDaily')
 
             #convert the html to pdf
-            is_success, errorMessage = html_to_pdf_save(htlmDaily, obj)
+            is_success, errorMessage, htlmDaily = html_to_pdf_save(htlmDaily, obj)
 
             if not is_success:
                 context['form']= form     
@@ -1884,15 +1884,15 @@ def approve_timesheet(request, id):
                         f"Please review it and let me know if you have any questions or issues.</p>\n\n" \
                         f"<p>Best regards, <u></u><u></u></p>\n\n" \
                         f"<p>HR Department </p></html>\n\n" \
+                        
+                    message_body += htlmDaily
 
                     if empD.email != None:
                         is_error, errorMessage = send_email_with_attachment(
                             subject="Daily Report – " + obj.day.strftime("%m-%d-%Y"),
                             message=message_body,
                             html_message=message_body,
-                            recipient_list=[empD.email],                            
-                            attachment_paths=[
-                                obj.pdfDaily.path],)
+                            recipient_list=[empD.email])
                     
                     
             
@@ -2527,7 +2527,8 @@ def html_to_pdf_save(html_content, daily_obj):
             </table>
         </div>
         """
-
+        html_mail = ""
+        html_mail = html_content
 
          # Add DailyMobDocs images section
         dailyDocs = DailyMobDocs.objects.filter(DailyID=daily_obj).order_by('docType')
@@ -2617,7 +2618,7 @@ def html_to_pdf_save(html_content, daily_obj):
             save=True
         )
 
-        return True, ""
+        return True, "", html_mail
 
     except Exception as e:
         print(f"Error converting HTML to PDF: {str(e)}")
