@@ -47,7 +47,7 @@ def send_email_with_attachment(
                 else:
                     raise FileNotFoundError(f"Attachment not found: {file_path}")
         
-        email.send()
+        #email.send()
         return False, ""
     except Exception as e:
         # Log the error in production
