@@ -180,10 +180,22 @@ def home(request):
 
 
             #Getting Pending dailies to Approve
+            #Getting the Location of the employee
+
+            locaList = woModels.employeeLocation.objects.filter(employeeID = emp)
+                
+            locationList = []
+            locationList.append(emp.Location.LocationID)
+            
+            for i in locaList:
+                locationList.append(i.LocationID.LocationID)
+
+
+
             if emp.is_supervisor:
                 dailies = mobModels.DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3)).count()
             elif emp.is_manager or emp.is_admin:
-                dailies = mobModels.DailyMob.objects.filter(Location = emp.Location, Status__in = (2,3)).count()
+                dailies = mobModels.DailyMob.objects.filter(Location__in = locationList, Status__in = (2,3)).count()
             
 
        
