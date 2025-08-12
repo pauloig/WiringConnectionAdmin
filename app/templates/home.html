@@ -71,6 +71,19 @@
    
             {% endif %}
 
+            {% if  woRTB > 0 %}
+                <div class="row row-cols-1  my-3">
+                  <div class="col">
+                    <div class="alert alert-warning" role="warning" style="border-radius: 1.3em; height: 3rem;">                  
+                        <p>You have <strong>{{woRTB}}</strong>  WO Ready to Bill</p>                
+                  </div>      
+                  </div>
+                </div>
+   
+            {% endif %}
+
+
+
             
 
             <div class="row row-cols-1 row-cols-lg-1 g-4 my-3">

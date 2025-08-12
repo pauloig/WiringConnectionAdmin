@@ -741,3 +741,20 @@ class woAdjustEstimateForm(forms.ModelForm):
         self.fields['woID'].disabled = True
         self.fields['estimateNumber'].disabled = True
         self.fields['invoiceNumber'].disabled = True
+
+class woEstimateCommentForm(forms.ModelForm):
+   
+    estimateNumber = forms.CharField(required=False)
+
+    class Meta:
+        model = woEstimate
+        fields = [
+           'woID',
+           'estimateNumber',           
+            'comment',
+
+        ]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['woID'].disabled = True
+        self.fields['estimateNumber'].disabled = True

@@ -113,6 +113,7 @@ def home(request):
     status = []
     totalOrders = 0
     dailies = 0
+    woRTB = 0
 
     if emp:
 
@@ -192,13 +193,11 @@ def home(request):
             
             if emp.is_manager or emp.is_admin:
                 dailies = mobModels.DailyMob.objects.filter(Location__in = locationList, Status__in = (2,3)).count()
-
-                #woRTB = woModels.workOrder.objects.filter(Location__in = locationList, Status=2).exclude(linkedOrder__isnull = False, uploaded = False).count()
-
             elif emp.is_supervisor:
                 dailies = mobModels.DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3)).count()
 
-
+            if emp.is_admin:
+                woRTB = woModels.workOrder.objects.filter(Location__in = locationList, Status=7).exclude(linkedOrder__isnull = False, uploaded = False).count()
 
             
                   
@@ -214,6 +213,7 @@ def home(request):
     context["status"] = status
     context["year"] = datetime.now().year
     context["dailies"] = dailies
+    context["woRTB"] = woRTB
 
     return render(
         request,

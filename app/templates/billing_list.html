@@ -172,11 +172,11 @@
                                                     role="button"><i class="fa-solid fa-download"
                                                         style="color: green;"></i></a>
                                                 {% if emp.is_superAdmin or user.is_staff %}
-                                                &nbsp; <a data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="Update Estimate"
-                                                    href="/update_estimate/{{order.id}}/{{itemd.estimateNumber}}"><i
-                                                        class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
-                                                &nbsp; 
+                                                    &nbsp; <a data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Update Estimate"
+                                                        href="/update_estimate/{{order.id}}/{{itemd.estimateNumber}}"><i
+                                                            class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                                    &nbsp; 
                                                     
                                                     {%if itemd.adjustment%}
                                                         <a
@@ -211,11 +211,19 @@
                                                         &nbsp;
                                                     {% endif %}
 
+                                                    <!--Button to Add comment-->
+                                                    <a data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    title="Add comment"
+                                                    hx-get="/update_woEstimate_comment/{{order.id}}/{{itemd.estimateNumber}}"
+                                                        hx-target="#dialog"><i class="fa-solid fa-comment" style="color: green;"></i></a>
+                                                    &nbsp;
+                                                   
+
                                                     <button type="button" class="btn shadow-none m-0 p-0"
                                                     data-bs-toggle="modal" data-bs-target="#invoice-alert">
-                                                    <i class="fa-solid fa-circle-arrow-right fa-lg "
+                                                    <i class="fa-solid fa-circle-arrow-right  "
                                                         style="color: green;"></i>
-                                                </button>
+                                                    </button>
                                                 {% endif %}
                                             </td>
                                         </tr>

@@ -15,7 +15,8 @@ status_choice = (
     ('3', 'Pending Docs'),
     ('4', 'Pending Revised WO'),
     ('5', 'Invoiced'),
-    ('6', 'Transferred')
+    ('6', 'Transferred'),
+    ('7', 'Ready to Bill'),
 )
 
 prodStatus_choice = (
@@ -550,6 +551,7 @@ class woEstimate(models.Model):
     city = models.CharField(max_length=200, blank=True, null=True)
     address = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=200, blank=True, null=True)
+    comment = models.TextField(max_length=500, null=True, blank=True)
     Status = models.IntegerField(default=1, choices = estimateStatus_choice)
     is_partial = models.BooleanField(default=False)
     created_date = models.DateTimeField(null=True, blank=True)

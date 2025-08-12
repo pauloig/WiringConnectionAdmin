@@ -624,7 +624,7 @@ def listOrders(request):
 
                 else:
                     if estatus != "0" and loc != "0":                          
-                        orders = workOrder.objects.filter(Status = estatus, Location = emp.Location).exclude(linkedOrder__isnull = False, uploaded = False )     
+                        orders = workOrder.objects.filter(Status = estatus, Location = loc).exclude(linkedOrder__isnull = False, uploaded = False )     
                     else:
                         if estatus != "0":                              
                             #orders = workOrder.objects.filter(Status = estatus, Location__LocationID__in = locationList).exclude(linkedOrder__isnull = False, uploaded = False ) 
@@ -1017,6 +1017,7 @@ def order(request, orderID):
     status_update = (
     ('1', 'Not Started'),
     ('2', 'Work in Progress'),
+    ('7', 'Ready to Bill'),
     ('3', 'Pending Docs'),
     ('4', 'Pending Revised WO'),
     ('5', 'Invoiced'),
@@ -5915,7 +5916,7 @@ def get_list_orders(request,estatus, loc, pid,addR,invNumber,invAmount,invAmount
 
                 else:
                     if estatus != "0" and loc != "0":                          
-                        orders = workOrder.objects.filter(Status = estatus, Location = emp.Location).exclude(linkedOrder__isnull = False, uploaded = False )     
+                        orders = workOrder.objects.filter(Status = estatus, Location = loc).exclude(linkedOrder__isnull = False, uploaded = False )     
                     else:
                         if estatus != "0":                                                          
                             #If estatus is 1 get all the locations
@@ -10534,3 +10535,27 @@ def update_wo_adjustment(request, woID, estimateID):
     context["form"] = form
     context["emp"] = emp
     return render(request, "wo_adjustment_estimate.html", context)
+
+
+def update_woEstimate_comment(request, woID, estimateID):
+
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()        
+    context ={}
+    context["emp"] = emp
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    wo = workOrder.objects.filter(id = woID).first()
+
+    obj = woEstimate.objects.filter(woID = wo, estimateNumber = estimateID).first()
+
+    form = woEstimateCommentForm(request.POST or None, instance = obj)
+ 
+    if form.is_valid():        
+        form.save()               
+        return HttpResponseRedirect("/billing_list/" + str(woID) + "/False")
+
+    context["form"] = form
+    context["emp"] = emp
+    return render(request, "update_woEstimate_comment.html", context)
