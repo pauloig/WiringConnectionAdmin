@@ -621,15 +621,19 @@
                                     <div class="col-sm-12 pt-3 d-flex flex-nowrap align-items-start gap-3" style="overflow-x: auto; padding-bottom: 10px;">
                                         <!-- Comments Row - now side by side with other elements -->
                                         <div class="d-flex gap-3" style="min-width: 50%; flex: 1;">
-                                            <div class="comment-box tech-comment flex-grow-1">
-                                                <strong class="comment-label">Tech Comments:</strong> 
-                                                <div class="comment-content">{{item.mobile_tech_comments}}</div>
-                                            </div>
+                                            {% if item.mobile_tech_comments %}
+                                                <div class="comment-box tech-comment flex-grow-1">
+                                                    <strong class="comment-label">Tech Comments:</strong> 
+                                                    <div class="comment-content">{{item.mobile_tech_comments}}</div>
+                                                </div>
+                                            {% endif %}
                                             
-                                            <div class="comment-box supervisor-comment flex-grow-1">
-                                                <strong class="comment-label">Supervisor Comments:</strong> 
-                                                <div class="comment-content">{{item.mobile_sup_comments}}</div>
-                                            </div>
+                                            {% if item.mobile_sup_comments %} 
+                                                <div class="comment-box supervisor-comment flex-grow-1">
+                                                    <strong class="comment-label">Supervisor Comments:</strong> 
+                                                    <div class="comment-content">{{item.mobile_sup_comments}}</div>
+                                                </div>
+                                            {% endif %}
                                         </div>
 
                                         {% if item.pdfDaily != '' and item.pdfDaily != None %}

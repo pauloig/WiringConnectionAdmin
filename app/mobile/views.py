@@ -185,6 +185,25 @@ def crew(request, perID, dID, crewID, LocID):
 
     twTitle = ''
 
+
+    #Validate if the Location receiver is valid for the current user
+
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append({'LocationID': emp.Location.LocationID, 'name':emp.Location.name })
+    
+    for i in locaList:
+        locationList.append({'LocationID': i.LocationID.LocationID, 'name': i.LocationID.name} )
+
+    
+    # Validation to check if LocationID 40 exists
+    location_exists = any(str(loc['LocationID']) == str(LocID) for loc in locationList)
+    if not location_exists:
+        return redirect('/mobile/home/' + str(emp.Location.LocationID))
+
+
+
     #getting the list of days per week
     startDate = per.fromDate
     numDays = 7
