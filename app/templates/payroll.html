@@ -296,7 +296,72 @@
         font-size: 14px;
     }
 
+    /* Comments Styles*/
+    
+
+        /* Base styles for comments */
+    .comment-box {
+        padding: 12px;
+        border-radius: 6px;
+        min-width: 200px;
+    }
+    
+    .tech-comment {
+        background-color: #e8f4f8;
+        border-left: 4px solid #3498db;
+    }
+    
+    .supervisor-comment {
+        background-color: #e8f8f0;
+        border-left: 4px solid #2ecc71;
+    }
+    
+    .comment-label {
+        display: block;
+        color: #2c3e50;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+    
+    .comment-content {
+        color: #34495e;
+        font-size: 0.9em;
+        word-break: break-word;
+    }
+    
+    /* Document thumbnail styles */
+    .document-thumbnail {
+        position: relative;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .document-thumbnail:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .col-sm-12.pt-3 {
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .d-flex.gap-3 {
+            min-width: 100% !important;
+        }
+    }
+
+     /* Comments Styles*/
+
   </style>
+
+
+  
 
 <div class="container">
     <form method='post' enctype="multipart/form-data">
@@ -520,13 +585,13 @@
                                             
                                         </div> 
                                     </div>-->
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-1">
                                         <div class="mb-3">                                            
                                             <label class="form-label" id="ov_l">Reported By</label> 
                                             <input type="input" class="form-control"   value="{%if item.sent_by != None%}{{item.sent_by}}{%endif%}" disabled>                                  
                                         </div> 
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-1">
                                         <div class="mb-3">                                            
                                             <label class="form-label" id="ov_l">Approved By</label> 
                                             <input type="input" class="form-control"   value="{%if item.approved_by != None%}{{item.approved_by}}{%endif%}" disabled>                                  
@@ -535,9 +600,93 @@
                                     <div class="col-sm-2 pt-4">
                                         <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">                                         
                                     </div> 
+                                    <div class="col-sm-4">
+                                        <!-- Buttons and Document Thumbnail -->
+                                        <div class="d-flex align-items-center gap-3 flex-nowrap" style="flex-shrink: 0;">
+                                            <a class="btn btn-success p-3" hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</a>
+                                            
+                                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                <button type="button" class="btn btn-primary p-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                                    Upload Daily
+                                                </button> 
+                                            {% endif %}
+                                        </div>    
+                                            
+                                        
+                                    </div>
                                 </form>
 
+
+                                
+                                    <div class="col-sm-12 pt-3 d-flex flex-nowrap align-items-start gap-3" style="overflow-x: auto; padding-bottom: 10px;">
+                                        <!-- Comments Row - now side by side with other elements -->
+                                        <div class="d-flex gap-3" style="min-width: 50%; flex: 1;">
+                                            <div class="comment-box tech-comment flex-grow-1">
+                                                <strong class="comment-label">Tech Comments:</strong> 
+                                                <div class="comment-content">{{item.mobile_tech_comments}}</div>
+                                            </div>
+                                            
+                                            <div class="comment-box supervisor-comment flex-grow-1">
+                                                <strong class="comment-label">Supervisor Comments:</strong> 
+                                                <div class="comment-content">{{item.mobile_sup_comments}}</div>
+                                            </div>
+                                        </div>
+
+                                        {% if item.pdfDaily != '' and item.pdfDaily != None %}
+                                                <div class="document-thumbnail" 
+                                                    data-url="{{ item.pdfDaily.url }}"
+                                                    data-type="{% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
+                                                    style="width: 120px; height: 120px; flex-shrink: 0;">
+                                                    
+                                                    <div class="thumbnail-content">
+                                                        {% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}
+                                                            <div class="pdf-thumbnail">
+                                                                <i class="fas fa-file-pdf pdf-icon"></i>
+                                                                <small class="text-muted">PDF Document</small>
+                                                                <canvas class="d-none"></canvas>
+                                                            </div>
+                                                        {% else %}
+                                                            <img src="{{ item.pdfDaily.url }}" alt="Document" class="thumbnail-img">
+                                                        {% endif %}
+                                                        
+                                                        <div class="overlay">
+                                                            <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                                        </div>
+
+                                                        <div class="download-btn" onclick="downloadFile('{{ item.pdfDaily.url }}'); event.stopPropagation();">
+                                                            <i class="fas fa-download download-icon"></i>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {% if item.Status == 1 or item.Status == 5 %}
+                                                        <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                            <i class="fas fa-times delete-icon"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        
+                                        
+                                    </div>
+
+
+
+
+                                   <!--
+                                
                                     <div class="col-sm-12 pt-3">
+
+                                        <div class="comments-row">
+                                            <div class="comment-box tech-comment">
+                                                <strong class="comment-label">Tech Comments:</strong> 
+                                                <div class="comment-content">{{item.mobile_tech_comments}}</div>
+                                            </div>
+                                            
+                                            <div class="comment-box supervisor-comment">
+                                                <strong class="comment-label">Supervisor Comments:</strong> 
+                                                <div class="comment-content">{{item.mobile_sup_comments}}</div>
+                                            </div>
+                                        </div>
                                         
                                         <a class="btn btn-success p-3 " hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</i></a>
                                         {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
@@ -547,7 +696,7 @@
                                             
                                         {%endif%}
                                         {% if item.pdfDaily != '' and item.pdfDaily != None %}                                        
-                                            <!--<a class="btn btn-primary p-3" href="/static/media/{{item.pdfDaily}}" target="_blank"> View Daily</a>  -->
+                                            <!--<a class="btn btn-primary p-3" href="/static/media/{{item.pdfDaily}}" target="_blank"> View Daily</a>  
 
                                             <div class="document-thumbnail" 
                                                 data-url="{{ item.pdfDaily.url }}"
@@ -581,7 +730,7 @@
                                             </div>
 
                                         {% endif %}                                          
-                                    </div>
+                                    </div>-->
                                 </div>   
                                 <div class="row">
                                     <div class="col-sm-12">

@@ -285,6 +285,8 @@ class Daily(models.Model):
     sent_by = models.CharField(max_length=60, blank= True, null=True)
     crew_by_user = models.IntegerField(null=True , blank=True)
     mobile_id = models.IntegerField(null=True , blank=True)
+    mobile_tech_comments = models.CharField(max_length=800, blank=True, null=True)
+    mobile_sup_comments = models.CharField(max_length=800, blank=True, null=True)
     
 
     def __str__(self):

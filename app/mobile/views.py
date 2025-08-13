@@ -1797,7 +1797,9 @@ def approve_timesheet(request, id):
                 approved_date = datetime.now(),
                 sent_by = obj.created_by,
                 crew_by_user = obj.crew_by_user,
-                mobile_id = obj.id
+                mobile_id = obj.id,
+                mobile_tech_comments = obj.daily_comments,
+                mobile_sup_comments = obj.comments,
             )
             
             
@@ -2627,4 +2629,4 @@ def html_to_pdf_save(html_content, daily_obj):
 
     except Exception as e:
         print(f"Error converting HTML to PDF: {str(e)}")
-        return False, f"Error converting HTML to PDF: {str(e)}"
+        return False, f"Error converting HTML to PDF: {str(e)}",""
