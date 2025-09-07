@@ -54,6 +54,45 @@
             alert('Failed to load the image. Please try again.');
         };
     }
+
+    function downloadAllImagesAsPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        let images = [];
+
+        // Select all image thumbnails in Docs List (maps, pictures, material backup)
+        document.querySelectorAll('.documents-container .document-thumbnail[data-type="image"] .thumbnail-img').forEach(img => {
+            images.push(img.src);
+        });
+
+        if (images.length === 0) {
+            alert('No images to download.');
+            return;
+        }
+
+        let loaded = 0;
+        images.forEach((src, idx) => {
+            const image = new Image();
+            image.crossOrigin = "anonymous";
+            image.src = src;
+            image.onload = function () {
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (image.height * imgWidth) / image.width;
+                if (idx > 0) pdf.addPage();
+                pdf.addImage(image, 'JPEG', 0, 0, imgWidth, imgHeight);
+                loaded++;
+                if (loaded === images.length) {
+                    pdf.save('All_Doc_Images.pdf');
+                }
+            };
+            image.onerror = function () {
+                loaded++;
+                if (loaded === images.length) {
+                    pdf.save('All_Doc_Images.pdf');
+                }
+            };
+        });
+    }
   </script>
 
 
@@ -861,7 +900,12 @@
                                 <div clas="row">
                                     <div class="col-sm-12 px-1">
                                         <div class="card">
-                                            <h6 class="card-header card-header-wc" >Docs List</h6>
+                                            <h6 class="card-header card-header-wc d-flex justify-content-between align-items-center">
+                                                Docs Listssss
+                                                <button type="button" class="btn btn-success btn-sm" onclick="downloadAllImagesAsPDF()">
+                                                    <i class="fas fa-file-download"></i> Download All
+                                                </button>
+                                            </h6>
                                             <div class="card-body">
 
                                                 <table class="table table-sm">                                 
