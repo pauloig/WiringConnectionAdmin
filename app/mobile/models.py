@@ -90,7 +90,7 @@ class DailyMob(models.Model):
     daily_Status = models.IntegerField(default=1, choices = dailyStatus_choice, null=True, blank=True)  
     daily_date = models.DateField(null=True, blank=True)
     daily_zone = models.CharField(max_length=100, blank=True, null=True)
-    daily_comments = models.CharField(max_length=800, blank=True, null=True)
+    daily_comments = models.CharField(max_length=800, blank=True, null=True) # Tech Comments
     created_date = models.DateTimeField(null=True, blank=True)
     created_by = models.CharField(max_length=60, blank=True, null=True)
     crew_by_user = models.IntegerField(null=True , blank=True)

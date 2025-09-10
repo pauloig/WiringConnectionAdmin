@@ -961,7 +961,7 @@
             
                 <div style="margin: 10px 0; border-bottom: 0.5px solid #666;"></div>
                 
-                <div style="margin: 10px 0;">Comments / Notes</div>
+                <div style="margin: 10px 0;" id="commentsNotesDisplay"><strong>Comments / Notes:</strong> </div>
             
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
                     <tr style="background-color: #f2f2f2;">
@@ -1298,9 +1298,11 @@
           var statusNFS = document.getElementById('id_daily_nfs') ? document.getElementById('id_daily_nfs').checked : false;
           var statusFD = document.getElementById('id_daily_fd') ? document.getElementById('id_daily_fd').checked : false;
 
-          console.log('statusWP: ',statusWP);
-          console.log('statusRTB: ',statusRTB);
 
+            var techComments = document.getElementById('id_daily_comments');
+            var commentsText = techComments ? techComments.value : '';
+
+          console.log('Comments Text:', commentsText);
 
         var StatusText = "";
 
@@ -1340,6 +1342,9 @@
           document.getElementById('zoneDisplay').textContent = zoneValue;
           document.getElementById('dateDisplay').textContent = dateValue;
           document.getElementById('statusDisplay').textContent =  StatusText;
+
+          document.getElementById('commentsNotesDisplay').textContent += commentsText;
+
           // ...existing code...
           modal.style.display = "block";
       }

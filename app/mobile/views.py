@@ -2426,6 +2426,13 @@ def html_to_pdf_save(html_content, daily_obj):
             </tr>
             """
 
+
+        # Tech Comments
+        tech_comments_html = ""
+        if daily_obj.daily_comments:
+            tech_comments_html = daily_obj.daily_comments
+        
+
         # Add signature disclaimer
         html_content += f"""
             <tr>
@@ -2441,7 +2448,7 @@ def html_to_pdf_save(html_content, daily_obj):
 
         <div style="margin: 10px 0; border-bottom: 0.5px solid #666;"></div>
         
-        <div style="margin: 10px 0;">Comments / Notes</div>
+        <div style="margin: 10px 0;">Comments / Notes:  {tech_comments_html}</div>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
             <tr style="background-color: #f2f2f2;">
