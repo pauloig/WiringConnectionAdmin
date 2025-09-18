@@ -5238,10 +5238,18 @@ def make_recap_pdf(empID, perID):
             total += i.total
 
         production = (total * item.per_to_pay) / 100
-        if item.DailyID.own_vehicle != None:
-            own_vehicle = (((total * item.DailyID.own_vehicle) / 100) * item.per_to_pay) / 100
+        
+        #if item.DailyID.own_vehicle != None:
+        #    own_vehicle = (((total * item.DailyID.own_vehicle) / 100) * item.per_to_pay) / 100
+        #else:
+        #    own_vehicle = 0
+
+        # Se cambia formula para el calculo del OV
+        if item.is_own_vehicle:
+            own_vehicle = item.own_vehicle_pay
         else:
             own_vehicle = 0
+
 
         rtTotal += rt
         otTotal += ot
@@ -5300,7 +5308,8 @@ def make_recap_pdf(empID, perID):
             itemHtml = itemHtml + '<td style="font-family:Verdana, Geneva, sans-serif; font-weight:200; font-size:8px; border-top:1px solid #999; border-bottom:1px solid #999; border-left:1px solid #999; border-right:1px solid #999; padding-top: 3px;" width="8%" align="center">'
             if own_vehicle != 0:
                 itemHtml = itemHtml +  '${0:,.2f}'.format((float(own_vehicle)))
-            itemHtml = itemHtml + '</td>'
+            else:
+                itemHtml = itemHtml + '</td>'
             
 
             itemHtml = itemHtml + ' <td style="font-family:Verdana, Geneva, sans-serif; font-weight:200; font-size:8px; border-top:1px solid #999; border-bottom:1px solid #999; border-left:1px solid #999; border-right:1px solid #999; padding-top: 3px;" width="7%" align="center">'
