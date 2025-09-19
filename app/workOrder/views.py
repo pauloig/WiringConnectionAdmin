@@ -5317,9 +5317,8 @@ def make_recap_pdf(empID, perID):
 
             itemHtml = itemHtml + '<td style="font-family:Verdana, Geneva, sans-serif; font-weight:200; font-size:8px; border-top:1px solid #999; border-bottom:1px solid #999; border-left:1px solid #999; border-right:1px solid #999; padding-top: 3px;" width="8%" align="center">'
             if own_vehicle != 0:
-                itemHtml = itemHtml +  '${0:,.2f}'.format((float(own_vehicle)))
-            else:
-                itemHtml = itemHtml + '</td>'
+                itemHtml = itemHtml +  '${0:,.2f}'.format((float(own_vehicle)))           
+            itemHtml = itemHtml + '</td>'
             
 
             itemHtml = itemHtml + ' <td style="font-family:Verdana, Geneva, sans-serif; font-weight:200; font-size:8px; border-top:1px solid #999; border-bottom:1px solid #999; border-left:1px solid #999; border-right:1px solid #999; padding-top: 3px;" width="7%" align="center">'
@@ -6632,6 +6631,10 @@ def get_summary(request, perID):
                     if validate_decimals(i.payout) != None:
                         payroll += validate_decimals(i.payout)
 
+                    if validate_decimals(i.is_own_vehicle) != None:
+                        ov = i.own_vehicle_pay
+                        ownvehicle += validate_decimals(ov)
+
                 
                 dailyprod =  DailyItem.objects.filter(DailyID=dailyItem)
                 total = 0
@@ -6651,9 +6654,10 @@ def get_summary(request, perID):
 
                 total = validate_decimals((total * ptpEmp) / 100)
 
-                if validate_decimals(dailyItem.own_vehicle) != None:
-                    ov = validate_decimals(((validate_decimals(total) * validate_decimals(dailyItem.own_vehicle)) / 100))
-                    ownvehicle += validate_decimals(ov)
+                #if validate_decimals(dailyItem.own_vehicle) != None:
+                #    ov = validate_decimals(((validate_decimals(total) * validate_decimals(dailyItem.own_vehicle)) / 100))
+                #    ownvehicle += validate_decimals(ov)
+
                 prod += validate_decimals(total)
 
             if validate_decimals(invoice) > 0:                    
