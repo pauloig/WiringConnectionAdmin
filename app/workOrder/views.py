@@ -6480,7 +6480,7 @@ def get_summary(request, perID):
                     #else:
                     #    own_vehicle = 0
 
-                    #own_vehicle = validate_decimals(itemEmp.own_vehicle_pay)
+                    own_vehicle = validate_decimals(itemEmp.own_vehicle_pay)
 
                     
                    
