@@ -3991,6 +3991,11 @@ def location_period_list(request, id):
             for h in dailyempleado:
                 ptpEmp += validate_decimals(h.per_to_pay)
 
+                 #Nuevo Calculo Own Vehicle
+                if h.is_own_vehicle:
+                    ov = validate_decimals(h.own_vehicle_pay)    
+                    ownvehicle += validate_decimals(ov)
+
             total = validate_decimals((total * ptpEmp) / 100)
 
             #if validate_decimals(dailyItem.own_vehicle) != None:
@@ -3998,10 +4003,7 @@ def location_period_list(request, id):
             #   ownvehicle += validate_decimals(ov)
 
 
-            #Nuevo Calculo Own Vehicle
-            if dailyItem.is_own_vehicle:
-                ov = validate_decimals(dailyItem.own_vehicle_pay)    
-                ownvehicle += validate_decimals(ov)
+           
 
 
             prod += validate_decimals(total)
@@ -6277,8 +6279,8 @@ def get_summary(request, perID):
 
                         
                         #Nuevo Calculo Own Vehicle
-                        if item.is_own_vehicle:
-                            ov = validate_decimals(item.own_vehicle_pay)    
+                        if i.is_own_vehicle:
+                            ov = validate_decimals(i.own_vehicle_pay)    
                         else:
                             ov = 0
                         
