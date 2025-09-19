@@ -3993,9 +3993,17 @@ def location_period_list(request, id):
 
             total = validate_decimals((total * ptpEmp) / 100)
 
-            if validate_decimals(dailyItem.own_vehicle) != None:
-                ov = validate_decimals(((validate_decimals(total) * validate_decimals(dailyItem.own_vehicle)) / 100))
+            #if validate_decimals(dailyItem.own_vehicle) != None:
+            #    ov = validate_decimals(((validate_decimals(total) * validate_decimals(dailyItem.own_vehicle)) / 100))
+            #   ownvehicle += validate_decimals(ov)
+
+
+            #Nuevo Calculo Own Vehicle
+            if dailyItem.is_own_vehicle:
+                ov = validate_decimals(dailyItem.own_vehicle_pay)    
                 ownvehicle += validate_decimals(ov)
+
+
             prod += validate_decimals(total)
 
         if validate_decimals(invoice) > 0:                    
@@ -6262,10 +6270,18 @@ def get_summary(request, perID):
                         for j in di:
                             t += validate_decimals(j.total)
 
-                        if validate_decimals(item.own_vehicle) != None:
-                            ov = validate_decimals((((t * validate_decimals(item.own_vehicle)) / 100) * validate_decimals(i.per_to_pay)) /100)
+                        #if validate_decimals(item.own_vehicle) != None:
+                        #    ov = validate_decimals((((t * validate_decimals(item.own_vehicle)) / 100) * validate_decimals(i.per_to_pay)) /100)
+                        #else:
+                        #    ov = 0
+
+                        
+                        #Nuevo Calculo Own Vehicle
+                        if item.is_own_vehicle:
+                            ov = validate_decimals(item.own_vehicle_pay)    
                         else:
                             ov = 0
+                        
 
                         ttp = (t * validate_decimals(i.per_to_pay)) /100
                         ws.write(row_num,round(11,2),validate_print_decimals(ttp), font_style)
@@ -6455,13 +6471,17 @@ def get_summary(request, perID):
                         total += validate_decimals(i.total)
 
                     production = validate_decimals((validate_decimals(total) * validate_decimals(itemEmp.per_to_pay)) / 100)
-                    if validate_decimals(itemEmp.DailyID.own_vehicle) != None:
-                        own_vehicle = validate_decimals((((validate_decimals(total) * validate_decimals(itemEmp.DailyID.own_vehicle)) / 100) * validate_decimals(itemEmp.per_to_pay)) / 100)
-                    else:
-                        own_vehicle = 0
 
-                    own_vehicle = validate_decimals(itemEmp.own_vehicle_pay)
 
+                    #if validate_decimals(itemEmp.DailyID.own_vehicle) != None:
+                    #    own_vehicle = validate_decimals((((validate_decimals(total) * validate_decimals(itemEmp.DailyID.own_vehicle)) / 100) * validate_decimals(itemEmp.per_to_pay)) / 100)
+                    #else:
+                    #    own_vehicle = 0
+
+                    #own_vehicle = validate_decimals(itemEmp.own_vehicle_pay)
+
+                    
+                   
                     rtTotal += rt
                     otTotal += ot
                     dtTotal += dt               
