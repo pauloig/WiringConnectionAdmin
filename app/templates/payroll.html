@@ -775,6 +775,9 @@
                                             {% endif %}
                                         </div>
 
+                                        
+
+
                                         {% if item.pdfDaily != '' and item.pdfDaily != None %}
                                                 <div class="document-thumbnail" 
                                                     data-url="{{ item.pdfDaily.url }}"
@@ -811,9 +814,8 @@
                                         
                                         
                                     </div>
-
-
-
+                                
+                                   
 
                                    <!--
                                 
@@ -875,6 +877,43 @@
                                         {% endif %}                                          
                                     </div>-->
                                 </div>   
+                                <div class="row mb-2">
+                                     <div class="col-sm-1">
+                                     </div>
+                                     <div class="col-sm-10 d-flex gap-3">
+
+                                        <!-- ...existing code... -->
+                                                <div class="col-sm-10 d-flex gap-3">
+                                                    <label class="form-check-label me-2">
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>
+                                                        Ready to Bill
+                                                    </label>
+                                                    <span style="margin-right: 10px;"></span>
+                                                    <label class="form-check-label me-2">
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
+                                                        Work in Progress
+                                                    </label>
+                                                    <span style="margin-right: 10px;"></span>
+                                                    <label class="form-check-label me-2">
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_cd %}checked{% endif %} disabled>
+                                                        Construction Done
+                                                    </label>
+                                                    <span style="margin-right: 10px;"></span>
+                                                    <label class="form-check-label me-2">
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_nfs %}checked{% endif %} disabled>
+                                                        Needs Fiber splicing
+                                                    </label>
+                                                    <span style="margin-right: 10px;"></span>
+                                                    <label class="form-check-label me-2">
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_fd %}checked{% endif %} disabled>
+                                                        Fiber Done
+                                                    </label>
+                                                </div>
+                                                <!-- ...existing code... -->
+                                    </div>
+
+
+                                </div>
                                 <div class="row">
                                     <div class="col-sm-12">
                                         {%if item.total_pay != 100 %}

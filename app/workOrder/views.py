@@ -4545,6 +4545,14 @@ def payroll(request, perID, dID, crewID, LocID):
         dailyEmp = DailyEmployee.objects.filter(DailyID = dailyID).order_by('created_date')
         context["dailyEmp"] = dailyEmp
 
+        #if the Payroll comes from Mobile, get the Mobile Info
+
+        if dailyID.mobile_id:
+            mobileInfo = MobileModel.DailyMob.objects.filter(id = dailyID.mobile_id).first()
+            context["mobileInfo"] = mobileInfo
+        else:
+            context["mobileInfo"] = None
+
         dailyItem = DailyItem.objects.filter(DailyID = dailyID).order_by('created_date')
         dailyTotal = 0
         ovT = 0
