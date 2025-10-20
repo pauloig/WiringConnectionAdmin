@@ -229,7 +229,7 @@
         <div class="d-flex justify-content-between">             
             <div>  
                 {% if selectedDay > 0 %}
-                    {%if emp.is_superAdmin  or user.is_staff  or period.status == 1%}                          
+                    {%if emp.is_superAdmin  or user.is_staff  or period.status == 1 or period.status == 0%}                          
                             <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
                                 <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
                             </a>                      
@@ -290,7 +290,7 @@
                             {%else%}
                                 <p id="address" name="address" style="margin-left: 10px">{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}</p>
                             {%endif%}
-                            {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
+                            {% if emp.is_superAdmin  or user.is_staff  or period.status == 1  or period.status == 0 %}
                                 {%if item.Status == 1 or item.Status == 5%}
                                     <a class="btn  pt-1" href="/mobile/orders_payroll/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
                                 {%endif%}
@@ -317,7 +317,7 @@
                                     <p id="supervisor" name="supervisor" style="margin-left: 10px">No Supervisor Selected</p> 
                                 {%endif%}
 
-                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}    
+                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1  or period.status == 0 %}    
                                     {%if item.Status == 1 or item.Status == 5%}                                                                
                                         <a class="btn  pt-1" href="/mobile/update_supervisor/{{period.id}}/{{item.day|date:'d'}}/{{item.id}}/{{selectedLocation}}" ><i class="fa-sharp fa-solid fa-magnifying-glass" style="color: blue;"></i></a>
                                     {%endif%}
@@ -368,7 +368,7 @@
                             <div class="card-header card-header-wc d-flex justify-content-between" >
                                 <h6>Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
                                 {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1  or period.status == 0 %}
                                         {%if item.Status == 1 or item.Status == 5%}                                                                                                    
                                             <a href="/mobile/create_daily_emp/{{item.id}}/{{selectedLocation}}" ><i class="fa-solid fa-user-plus"></i></a>
                                         {%endif%}
@@ -421,7 +421,7 @@
                             <div class="card-header card-header-wc d-flex justify-content-between" >
                                 <h6>Item List - Total: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
                                 {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1  or period.status == 0 %}
                                         {%if item.Status == 1 or item.Status == 5%}        
                                             <a href="/mobile/create_daily_item/{{item.id}}/{{selectedLocation}}"><i class="fa-solid fa-circle-plus"></i></a>
                                         {%endif%}
@@ -440,7 +440,7 @@
                                         <td class="p-1"><p> | ${{itemd.emp_payout|floatformat:2|intcomma}}</p></td>
                                         <td class="p-1"><p> | ${{itemd.total|floatformat:2|intcomma}}</p></td>   
                                         <td class="p-1">
-                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1  or period.status == 0 %}
                                                 {%if itemd.Status == 1 %}
                                                     <div class="d-flex justify-content-between">
                                                         {%if item.Status == 1 or item.Status == 5%}                                                                
@@ -535,7 +535,7 @@
 
                                     <h3 class="mb-3 mt-3">Pictures
                                         {% if item.supervisor != None and item.woID != None %}
-                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1  or period.status == 0 %}
                                                 {%if item.Status == 1 or item.Status == 5%}        
                                                     <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/2" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
                                                 {%endif%}
@@ -579,7 +579,7 @@
 
                                     <h3 class="mb-3 mt-3">Material Backup
                                         {% if item.supervisor != None and item.woID != None %}
-                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1  or period.status == 0 %}
                                                 {%if item.Status == 1 or item.Status == 5%}        
                                                     <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/3" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
                                                 {%endif%}
@@ -654,7 +654,7 @@
           {%if selectedDay > 0 and selectedCrew > 0 %}      
             {% for item in crew %} 
                 {% if item.crew == selectedCrew %}
-                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
+                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1  or period.status == 0 %}
                         {%if item.Status == 1 or item.Status == 5 %}                                                                
                             <div class="d-flex justify-content-center mt-3 mb-5 pb-5">
                                 <a class="btn btn-danger"

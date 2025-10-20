@@ -55,8 +55,22 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong> {{period.periodID}}</div>
-                            <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> {{period.weekRange}} </div>
+                            <div><i class="fas fa-calendar-alt"></i> <strong>Period: </strong>
+                                {% if period and period.periodID == -1 %}
+                                    No Active Period
+                                {% else %}
+                                    {{ period.periodID }}
+                                {% endif %}
+                            </div>
+                            
+                            <div><i class="fas fa-calendar-week"></i> <strong>Week: </strong> 
+                                 {% if period and period.periodID == -1 %}
+                                    No Active Period
+                                {% else %}
+                                    {{period.weekRange}} 
+                                {% endif %}
+                            
+                            </div>
                         </li> 
 
                      <li class="mb-2 d-flex justify-content-between">                                          
@@ -70,11 +84,17 @@
                     </li>
 
                     <li class="mb-2">
-                      <i class="fas fa-money-check-alt"></i> <strong>Pay Date:</strong> {{period.payDate|date:"Y-m-d"}}
+                      <i class="fas fa-money-check-alt"></i> <strong>Pay Date:</strong> 
+                      {% if period and period.periodID == -1 %}
+                            No Active Period
+                      {% else %}
+                            {{period.payDate|date:"Y-m-d"}}
+                      {% endif %}  
                     </li> 
                   </ul>
                 </div>
               </div>
+              {{message}}
             </div>   
         </div>
 
@@ -86,11 +106,11 @@
                       <div class="col-sm-12">
                           {% for item in week1 %}                                                                        
                               {% if item.selected %}
-                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-success position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{item.actual_period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}                                            
                                   </a> 
                               {% else %}
-                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
+                                  <a class="btn btn-primary position-relative px-2 mx-2 my-2" style="text-align:center !important; width: 5.5em;" href="/mobile/crew/{{item.actual_period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                       {{item.shortDate}}
                                       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-{{item.type}}" style="font-size:0.7rem;">
                                       {{item.Total|intcomma}}                                            
@@ -105,7 +125,7 @@
               </div> 
           </div>
       </div>     
-      <div class="col-sm-12 pb-5 mb-3">
+      <!--<div class="col-sm-12 pb-5 mb-3">
           <div class="card mt-3 ">
               <h6 class="card-header card-header-wc">Week 2</h6>
               <div class="card-body">
@@ -130,7 +150,7 @@
                   </div>                   
               </div> 
           </div>
-      </div>       
+      </div>  -->     
 
   </form>       
 </div>

@@ -61,6 +61,19 @@ def mobile(request):
 def mobile_home(request, LocID):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     per = catalogModel.period.objects.filter(status=1).first()
+
+    if not per:
+        per = catalogModel.period.objects.filter(periodID=-1).first()
+
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
+
+        per.fromDate = yesterday
+        per.toDate = today
+        per.payDate = today
+        per.save()
+
+
     context ={}
     context["period"] = per    
     context["emp"]= emp
@@ -82,10 +95,49 @@ def mobile_home(request, LocID):
 
     #Select the location according to the parameter
     loca = catalogModel.Locations.objects.filter(LocationID = LocID).first()
+    
+    # validate that yesterday and today are within the active period
+    from_date = getattr(per, 'fromDate', None)
+    to_date = getattr(per, 'toDate', None)
+    
+    if hasattr(from_date, 'date'):
+        from_date = from_date.date()
+    if hasattr(to_date, 'date'):
+        to_date = to_date.date()
+
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+
+    message = ""
+
+    # determine membership of each date in the active period
+    today_in = from_date <= today <= to_date
+    yesterday_in = from_date <= yesterday <= to_date
+
+    yesterday_period = None
+    today_period = None
+
+    if today_in and yesterday_in:
+        message = ""  # both inside -> no warning
+        yesterday_period = per
+        today_period = per
+    elif today_in and not yesterday_in:
+        message = "Warning: Yesterday is outside the active period."
+        yesterday_period = catalogModel.period.objects.filter(periodID=-1).first()
+        today_period = per
+    elif yesterday_in and not today_in:
+        message = "Warning: Today is outside the active period."
+        today_period = catalogModel.period.objects.filter(periodID=-1).first()
+        yesterday_period = per
+    else:
+        message = "Warning: Today's date and Yesterday's date are outside the active period."
+        yesterday_period = catalogModel.period.objects.filter(periodID=-1).first()
+        today_period = catalogModel.period.objects.filter(periodID=-1).first()
+    
 
     #getting the list of days per week
-    startDate = per.fromDate
-    numDays = 7
+    startDate = yesterday
+    numDays = 2
     week1 = []
     totalRejected = 0
     totalDeleted = 0
@@ -120,12 +172,18 @@ def mobile_home(request, LocID):
             if d.Status == 6:
                 totalDeleted += 1
                 type="danger"
-            
+
+        pr = None
+
+        if day == yesterday.strftime("%d"):
+            pr = yesterday_period
+        elif day == today.strftime("%d"):
+            pr = today_period     
                 
 
-        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type })
+        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type, 'actual_period': pr })
 
-    startDate += timedelta(days = numDays)
+    """startDate += timedelta(days = numDays)
     week2 = []
     for x in range(0,numDays):
         selectedDay = False
@@ -133,11 +191,6 @@ def mobile_home(request, LocID):
         shortDate = fullDate.strftime("%a") + ' ' + fullDate.strftime("%d")
         longDate = fullDate.strftime("%A") + ' ' + fullDate.strftime("%d")
         day = fullDate.strftime("%d")
-
-        """if dID == day:
-            selectedDay = True
-            selectedDate = fullDate
-            twTitle += ' - ' + fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()"""
 
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
@@ -160,10 +213,9 @@ def mobile_home(request, LocID):
                 type="danger"
 
         week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'type':type })
-    
-
+   """
     context["week1"] = week1
-    context["week2"] = week2
+    context["message"] = message
     context["totalRejected"] = totalRejected
     context["totalDeleted"] = totalDeleted
 
@@ -174,9 +226,14 @@ def crew(request, perID, dID, crewID, LocID):
     emp =  catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     context ={}
 
-    per = catalogModel.period.objects.filter(status__in=(1,2)).first()
-    context["per"] = per    
-    context["period"] = per    
+    #per = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    per = catalogModel.period.objects.filter(status=1).first()
+
+    if not per:
+        per = catalogModel.period.objects.filter(periodID=-1).first()
+
+
+    context["per"] = per        
     context["emp"]= emp
     context["dailyactual"] =""
 
@@ -203,10 +260,61 @@ def crew(request, perID, dID, crewID, LocID):
         return redirect('/mobile/home/' + str(emp.Location.LocationID))
 
 
+    #**************************************************************
+
+    
+    # validate that yesterday and today are within the active period
+    from_date = getattr(per, 'fromDate', None)
+    to_date = getattr(per, 'toDate', None)
+    
+    if hasattr(from_date, 'date'):
+        from_date = from_date.date()
+    if hasattr(to_date, 'date'):
+        to_date = to_date.date()
+
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+    
+
+    message = ""
+
+    # determine membership of each date in the active period
+    today_in = from_date <= today <= to_date
+    yesterday_in = from_date <= yesterday <= to_date
+    yesterday_period = None
+    today_period = None
+
+    if today_in and yesterday_in:
+        message = ""  # both inside -> no warning
+        yesterday_period = per
+        today_period = per
+    elif today_in and not yesterday_in:
+        message = "Warning: Yesterday is outside the active period."
+        yesterday_period = catalogModel.period.objects.filter(periodID=-1).first()
+        today_period = per
+    elif yesterday_in and not today_in:
+        message = "Warning: Today is outside the active period."
+        today_period = catalogModel.period.objects.filter(periodID=-1).first()
+        yesterday_period = per
+    else:
+        message = "Warning: Today's date and Yesterday's date are outside the active period."
+        yesterday_period = catalogModel.period.objects.filter(periodID=-1).first()
+        today_period = catalogModel.period.objects.filter(periodID=-1).first()
+
+    
+    if dID == yesterday.strftime("%d"):
+        context["period"] = yesterday_period
+    elif dID == today.strftime("%d"):
+        context["period"] = today_period
 
     #getting the list of days per week
-    startDate = per.fromDate
-    numDays = 7
+    startDate = yesterday
+
+    #***********************************************************************************************************
+
+    #getting the list of days per week
+    #startDate = per.fromDate
+    numDays = 2
     week1 = []
     for x in range(0,numDays):
         selectedDay = False
@@ -218,6 +326,10 @@ def crew(request, perID, dID, crewID, LocID):
             selectedDay = True
             selectedDate = fullDate
             twTitle +=  fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()
+
+            
+             
+
         
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
@@ -229,9 +341,16 @@ def crew(request, perID, dID, crewID, LocID):
             for i in dItemDetail:
                 totalItems += i.quantity
 
-        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
+        pr = None
 
-    startDate += timedelta(days = numDays)
+        if day == yesterday.strftime("%d"):
+            pr = yesterday_period
+        elif day == today.strftime("%d"):
+            pr = today_period
+
+        week1.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay, 'actual_period': pr })
+
+    """startDate += timedelta(days = numDays)
     week2 = []
     for x in range(0,numDays):
         selectedDay = False
@@ -256,7 +375,7 @@ def crew(request, perID, dID, crewID, LocID):
                 totalItems += i.quantity
 
         week2.append({'day':day, 'shortDate': shortDate, 'longDate': longDate, 'fullDate': fullDate, 'Total': totalItems, 'selected': selectedDay })
-    
+    """
     
 
     if request.user.is_staff or emp.is_superAdmin:
@@ -311,7 +430,7 @@ def crew(request, perID, dID, crewID, LocID):
         context["GranTotalItem"] = granTotal
 
     context["week1"] = week1
-    context["week2"] = week2
+    context["message"] = message
     context["selectedDate"] = twTitle
     context["superV"] = superV
     context["selectedCrew"] = int(crewID)
@@ -391,7 +510,8 @@ def create_daily(request, pID, dID, LocID):
     context["emp"] = emp    
     per = catalogModel.period.objects.filter(id = pID).first()
 
-    perActual = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    #perActual = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    perActual = catalogModel.period.objects.filter(status=1).first()
     context["per"] = perActual
 
     if int(LocID) > 0:
@@ -1412,6 +1532,17 @@ def supervisor_list(request):
     empList = catalogModel.Employee.objects.all()
 
 
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+    
+
+
     if request.method == "POST":
         dateSelected =  request.POST.get('date')
         dateSelected2 = request.POST.get('date2')
@@ -1461,6 +1592,40 @@ def supervisor_list(request):
                                         empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
 
                                         ts = DailyMob.objects.filter(created_by = empFilter.user) 
+        elif emp.is_manager:
+            if status == "0" and loc == "0" and employee == "0":
+                #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+                ts = DailyMob.objects.filter(Location__LocationID__in = locationList, Status__in = (2,3))
+            else:
+                if status != "0" and loc != "0" and employee != "0":
+
+                    empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                    #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                    ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+                else:
+                    if status != "0" and loc!= "0":    
+                        ts = DailyMob.objects.filter( Status = status , Location__LocationID = loc)            
+                    else:    
+                        if  status != "0" and employee != "0":
+                            empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                            ts = DailyMob.objects.filter(Location__LocationID__in = locationList, Status = status , created_by = empFilter.user)   
+                        else:
+                            if  loc != "0" and employee != "0":
+                                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                ts = DailyMob.objects.filter(Location__LocationID = loc, created_by = empFilter.user)   
+                            else:
+                                if status != "0":
+                                    ts = DailyMob.objects.filter(Location__LocationID__in = locationList, Status = status ) 
+                                else:
+                                    if loc != "0":
+                                        ts = DailyMob.objects.filter(Location__LocationID = loc) 
+                                    else:
+                                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                        ts = DailyMob.objects.filter(Location__LocationID__in = locationList, created_by = empFilter.user) 
         else:
             if status == "0" and loc == "0" and employee == "0":
                 #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
@@ -1498,6 +1663,8 @@ def supervisor_list(request):
     else:
         if request.user.is_staff or emp.is_superAdmin:
             ts = DailyMob.objects.filter()
+        elif emp.is_manager:
+            ts = DailyMob.objects.filter(Location__LocationID__in = locationList, Status__in = (2,3))
         else:
             ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
 

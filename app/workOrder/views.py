@@ -3869,7 +3869,7 @@ def upload_employee(request):
 def period_list(request):
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()
     context = {}    
-    context["period"] = period.objects.all().order_by('-id')
+    context["period"] = period.objects.filter(periodID__gte = 1).order_by('-id')
     context["emp"] = emp
 
     per = period.objects.filter(status__in=(1,2)).first()
@@ -4078,33 +4078,43 @@ def create_period(request, perID):
     lastPeriod = period.objects.filter(id=perID).first()
 
     if lastPeriod:
-        try:
+        #try:
 
-            fromD = lastPeriod.toDate + timedelta(days=1)
-            toD = fromD + timedelta(days=periodRange)
-            payD = toD + timedelta(days=payRange)
-            newYear = int(payD.year)
-            perId = 0
-            weekR = 'W' + str(fromD.isocalendar()[1]) + '-' + str(toD.isocalendar()[1])
+        fromD = lastPeriod.toDate + timedelta(days=1)
+        toD = fromD + timedelta(days=periodRange)
+        payD = toD + timedelta(days=payRange)
+        newYear = int(payD.year)
+        perId = 0
+        weekR = 'W' + str(fromD.isocalendar()[1]) + '-' + str(toD.isocalendar()[1])
 
-            if newYear > lastPeriod.periodYear:
-                perId = 1
-            else:
-                perId = lastPeriod.periodID + 1
+        if newYear > lastPeriod.periodYear:
+            perId = 1
+        else:
+            perId = lastPeriod.periodID + 1
 
-            newPeriod = period(
-                periodID = perId,
-                periodYear = newYear,
-                fromDate = fromD,
-                toDate = toD,
-                payDate = payD,
-                weekRange = weekR,
-                status = 1
-            )
+        newPeriod = period(
+            periodID = perId,
+            periodYear = newYear,
+            fromDate = fromD,
+            toDate = toD,
+            payDate = payD,
+            weekRange = weekR,
+            status = 1
+        )
 
-            newPeriod.save()
-        except Exception as e:
-            print('********** Error: ', e, '**********')
+        newPeriod.save()
+
+        #Search for Mobile Dailys without period and assign to the new period
+        pM = period.objects.filter(periodID = -1).first()
+        mobiles = MobileModel.DailyMob.objects.filter(Period = pM)
+
+        for m in mobiles:
+            if m.day >= newPeriod.fromDate and m.day <= newPeriod.toDate:
+                m.Period = newPeriod
+                m.save()
+
+        #except Exception as e:
+        #    print('********** Error: ', e, '**********')
 
     return True
 
