@@ -1671,6 +1671,7 @@ def supervisor_list(request):
 
     ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
         
+    context["origen"] = "supervisor_list"
     context["emp"] = emp
     context["dataset"] = ts
     context["location"]=locationList
@@ -1763,7 +1764,7 @@ def updateBySuper(request, id):
     return render(request, "mobile/supervisor_timesheet.html", context)
 
 
-def reject_timesheet(request, id):
+def reject_timesheet(request, id, origen):
     emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
     per = catalogModel.period.objects.filter(status__in=(1,2)).first()
     context ={}
@@ -1863,6 +1864,7 @@ def reject_timesheet(request, id):
     context["dailyDocs"] = dailyDocs
     context["dailyDocsPic"] = dailyDocsPic
     context["dailyDocsMB"] = dailyDocsMB
+    context["origen"] = origen
 
     context['form']= form     
     context["emp"] = emp
@@ -2411,6 +2413,162 @@ def get_report_list(request, dateSelected, dateSelected2, status, location, empl
     wb.save(response)
 
     return response
+
+
+"""
+*********************************** ADMIN ********************************************************
+"""
+@login_required(login_url='/home/')
+def approved_dailies(request):
+    emp = catalogModel.Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    status = 0
+    dateS = ""
+    dateS2 = ""
+    loc = "0"
+    employee = "0"
+
+    locationList = catalogModel.Locations.objects.all()
+    empList = catalogModel.Employee.objects.all()
+
+
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
+
+    current_period = catalogModel.period.objects.filter(status__in=(1,2)).first()
+    
+
+
+    if request.method == "POST":
+        dateSelected =  request.POST.get('date')
+        dateSelected2 = request.POST.get('date2')
+        # dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
+        # dateS2 = datetime.strptime(dateSelected2, '%Y-%m-%d').date()
+        status = 4 #request.POST.get('status')        
+        loc = request.POST.get('location') 
+        employee = "0"
+
+        if loc == None or loc =="":
+            loc = "0"
+        
+        if emp == None or emp =="":
+            emp = "0"
+
+        if request.user.is_staff or emp.is_superAdmin or emp.is_admin:
+            if status == "0" and loc == "0" and employee == "0":
+                #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+                ts = DailyMob.objects.filter( Status__in = (2,3))
+            else:
+                if status != "0" and loc != "0" and employee != "0":
+
+                    empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                    #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                    ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+                else:
+                    if status != "0" and loc!= "0":    
+                        ts = DailyMob.objects.filter( Status = status , Location__LocationID = loc, Period = current_period )            
+                    else:    
+                        if  status != "0" and employee != "0":
+                            empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                            ts = DailyMob.objects.filter(Status = status , created_by = empFilter.user)   
+                        else:
+                            if  loc != "0" and employee != "0":
+                                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                ts = DailyMob.objects.filter(Location__LocationID = loc, created_by = empFilter.user)   
+                            else:
+                                if status != "0":
+                                    ts = DailyMob.objects.filter(Status = status, Period = current_period) 
+                                else:
+                                    if loc != "0":
+                                        ts = DailyMob.objects.filter(Location__LocationID = loc, Period = current_period) 
+                                    else:
+                                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                        ts = DailyMob.objects.filter(created_by = empFilter.user, Period = current_period) 
+        
+        else:
+            if status == "0" and loc == "0" and employee == "0":
+                #ts = DailyMob.objects.filter(Status__in = (2,3), day__range=[dateS, dateS2])
+                ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status__in = (2,3))
+            else:
+                if status != "0" and loc != "0" and employee != "0":
+
+                    empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                    #ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, EmployeeID__employeeID = employee, day__range=[dateS, dateS2])  
+                    ts = DailyMob.objects.filter(Status = status, Location__LocationID = loc, created_by = empFilter.user)  
+                else:
+                    if status != "0" and loc!= "0":    
+                        ts = DailyMob.objects.filter(supervisor = emp.employeeID, Status = status , Location__LocationID = loc)            
+                    else:    
+                        if  status != "0" and employee != "0":
+                            empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                            ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status , created_by = empFilter.user)   
+                        else:
+                            if  loc != "0" and employee != "0":
+                                empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc, created_by = empFilter.user)   
+                            else:
+                                if status != "0":
+                                    ts = DailyMob.objects.filter(supervisor = emp.employeeID,Status = status ) 
+                                else:
+                                    if loc != "0":
+                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID,Location__LocationID = loc) 
+                                    else:
+                                        empFilter = catalogModel.Employee.objects.filter(employeeID = employee ).first()
+
+                                        ts = DailyMob.objects.filter(supervisor = emp.employeeID, created_by = empFilter.user) 
+    else:
+        if request.user.is_staff or emp.is_superAdmin or emp.is_admin:
+            ts = DailyMob.objects.filter(Status = 4, Period = current_period)
+        else:
+            ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
+
+
+    ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
+
+    if emp:
+        if emp.is_admin:
+            locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+            locationList = []
+            locationList.append({'LocationID': emp.Location.LocationID, 'name':emp.Location.name })
+            
+            for i in locaList:
+                locationList.append({'LocationID': i.LocationID.LocationID, 'name': i.LocationID.name} )
+        else:
+            locationList = catalogModel.Locations.objects.all()
+    else:
+        locationList = catalogModel.Locations.objects.all()
+        
+    context["origen"] = "approved_dailies"    
+    context["emp"] = emp
+    context["dataset"] = ts
+    context["location"]=locationList
+    context["empList"]=empList
+    context["selectLoc"]=loc
+    context["selectEstatus"] = status 
+    context["selectEmployee"] = employee 
+    context["dateSelected"] =  dateS
+    context["dateSelected2"] =  dateS2
+
+
+        
+    return render(request, "mobile/approved_dailies.html", context)
+
+
 
 """
 ****************  UTILITIES *********************************

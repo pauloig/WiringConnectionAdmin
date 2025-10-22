@@ -42,7 +42,7 @@ urlpatterns = [
      path('approve_timesheet/<id>',views.approve_timesheet),
      path('update_daily_pdf/<id>',views.save_pdf_daily),
      path('save-pdf/<id>', views.save_pdf_daily, name='save_pdf'),
-     path('reject_timesheet/<id>',views.reject_timesheet),
+     path('reject_timesheet/<id>/<origen>',views.reject_timesheet),
 
      path('create_daily_emp_sup/<id>/<LocID>',views.create_daily_emp_sup),
      path('update_daily_emp_sup/<id>/<LocID>',views.update_daily_emp_sup),
@@ -70,4 +70,7 @@ urlpatterns = [
      # ****** Reports **********************
      path('report_list/',views.report_list), 
      path('get_report_list/<dateSelected>/<dateSelected2>/<status>/<location>/<employee>/<type>',views.get_report_list),
+
+     # ******** ADMIN ************************
+     path('approved_dailies/',views.approved_dailies),
 ]

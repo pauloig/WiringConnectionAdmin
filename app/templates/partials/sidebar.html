@@ -97,10 +97,17 @@
                     <li><a aria-current="page" class="d-block text-light p-2" href="/payroll/0/0/0/0"><i class="icon ion-md-today mr-2 lead" ></i>  Payroll</a></li>    
                     <li class="active">
                       <a href="/mobile/supervisor_list/"><span class="fa fa-list"></span> Payroll Approve</a>
-                    </li>                              
+                    </li>   
+                    {% if emp.is_admin or emp.is_superAdmin or user.is_staff%} 
+                        <li class="active">
+                              <a href="/mobile/approved_dailies/"><span class="fa fa-list"></span> Approved Dailies</a>
+                            </li>   
+                    {%endif%}                           
                 </ul>                   
                 
             {%endif%}
+
+            
 
           </li>
  
