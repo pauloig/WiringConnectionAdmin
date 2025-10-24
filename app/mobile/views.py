@@ -2487,7 +2487,7 @@ def approved_dailies(request):
                                 ts = DailyMob.objects.filter(Location__LocationID = loc, created_by = empFilter.user)   
                             else:
                                 if status != "0":
-                                    ts = DailyMob.objects.filter(Status = status, Period = current_period) 
+                                    ts = DailyMob.objects.filter(Status = status, Period = current_period, Location__LocationID__in = locationList ) 
                                 else:
                                     if loc != "0":
                                         ts = DailyMob.objects.filter(Location__LocationID = loc, Period = current_period) 
@@ -2539,19 +2539,19 @@ def approved_dailies(request):
 
     ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
 
-    if emp:
-        if emp.is_admin:
-            locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-            locationList = []
-            locationList.append({'LocationID': emp.Location.LocationID, 'name':emp.Location.name })
-            
-            for i in locaList:
-                locationList.append({'LocationID': i.LocationID.LocationID, 'name': i.LocationID.name} )
-        else:
-            locationList = catalogModel.Locations.objects.all()
-    else:
-        locationList = catalogModel.Locations.objects.all()
+    #if emp:
+    #    if emp.is_admin:
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+        
+    locationList = []
+    locationList.append({'LocationID': emp.Location.LocationID, 'name':emp.Location.name })
+    
+    for i in locaList:
+        locationList.append({'LocationID': i.LocationID.LocationID, 'name': i.LocationID.name} )
+    #    else:
+    #        locationList = catalogModel.Locations.objects.all()
+    #else:
+    #    locationList = catalogModel.Locations.objects.all()
         
     context["origen"] = "approved_dailies"    
     context["emp"] = emp
