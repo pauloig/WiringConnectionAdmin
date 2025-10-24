@@ -51,7 +51,7 @@
 
         // Notificar al servidor que se descargó (y luego recargar)
         const csrfToken = getCookie('csrftoken');
-        fetch(`/record_daily_pdf_download/${dailyId}/`, {
+        fetch(`/record_daily_pdf_download/${dailyId}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
