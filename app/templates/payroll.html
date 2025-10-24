@@ -16,6 +16,65 @@
         }  
     }
 
+
+      // helper to get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+            }
+        }
+        }
+        return cookieValue;
+    }
+
+    // Wrapper: download file and, only if this is the item.pdfDaily file, record the download in DB
+  function downloadFileAndRecord(url, dailyId) {
+        // Solo actuar para PDFs
+        if (!url || !url.toLowerCase().endsWith('.pdf')) {
+            downloadFile(url);
+            return;
+        }
+
+        // Iniciar descarga
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = url.split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Notificar al servidor que se descargó (y luego recargar)
+        const csrfToken = getCookie('csrftoken');
+        fetch(`/record_daily_pdf_download/${dailyId}/`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ url: url })
+        })
+        .then(resp => {
+            if (!resp.ok) console.error('Failed to record PDF download', resp.status);
+        })
+        .catch(err => {
+            console.error('Error recording PDF download', err);
+        })
+        .finally(() => {
+            // Esperar un breve tiempo para asegurar que el navegador inició la descarga
+            setTimeout(() => {
+            location.reload();
+            }, 800); // ajustar (ms) según sea necesario
+        });
+        }
+
+
     function downloadFile(url) {
         // If the file is a PDF, just download it directly
         if (url.toLowerCase().endsWith('.pdf')) {
@@ -206,8 +265,8 @@
 <style>
    /* CSS will go here */
    :root {
-      --thumbnail-width: 200px;
-      --thumbnail-height: 145px;
+      --thumbnail-width: 220px;
+      --thumbnail-height: 165px;
   }
   
   .documents-container {
@@ -317,37 +376,51 @@
   }
   
   /* Modal Styles */
+
+  .preview-modal .modal-dialog {
+    max-width: 95vw; /* ocupar hasta 90% del ancho de la ventana */
+    margin: 0 auto;
+    height: auto;
+  }
+
   .preview-modal .modal-content {
-      background-color: rgba(0,0,0,0.9);
+        max-height: 95vh; /* permitir que el modal ocupe casi toda la ventana */
+        background-color: rgba(0,0,0,0.92);
+        overflow: hidden; /* el scroll lo maneja modal-body */
+        position: relative;
   }
   
   .preview-modal .modal-body {
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 40vh;
+      padding: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* importante: evitar centrar verticalmente */
+    overflow: auto;          /* permitir scroll interno si el contenido es mayor */
+    max-height: calc(95vh - 48px); /* dejar espacio para botones/header */
+    box-sizing: border-box;
   }
   
   .modal-img {
       max-height: 60vh;
       max-width: 80%;
       object-fit: contain;
-  }
+  } 
   
   .pdf-controls {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      border-radius: 5px;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(0,0,0,0.6);
+    padding: 8px;
+    margin: 12px auto 0;
+    border-radius: 6px;
+    width: auto;
   }
+
   
   .pdf-controls button {
       background: none;
@@ -380,19 +453,21 @@
       z-index: 1;
   }
   
-  .preview-modal .modal-dialog {
-   max-width: 800px; /* Smaller fixed width */
-}
+
 
 .preview-modal .modal-content {
    max-height: 80vh;
    overflow: auto;
 }
 
+
+
 #pdfCanvas {
    border: 1px solid #444;
-   max-height: 55vh !important; /* Reduced canvas height */
-   width: auto !important; /* Allow natural width */
+   
+    width: 50% !important; /* ocupar el ancho disponible del contenedor */
+    height: 50%  !important;
+    display: block;
 }
 
 .pdf-controls {
@@ -607,8 +682,14 @@
                         </a>
                     {%else%}
                         {%if item.approved_by != None%}
-                            <a class="btn btn-info position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
-                                
+
+                            {%if item.download_date != None%}
+                                <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {%else%}
+                                <a class="btn btn-info position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">                                 
+                            {%endif%}
+
+
                                 {%if item.sent_by == None%}
                                     crew {{item.crew}}
                                 {%else%}
@@ -620,7 +701,13 @@
                                 </span>
                             </a>
                         {%else%}
-                            <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+
+                            {%if item.download_date != None%}
+                                <a class="btn btn-primary px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {%else%}  
+                                <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                                
+                            {%endif%}
                                 {%if item.sent_by == None%}
                                     crew {{item.crew}}
                                 {%else%}
@@ -799,7 +886,7 @@
                                                             <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
                                                         </div>
 
-                                                        <div class="download-btn" onclick="downloadFile('{{ item.pdfDaily.url }}'); event.stopPropagation();">
+                                                        <div class="download-btn" onclick="downloadFileAndRecord('{{ item.pdfDaily.url }}', {{ item.id }}); event.stopPropagation();">
                                                             <i class="fas fa-download download-icon"></i>
                                                         </div>
                                                     </div>
@@ -810,6 +897,7 @@
                                                         </div>
                                                     {% endif %}
                                                 </div>
+                                                
                                             {% endif %}
                                         
                                         
@@ -880,7 +968,7 @@
                                 <div class="row mb-2">
                                      <div class="col-sm-1">
                                      </div>
-                                     <div class="col-sm-10 d-flex gap-3">
+                                     <div class="col-sm-9 d-flex gap-3">
 
                                         <!-- ...existing code... -->
                                                 <div class="col-sm-10 d-flex gap-3">
@@ -911,6 +999,17 @@
                                                 </div>
                                                 <!-- ...existing code... -->
                                     </div>
+                                        <div class="col-sm-2">
+                                                {% if item.downloaded_by != None %}
+                                                    <strong>Downloaded:</strong>
+                                                        {{ item.download_date|date:"m/d/Y H:i" }}
+                                                    </br>
+                                                    <strong>Downloaded By:</strong>
+                                                    {{item.downloaded_by}}
+                                                {% endif %}
+                                                
+                                                
+                                        </div>
 
 
                                 </div>
@@ -1318,30 +1417,30 @@
 
 <!-- Preview Modal -->
 <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Changed from modal-xl to modal-lg -->
-        <div class="modal-content">
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            <div class="modal-body p-3"> <!-- Added padding -->
-                <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;"> <!-- Reduced height -->
-                <div id="pdfPreview" class="w-100 d-none">
-                    <div class="d-flex justify-content-center">
-                        <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas> <!-- Constrained dimensions -->
-                    </div>
-                    <div class="pdf-controls mt-2"> <!-- Smaller controls -->
-                        <button id="prevPage" class="btn btn-sm btn-outline-light">
-                            <i class="fas fa-chevron-left"></i> Prev
-                        </button>
-                        <span class="page-counter mx-2">
-                            Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
-                        </span>
-                        <button id="nextPage" class="btn btn-sm btn-outline-light">
-                            Next <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+  <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- tamaño grande flexible -->
+    <div class="modal-content">
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-body p-0">
+        <img id="imagePreview" src="" class="modal-img d-none" alt="Preview image">
+        <div id="pdfPreview" class="w-100 d-none" style="padding: 12px 18px;">
+          <div style="display:flex;justify-content:center;">
+            <canvas id="pdfCanvas"></canvas>
+          </div>
+          <div class="pdf-controls mt-2">
+            <button id="prevPage" class="btn btn-sm btn-outline-light">
+              <i class="fas fa-chevron-left"></i> Prev
+            </button>
+            <span class="page-counter mx-2">
+              Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
+            </span>
+            <button id="nextPage" class="btn btn-sm btn-outline-light">
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
     
@@ -1361,7 +1460,7 @@
         let pageNum = 1;
         let pageRendering = false;
         let pageNumPending = null;
-        const scale = 1.5;
+        
         
         // DOM elements
         const pdfCanvas = document.getElementById('pdfCanvas');
@@ -1420,89 +1519,102 @@
         });
         
         // Show PDF in modal
-        function showPdfPreview(url) {
+         function showPdfPreview(url) {
             document.getElementById('imagePreview').classList.add('d-none');
             document.getElementById('pdfPreview').classList.remove('d-none');
-            
+
             pdfjsLib.getDocument(url).promise.then(function(pdf) {
                 pdfDoc = pdf;
                 totalPagesSpan.textContent = pdf.numPages;
                 pageNum = 1;
-                
+
                 // Reset UI
                 currentPageSpan.textContent = pageNum;
                 prevPageBtn.disabled = true;
                 nextPageBtn.disabled = pdf.numPages <= 1;
-                
-                // Render initial page
-                renderPage(pageNum);
+
+                // Ensure state is clean
+                pageNumPending = null;
+                pageRendering = false;
+
+                // Wait until modal is shown to render (layout must be ready)
+                const modalEl = document.getElementById('previewModal');
+                modalEl.addEventListener('shown.bs.modal', function onShown() {
+                    // small timeout helps layout stabilize on some browsers
+                    setTimeout(() => renderPage(pageNum), 50);
+                }, { once: true });
+
+                previewModal.show();
             }).catch(function(error) {
                 console.error('PDF preview error:', error);
                 alert('Error loading PDF document');
             });
-            
-            previewModal.show();
         }
         
         // Render PDF page
-        function renderPage(num) {
-            pageRendering = true;
-            
-            pdfDoc.getPage(num).then(function(page) {
+         function renderPage(num) {
+                pageRendering = true;
+
+                pdfDoc.getPage(num).then(function(page) {
+                // Obtener viewport base (scale = 1) y calcular escala para el ancho disponible
+                const unscaledViewport = page.getViewport({ scale: 1.0 });
+                // ancho disponible: ancho del contenedor del canvas (con padding reducido)
+                const containerWidth = pdfCanvas.parentElement.clientWidth * 0.96; // dejar margen
+                const scale = (containerWidth / unscaledViewport.width);
+
                 const viewport = page.getViewport({ scale: scale });
                 pdfCanvas.width = viewport.width;
                 pdfCanvas.height = viewport.height;
-                
+
                 const renderContext = {
                     canvasContext: ctx,
                     viewport: viewport
                 };
-                
+
                 page.render(renderContext).promise.then(function() {
                     pageRendering = false;
                     if (pageNumPending !== null) {
-                        renderPage(pageNumPending);
-                        pageNumPending = null;
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
                     }
                 });
-            });
-            
-            currentPageSpan.textContent = num;
-            prevPageBtn.disabled = num <= 1;
-            nextPageBtn.disabled = num >= pdfDoc.numPages;
-        }
-        
-        // Queue PDF page rendering
-        function queueRenderPage(num) {
-            if (pageRendering) {
-                pageNumPending = num;
-            } else {
-                renderPage(num);
+                });
+
+                currentPageSpan.textContent = num;
+                prevPageBtn.disabled = num <= 1;
+                nextPageBtn.disabled = num >= pdfDoc.numPages;
             }
-        }
+
+            // Queue PDF page rendering
+            function queueRenderPage(num) {
+                if (pageRendering) {
+                pageNumPending = num;
+                } else {
+                renderPage(num);
+                }
+            }
         
-        // Previous page button
-        prevPageBtn.addEventListener('click', function() {
-            if (pageNum <= 1) return;
-            pageNum--;
-            queueRenderPage(pageNum);
-        });
-        
-        // Next page button
-        nextPageBtn.addEventListener('click', function() {
-            if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            queueRenderPage(pageNum);
-        });
-        
-        // Show image in modal
-        function showImagePreview(url) {
-            document.getElementById('pdfPreview').classList.add('d-none');
-            const imgPreview = document.getElementById('imagePreview');
-            imgPreview.src = url;
-            imgPreview.classList.remove('d-none');
-            previewModal.show();
-        }
+         // Prev / Next handlers
+            prevPageBtn.addEventListener('click', function() {
+                if (pageNum <= 1) return;
+                pageNum--;
+                queueRenderPage(pageNum);
+            });
+
+            nextPageBtn.addEventListener('click', function() {
+                if (pageNum >= pdfDoc.numPages) return;
+                pageNum++;
+                queueRenderPage(pageNum);
+            });
+
+            // Show image in modal
+            function showImagePreview(url) {
+                document.getElementById('pdfPreview').classList.add('d-none');
+                const imgPreview = document.getElementById('imagePreview');
+                imgPreview.src = url;
+                imgPreview.classList.remove('d-none');
+                previewModal.show();
+            }
 
 
         

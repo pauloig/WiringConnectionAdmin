@@ -287,6 +287,8 @@ class Daily(models.Model):
     mobile_id = models.IntegerField(null=True , blank=True)
     mobile_tech_comments = models.CharField(max_length=800, blank=True, null=True)
     mobile_sup_comments = models.CharField(max_length=800, blank=True, null=True)
+    download_date = models.DateTimeField(null=True, blank=True)
+    downloaded_by =  models.CharField(max_length=60, blank=True, null=True)
     
 
     def __str__(self):

@@ -48,6 +48,7 @@ from django.views.generic import CreateView
 from django.http import JsonResponse
 from django.db import transaction
 from workOrder import models as catalogModel
+from django.views.decorators.http import require_POST
 
 @login_required(login_url='/home/')
 def simple_upload(request):
@@ -5161,6 +5162,28 @@ def upload_daily(request, id, LocID):
         return HttpResponseRedirect('/payroll/' + str(d.Period.id) + '/' + d.day.strftime("%d") + '/' + str(d.crew) +'/' + str(LocID))   
 
     return render(request, "upload_daily.html", context)
+
+@login_required
+@require_POST
+def record_daily_pdf_download(request, daily_id):
+    """
+    Registra en la BD que el PDF asociado a Daily (item.pdfDaily) fue descargado:
+    """
+    try:
+        daily = Daily.objects.filter(id=daily_id).first()
+    except Daily.DoesNotExist:
+        return JsonResponse({'error': 'not found'}, status=404)
+
+
+    try:
+        daily.download_date = datetime.now()
+        daily.downloaded_by = request.user.username
+        daily.save()
+    except Daily.DoesNotExist:
+        return JsonResponse({'error': 'Error updating data'}, status=405)
+
+
+    return JsonResponse({'status': 'ok'})
 
 
 def recap(request, perID):
