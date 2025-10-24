@@ -2532,7 +2532,7 @@ def approved_dailies(request):
                                         ts = DailyMob.objects.filter(supervisor = emp.employeeID, created_by = empFilter.user) 
     else:
         if request.user.is_staff or emp.is_superAdmin or emp.is_admin:
-            ts = DailyMob.objects.filter(Status = 4, Period = current_period)
+            ts = DailyMob.objects.filter(Status = 4, Period = current_period, Location__LocationID__in = locationList)
         else:
             ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
 
