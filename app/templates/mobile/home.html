@@ -152,6 +152,30 @@
           </div>
       </div>  -->     
 
+
+      <!-- Rejected Dailys    -->
+
+      <div class="col-sm-12 pb-5 mb-3">
+          <div class="card mt-3 ">
+              <h6 class="card-header card-header-wc">Rejected</h6>
+              <div class="card-body">
+                  <div class="row">
+                      <div class="col-sm-12">                                                       
+                          {% for item in rejectedDailys %}      
+                           <div class="d-flex justify-content-left align-items-bottom">
+                                <i class="fas fa-briefcase mr-2" style="padding-bottom: 15px;"></i> 
+                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}</p>   
+                                <i class="fas fa-map-marker-alt mr-2 ml-3" style="padding-bottom: 15px; margin-left: 10px;"></i> 
+                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.JobAddress}}</p>                                                                   
+                            </div>
+                          {% endfor %}                                       
+
+                      </div>
+                  </div>                   
+              </div> 
+          </div>
+      </div> 
+
   </form>       
 </div>
 {% endblock %}

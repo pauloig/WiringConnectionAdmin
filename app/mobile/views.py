@@ -73,10 +73,14 @@ def mobile_home(request, LocID):
         per.payDate = today
         per.save()
 
+    else:
+        rejectedDailys = DailyMob.objects.filter(Period=per, Status=5, created_by=request.user.username)
+
 
     context ={}
     context["period"] = per    
     context["emp"]= emp
+    context["rejectedDailys"] = rejectedDailys 
 
     locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
                 
