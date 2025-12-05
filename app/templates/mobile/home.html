@@ -165,8 +165,9 @@
                            <div class="d-flex justify-content-left align-items-bottom">
                                 <i class="fas fa-briefcase mr-2" style="padding-bottom: 15px;"></i> 
                                 <p id="address" name="address" style="margin-left: 10px">{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}</p>   
-                                <i class="fas fa-map-marker-alt mr-2 ml-3" style="padding-bottom: 15px; margin-left: 10px;"></i> 
-                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.JobAddress}}</p>                                                                   
+                                <!--<i class="fas fa-map-marker-alt mr-2 ml-3" style="padding-bottom: 15px; margin-left: 10px;"></i> 
+                                <p id="address" name="address" style="margin-left: 10px">{{item.woID.JobAddress}}</p> -->
+                                <a href="/mobile/crew/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}"><i class="fa fa-pen-to-square" style="padding-bottom: 15px; color: green; padding-bottom: 15px; margin-left: 10px;"></i></a>                                                                  
                             </div>
                           {% endfor %}                                       
 
