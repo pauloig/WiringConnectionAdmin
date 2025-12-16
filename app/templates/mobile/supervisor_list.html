@@ -99,16 +99,16 @@
                                         id="location">
 
                                         {%if selectLoc == "0" %}
-                                        <option value="0" selected>Select a Location</option>
+                                            <option value="0" selected>Select a Location</option>
                                         {%else%}
-                                        <option value="0">Select a Location</option>
+                                            <option value="0">Select a Location</option>
                                         {%endif%}
-                                        {% for data in location %}
-                                        {%if data.LocationID|slugify == selectLoc%}
-                                        <option value="{{data.LocationID}}" selected>{{data.name}}</option>
-                                        {%else%}
-                                        <option value="{{data.LocationID}}">{{data.name}}</option>
-                                        {%endif%}
+                                        {% for data in locationList %}
+                                            {%if data.LocationID|slugify == selectLoc%}
+                                                <option value="{{data.LocationID}}" selected>{{data.name}}</option>
+                                            {%else%}
+                                                <option value="{{data.LocationID}}">{{data.name}}</option>
+                                            {%endif%}
                                         {% endfor %}
                                     </select>
                                 </div>

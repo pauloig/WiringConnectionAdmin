@@ -1544,6 +1544,9 @@ def supervisor_list(request):
 
     for i in locaList:
         locationList.append(i.LocationID.LocationID)
+
+    location = catalogModel.Locations.objects.filter(LocationID__in = locationList)
+    context["locationList"] = location
     
 
 

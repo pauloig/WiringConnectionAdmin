@@ -9124,12 +9124,22 @@ def invoice_daily_report(request):
     context["per"] = per
     context["emp"] = emp
 
+
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
     
 
     if request.method == 'POST':       
        dateSelected =  request.POST.get('date')
        dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
-       result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d') )
+       result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
 
        context["woInvoice"] = result
        context["dateSelected"] =  dateS
@@ -9155,6 +9165,15 @@ def invoice_monthly_report(request):
     opDetail = "Invoice Monthly Report"
     logInAuditLog(request, opType, opDetail)
 
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
 
     if request.method == 'POST':       
        dateSelected =  request.POST.get('date')
@@ -9165,9 +9184,9 @@ def invoice_monthly_report(request):
 
        #result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'))
        if status == "0":
-            result = woInvoice.objects.filter(created_date__range=[dateS, dateS2])
+            result = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Location__LocationID__in = locationList)
        else:
-            result = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Status = status)
+            result = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Status = status, woID__Location__LocationID__in = locationList)
        
        resultList = []
         # Calculating Labor
@@ -9238,12 +9257,23 @@ def payroll_employee_report(request, empID):
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()    
     per = period.objects.filter(status__in=(1,2)).first()
 
-    locationList = Locations.objects.filter()
+
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
+
+    locationList2 = Locations.objects.filter( LocationID__in = locationList)
     
 
     context["per"] = per
     context["emp"] = emp
-    context["location"] = locationList
+    context["location"] = locationList2
 
     opType = "Access Option"
     opDetail = "Invoice Monthly Report"
@@ -9251,6 +9281,11 @@ def payroll_employee_report(request, empID):
 
     employeeID = empID
     context["post"] = False
+
+
+    
+
+
 
     if request.method == 'POST':       
        dateSelected =  request.POST.get('date')
@@ -9295,11 +9330,19 @@ def get_summary_by_employee(request,dateSelected, dateSelected2, empID, Location
 
     resultList = []
 
-    
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first() 
 
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
 
     if LocationID == "0":
-        loca = Locations.objects.all().order_by("LocationID")
+        loca = Locations.objects.filter(LocationID__in = locationList).order_by("LocationID")
     else:        
         loca = Locations.objects.filter(LocationID = LocationID)
         
@@ -9583,7 +9626,7 @@ def employee_list_pay_report(request):
 @login_required(login_url='/home/')
 def get_daily_report(request, dateSelected):
     
-
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('daily-report', cell_overwrite_ok = True) 
 
@@ -9613,10 +9656,20 @@ def get_daily_report(request, dateSelected):
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_title) # at 0 row 0 column 
-      
+
+
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
 
     dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
-    ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d') )
+    ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
     
 
     for item in ordenes:
@@ -9666,11 +9719,22 @@ def get_daily_report(request, dateSelected):
 @login_required(login_url='/home/')
 def get_monthly_report(request, dateSelected, dateSelected2, status):
     
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('monthly-report', cell_overwrite_ok = True) 
 
     
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
 
     # Sheet header, first row
     row_num = 4
@@ -9706,9 +9770,9 @@ def get_monthly_report(request, dateSelected, dateSelected2, status):
     #ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'))
     
     if status == "0":
-        ordenes = woInvoice.objects.filter(created_date__range=[dateS, dateS2])
+        ordenes = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Location__LocationID__in = locationList)
     else:
-        ordenes = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Status = status)
+        ordenes = woInvoice.objects.filter(created_date__range=[dateS, dateS2], woID__Status = status, woID__Location__LocationID__in = locationList )
        
     for item in ordenes:
         row_num += 1
@@ -9820,10 +9884,19 @@ def wo_balance_Report(request):
     opDetail = "Invoice Monthly Report"
     logInAuditLog(request, opType, opDetail)
     estatus = ""
-    loc = ""
+    loc = ""    
 
-    locationList = Locations.objects.all()
-    context["location"]=locationList
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
+    locationList2 = Locations.objects.filter( LocationID__in = locationList)
+    context["location"]=locationList2
 
     if request.method == 'POST':       
     
@@ -9838,9 +9911,9 @@ def wo_balance_Report(request):
             result = workOrder.objects.filter(Status = estatus, Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )     
        else:
             if estatus != "0":
-                result = workOrder.objects.filter(Status = estatus).exclude(linkedOrder__isnull = False, uploaded = False ) 
+                result = workOrder.objects.filter(Status = estatus, Location__LocationID__in = locationList).exclude(linkedOrder__isnull = False, uploaded = False ) 
             else:
-                result = workOrder.objects.filter(Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False ) 
+                result = workOrder.objects.filter(Location__LocationID__in = locationList).exclude(linkedOrder__isnull = False, uploaded = False ) 
        
        resultList = []
         # Calculating Labor
@@ -9885,6 +9958,18 @@ def wo_balance_Report(request):
 @login_required(login_url='/home/')
 def get_balance_report(request, status, location):
     
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()  
+
+
+    #Getting the locations assigned to the Actual User
+    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                
+    locationList = []
+    locationList.append(emp.Location.LocationID)
+
+    for i in locaList:
+        locationList.append(i.LocationID.LocationID)
+
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('monthly-report', cell_overwrite_ok = True) 
@@ -9922,9 +10007,9 @@ def get_balance_report(request, status, location):
         result = workOrder.objects.filter(Status = status, Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )     
     else:
         if status != "0":
-            result = workOrder.objects.filter(Status = status).exclude(linkedOrder__isnull = False, uploaded = False ) 
+            result = workOrder.objects.filter(Status = status, Location__LocationID__in = locationList).exclude(linkedOrder__isnull = False, uploaded = False ) 
         else:
-            result = workOrder.objects.filter(Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False ) 
+            result = workOrder.objects.filter(Location__LocationID__in = locationList).exclude(linkedOrder__isnull = False, uploaded = False ) 
     
     for i in result:
         #Payroll Detail
