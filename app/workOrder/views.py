@@ -9125,6 +9125,8 @@ def invoice_daily_report(request):
     context["emp"] = emp
 
 
+    
+
     #Getting the locations assigned to the Actual User
     locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
                 
@@ -9139,7 +9141,11 @@ def invoice_daily_report(request):
     if request.method == 'POST':       
        dateSelected =  request.POST.get('date')
        dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
-       result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
+
+       if emp.is_superAdmin:
+           result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'))
+       else:
+           result = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
 
        context["woInvoice"] = result
        context["dateSelected"] =  dateS
@@ -9166,13 +9172,17 @@ def invoice_monthly_report(request):
     logInAuditLog(request, opType, opDetail)
 
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                        
+        locationList = []
+        locationList.append(emp.Location.LocationID)
+
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
 
     if request.method == 'POST':       
@@ -9259,13 +9269,16 @@ def payroll_employee_report(request, empID):
 
 
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                    
+        locationList = []
+        locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
 
     locationList2 = Locations.objects.filter( LocationID__in = locationList)
@@ -9333,13 +9346,16 @@ def get_summary_by_employee(request,dateSelected, dateSelected2, empID, Location
     emp = Employee.objects.filter(user__username__exact = request.user.username).first() 
 
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                    
+        locationList = []
+        locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
     if LocationID == "0":
         loca = Locations.objects.filter(LocationID__in = locationList).order_by("LocationID")
@@ -9669,8 +9685,10 @@ def get_daily_report(request, dateSelected):
 
 
     dateS = datetime.strptime(dateSelected, '%Y-%m-%d').date()
-    ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
-    
+    if emp.is_superAdmin:
+        ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'))
+    else:
+        ordenes = woInvoice.objects.filter(created_date__year = datetime.strftime(dateS, '%Y'), created_date__month = datetime.strftime(dateS, '%m'),created_date__day=datetime.strftime(dateS, '%d'), woID__Location__LocationID__in = locationList)
 
     for item in ordenes:
         row_num += 1
@@ -9727,13 +9745,16 @@ def get_monthly_report(request, dateSelected, dateSelected2, status):
 
     
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                    
+        locationList = []
+        locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
 
     # Sheet header, first row
@@ -9887,13 +9908,16 @@ def wo_balance_Report(request):
     loc = ""    
 
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                    
+        locationList = []
+        locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
     locationList2 = Locations.objects.filter( LocationID__in = locationList)
     context["location"]=locationList2
@@ -9962,13 +9986,16 @@ def get_balance_report(request, status, location):
 
 
     #Getting the locations assigned to the Actual User
-    locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
-                
-    locationList = []
-    locationList.append(emp.Location.LocationID)
+    if emp.is_superAdmin:
+        locationList = Locations.objects.all().values_list('LocationID', flat=True)
+    else:    
+        locaList = catalogModel.employeeLocation.objects.filter(employeeID = emp)
+                    
+        locationList = []
+        locationList.append(emp.Location.LocationID)
 
-    for i in locaList:
-        locationList.append(i.LocationID.LocationID)
+        for i in locaList:
+            locationList.append(i.LocationID.LocationID)
 
 
     wb = xlwt.Workbook(encoding='utf-8')
