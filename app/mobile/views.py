@@ -330,10 +330,6 @@ def crew(request, perID, dID, crewID, LocID):
             selectedDay = True
             selectedDate = fullDate
             twTitle +=  fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()
-
-            
-             
-
         
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
@@ -399,6 +395,8 @@ def crew(request, perID, dID, crewID, LocID):
 
     if crewID != "0":
         dailyID = DailyMob.objects.filter(Period = perID, day=selectedDate, crew = crewID, Location = loca, created_by = user ).first()
+
+        
         dailyEmp = DailyMobEmployee.objects.filter(DailyID = dailyID).order_by('created_date')
         context["dailyEmp"] = dailyEmp
 
@@ -422,7 +420,7 @@ def crew(request, perID, dID, crewID, LocID):
 
         #Adding the documents Material Backup
         dailyDocsMB = DailyMobDocs.objects.filter(DailyID = dailyID, docType=3).order_by('created_date')
-        
+    
 
         context["dailyactual"] = dailyID
         context["dailyItem"] = dailyItem
@@ -2080,6 +2078,16 @@ def approve_timesheet(request, id):
             form.instance.approved_by = request.user.username
             form.instance.approved_date = datetime.now()
             form.save()
+
+            #If Daily is Ready to Bill Update the Work Order Status to 7 - Ready to Bill
+            if obj.daily_rtb:
+                if obj.woID != None:            
+                    wo = catalogModel.workOrder.objects.filter(id = obj.woID.id).first()
+                    if wo:
+                        wo.Status = '7'
+                        wo.updated_date = datetime.now()
+                        wo.updatedBy = request.user.username
+                        wo.save()
 
             # Send email to notify approval
             for emp in dailyEmp:

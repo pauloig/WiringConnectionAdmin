@@ -172,6 +172,8 @@
                                                         <td>Invoiced</td>
                                                     {% elif order.Status == "6" %}
                                                         <td>Transferred</td>
+                                                    {% elif order.Status == "7" %}
+                                                        <td>Ready To Bill</td>
                                                     {%else%}
                                                         <td></td>
                                                     {% endif %} 

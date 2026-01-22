@@ -202,7 +202,9 @@
                                                     <td class="p-1">Invoiced</td>                                               
                                                 {% elif order.Status == "6" %}
                                                     <td class="p-1">Transferred</td>
-                                                {%else%}
+                                                {% elif order.Status == "7" %}
+                                                    <td class="p-1">Ready To Bill</td>
+                                                {%else%}                                              
                                                     <td class="p-1"></td>
                                                 {% endif %} 
                                                 <td class="p-1">{{order.Location}}</td>

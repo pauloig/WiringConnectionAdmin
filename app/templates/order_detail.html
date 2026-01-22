@@ -70,6 +70,8 @@
                                         <input type="text" name="Status" id="Status" class="form-control" value="Invoiced" disabled>
                                     {%elif order.Status == "6"%}
                                         <input type="text" name="Status" id="Status" class="form-control" value="Transferred" disabled>
+                                    {%elif order.Status == "7"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="Ready To Bill" disabled>
                                     {% else %}
                                         <input type="text" name="Status" id="Status" class="form-control" value="" disabled>
                                     {%endif%}                                                                                                                                           

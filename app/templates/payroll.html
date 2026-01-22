@@ -973,9 +973,9 @@
                                         <!-- ...existing code... -->
                                                 <div class="col-sm-10 d-flex gap-3">
                                                     <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb or item.woID.Status == 7 %}checked{% endif %} disabled>                                                        
-                                                    </label>
-                                                    {{item.woID.Status}}
+                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>                                                        
+                                                        Ready To Bill
+                                                    </label>                                                    
                                                     <span style="margin-right: 10px;"></span>
                                                     <label class="form-check-label me-2">
                                                         <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
