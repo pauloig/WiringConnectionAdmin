@@ -229,10 +229,12 @@
         <div class="d-flex justify-content-between">             
             <div>  
                 {% if selectedDay > 0 %}
-                    {%if emp.is_superAdmin  or user.is_staff  or period.status == 1 or period.status == 0%}                          
-                            <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
-                                <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
-                            </a>                      
+                    {%if emp.is_superAdmin  or user.is_staff  or period.status == 1 or period.status == 0%}        
+                            {% if AddCrew %}                  
+                                <a class="btn btn-success px-2" href="/mobile/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}" style="height: 3em; margin-bottom: 0.5em;">
+                                    <i class="fa-solid fa-user-plus" style="height: 0.5em;"></i> 
+                                </a>    
+                            {% endif %}                  
                     {%endif%}
                 {%endif%}   
                 {% for item in crew %}                         

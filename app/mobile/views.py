@@ -310,16 +310,19 @@ def crew(request, perID, dID, crewID, LocID):
         context["period"] = yesterday_period
     elif dID == today.strftime("%d"):
         context["period"] = today_period
-
-    #getting the list of days per week
-    startDate = yesterday
+    else:
+        context["period"] = per
 
     #***********************************************************************************************************
+    #StartDate is taken from the Period.From because it is possible to edit rejected Dailys from other days than yesterday or today
 
     #getting the list of days per week
-    #startDate = per.fromDate
-    numDays = 2
+    #startDate = yesterday
+    #getting the list of days per week
+    startDate = per.fromDate
+    numDays = 15
     week1 = []
+    #***********************************************************************************************************
     for x in range(0,numDays):
         selectedDay = False
         fullDate = startDate + timedelta(days = x)
@@ -330,6 +333,7 @@ def crew(request, perID, dID, crewID, LocID):
             selectedDay = True
             selectedDate = fullDate
             twTitle +=  fullDate.strftime("%A").upper() + ', ' + fullDate.strftime("%B %d, %Y").upper()
+        
         
         #obtengo la cantidad de Items asociados
         dItems = DailyMob.objects.filter(Period = per, Location = loca, day = fullDate)
@@ -386,8 +390,16 @@ def crew(request, perID, dID, crewID, LocID):
     user = request.user.username
 
     if dID != "0":
-        # get the list of dailys for the period, Day selected and Location
-        crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca, created_by = user).order_by('crew')
+
+        #If selectedDate is not yesterday or today, just get the dailys in Rejected Status
+        if selectedDate != yesterday and selectedDate != today:
+            crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca, Status=5, created_by = user).order_by('crew')
+            context["AddCrew"] = False
+        else:
+            # get the list of dailys for the period, Day selected and Location
+            crews = DailyMob.objects.filter(Period = perID, day=selectedDate, Location = loca, created_by = user).order_by('crew')
+            context["AddCrew"] = True
+        
         context["crew"] = crews
 
     if crews.count() == 1:
