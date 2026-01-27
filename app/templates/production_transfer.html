@@ -46,6 +46,15 @@
                                     {% if order.Status == "5" %}
                                         <td>Invoiced</td>
                                     {% endif %}
+                                    {% if order.Status == "6" %}
+                                        <td>Transferred</td>
+                                    {% endif %}
+                                    {% if order.Status == "7" %}
+                                        <td>Ready To Bill</td>
+                                    {% endif %}
+                                    {% if order.Status == "8" %}
+                                        <td>RTB / Pending External Production</td>
+                                    {% endif %}                                    
                                    
                                     <td>                                     
                                          <a href="#" onclick="selectItem({{order.id}},'{{order}}')"><i class="fa-solid fa-circle-arrow-right" style="color: green;"></i></a>                                        

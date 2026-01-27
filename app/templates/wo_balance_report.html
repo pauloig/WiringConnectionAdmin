@@ -53,6 +53,16 @@
                                     {%else%}
                                         <option value="6">Transferred</option>
                                     {%endif%}
+                                    {%if selectEstatus == "7"%}
+                                        <option value="7" selected>Ready To Bill</option>
+                                    {%else%}
+                                        <option value="7">Ready To Bill</option>
+                                    {%endif%}
+                                    {%if selectEstatus == "8"%}
+                                        <option value="8" selected>RTB / Pending External Production</option>
+                                    {%else%}
+                                        <option value="8">RTB / Pending External Production</option>
+                                    {%endif%}
                                   </select>
                             </div>
                             <div class="col-lg-2">  
@@ -118,6 +128,10 @@
                         Invoiced
                     {%elif selectEstatus == "6"%}
                         Transferred
+                    {%elif selectEstatus == "7"%}
+                        Ready To Bill
+                    {%elif selectEstatus == "8"%}
+                        RTB / Pending External Production
                     {%endif%}    
                     - {% for data in location %}
                             {%if data.LocationID|slugify == selectLoc%}                              
@@ -172,6 +186,10 @@
                                                         Invoiced
                                                     {%elif item.Status == "6"%}
                                                         Transferred
+                                                    {%elif item.Status == "7"%}
+                                                        Ready To Bill
+                                                    {%elif item.Status == "8"%}
+                                                        RTB / Pending External Production
                                                     {%endif%}    
                                                    
                                                 

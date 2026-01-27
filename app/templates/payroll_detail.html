@@ -77,6 +77,8 @@
                                         <input type="text" name="Status" id="Status" class="form-control" value="Transferred" disabled>
                                     {%elif order.Status == "7"%}
                                         <input type="text" name="Status" id="Status" class="form-control" value="Ready To Bill" disabled>
+                                    {%elif order.Status == "8"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="RTB / Pending External Production" disabled>
                                     {%endif%}                                                                                                                                            
                                 </div>
                             </div>

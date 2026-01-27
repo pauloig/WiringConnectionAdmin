@@ -74,6 +74,10 @@ urlpatterns = [
     path('update_order_daily/<woID>/<dailyID>/<LocID>',views.update_order_daily),
     path('create_daily/<pID>/<dID>/<LocID>',views.create_daily),
     path('update_daily/<daily>',views.update_daily),
+
+     path('get_daily_status/<int:daily_id>', views.get_daily_status, name='get_daily_status'),
+    path('update_daily_status/<int:daily_id>', views.update_daily_status, name='update_daily_status'),
+
     path('create_daily_emp/<id>/<LocID>',views.create_daily_emp),
     path('update_daily_emp/<id>/<LocID>',views.update_daily_emp),
     path('delete_daily_emp/<id>/<LocID>',views.delete_daily_emp),

@@ -53,6 +53,15 @@
                                 {% if order.Status == "5" %}
                                     <td>Invoiced</td>
                                 {% endif %}
+                                {% if order.Status == "6" %}
+                                    <td>Transferred</td>
+                                {% endif %}
+                                {% if order.Status == "7" %}
+                                    <td>Ready To Bill</td>
+                                {% endif %}
+                                {% if order.Status == "8" %}
+                                    <td>RTB / Pending External Production</td>
+                                {% endif %}
                                 <!-- <td>{{order.Location}}</td>
                                 <td>{{order.WCSup}}</td> -->
                                 <!-- <td>{{order.UploadDate}}</td> -->

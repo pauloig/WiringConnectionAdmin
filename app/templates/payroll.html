@@ -968,34 +968,76 @@
                                 <div class="row mb-2">
                                      <div class="col-sm-1">
                                      </div>
-                                     <div class="col-sm-9 d-flex gap-3">
+                                     <div class="col-sm-10 d-flex gap-3">
 
                                         <!-- ...existing code... -->
-                                                <div class="col-sm-10 d-flex gap-3">
-                                                    <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>                                                        
-                                                        Ready To Bill
-                                                    </label>                                                    
-                                                    <span style="margin-right: 10px;"></span>
-                                                    <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
-                                                        Work in Progress
-                                                    </label>
-                                                    <span style="margin-right: 10px;"></span>
-                                                    <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_cd %}checked{% endif %} disabled>
-                                                        Construction Done
-                                                    </label>
-                                                    <span style="margin-right: 10px;"></span>
-                                                    <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_nfs %}checked{% endif %} disabled>
-                                                        Needs Fiber splicing
-                                                    </label>
-                                                    <span style="margin-right: 10px;"></span>
-                                                    <label class="form-check-label me-2">
-                                                        <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_fd %}checked{% endif %} disabled>
-                                                        Fiber Done
-                                                    </label>
+                                                <div class="col-sm-12 d-flex gap-3">
+                                                    {% if item.mobile_id %}
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>                                                        
+                                                            Ready To Bill
+                                                        </label>                                                    
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
+                                                            Work in Progress
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_cd %}checked{% endif %} disabled>
+                                                            Construction Done
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_nfs %}checked{% endif %} disabled>
+                                                            Needs Fiber splicing
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_fd %}checked{% endif %} disabled>
+                                                            Fiber Done
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_rtb_pep %}checked{% endif %} disabled>
+                                                            RTB / Pending External Production
+                                                        </label>
+                                                    {% elif item.mobile_id == None %}
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_rtb %}checked{% endif %} disabled>                                                        
+                                                            Ready To Bill
+                                                        </label>                                                    
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_wp %}checked{% endif %} disabled>
+                                                            Work in Progress
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_cd %}checked{% endif %} disabled>
+                                                            Construction Done
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_nfs %}checked{% endif %} disabled>
+                                                            Needs Fiber splicing
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_fd %}checked{% endif %} disabled>
+                                                            Fiber Done
+                                                        </label>
+                                                        <span style="margin-right: 10px;"></span>
+                                                        <label class="form-check-label me-2">
+                                                            <input type="checkbox" class="form-check-input" {% if item.daily_rtb_pep %}checked{% endif %} disabled>
+                                                            RTB / Pending External Production
+                                                        </label>
+                                                        <span style="margin-right: 4px;"></span>
+                                                        <button type="button" class="btn btn-primary btn-sm"     onclick="openDailyStatusModal({{item.id}})">
+                                                            <i class="fa-solid fa-pen-to-square"></i>
+                                                        </button>
+                                                        
+                                                    {%endif%}
                                                 </div>
                                                 <!-- ...existing code... -->
                                     </div>
@@ -1404,6 +1446,70 @@
                                     </div>
                                     </div>
                                 </div>
+
+                                <!-- Daily Status Modal -->
+                                <div class="modal fade" id="dailyStatusModal" tabindex="-1" aria-labelledby="dailyStatusModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="dailyStatusModalLabel">Update Daily Status</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="dailyStatusForm">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" id="dailyId" name="daily_id">
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_rtb" name="daily_rtb">
+                                                        <label class="form-check-label" for="daily_rtb">
+                                                            Ready To Bill
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_wp" name="daily_wp">
+                                                        <label class="form-check-label" for="daily_wp">
+                                                            Work in Progress
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_cd" name="daily_cd">
+                                                        <label class="form-check-label" for="daily_cd">
+                                                            Construction Done
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_nfs" name="daily_nfs">
+                                                        <label class="form-check-label" for="daily_nfs">
+                                                            Needs Fiber splicing
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_fd" name="daily_fd">
+                                                        <label class="form-check-label" for="daily_fd">
+                                                            Fiber Done
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="daily_rtb_pep" name="daily_rtb_pep">
+                                                        <label class="form-check-label" for="daily_rtb_pep">
+                                                            RTB / Pending External Production
+                                                        </label>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="button" class="btn btn-primary" onclick="saveDailyStatus()">Save Changes</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             {%endif%} 
                         {%endfor%}
                        
@@ -1451,7 +1557,7 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
+    <script>
                 // Initialize PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
         
@@ -1617,7 +1723,82 @@
             }
 
 
-        
+            // Adding Function to open Daily Status Modal
+            function openDailyStatusModal(dailyId) {
+                    // Set the hidden daily_id field
+                    document.getElementById('dailyId').value = dailyId;
+                    
+                    // Fetch current status and populate form
+                    fetch(`/get_daily_status/${dailyId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('daily_rtb').checked = data.daily_rtb;
+                            document.getElementById('daily_wp').checked = data.daily_wp;
+                            document.getElementById('daily_cd').checked = data.daily_cd;
+                            document.getElementById('daily_nfs').checked = data.daily_nfs;
+                            document.getElementById('daily_fd').checked = data.daily_fd;
+                            document.getElementById('daily_rtb_pep').checked = data.daily_rtb_pep;
+
+                            // Add event listeners for mutual exclusivity
+                            setupCheckboxListeners();
+                        })
+                        .catch(error => console.error('Error:', error));
+                    
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('dailyStatusModal'));
+                    modal.show();
+                }
+
+                function setupCheckboxListeners() {
+                    const rtbCheckbox = document.getElementById('daily_rtb');
+                    const rtbPepCheckbox = document.getElementById('daily_rtb_pep');
+                    
+                    // When Ready To Bill is checked, uncheck RTB / Pending External Production
+                    rtbCheckbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            rtbPepCheckbox.checked = false;
+                        }
+                    });
+                    
+                    // When RTB / Pending External Production is checked, uncheck Ready To Bill
+                    rtbPepCheckbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            rtbCheckbox.checked = false;
+                        }
+                    });
+                }
+
+                function saveDailyStatus() {
+                    const dailyId = document.getElementById('dailyId').value;
+                    const formData = {
+                        daily_rtb: document.getElementById('daily_rtb').checked,
+                        daily_wp: document.getElementById('daily_wp').checked,
+                        daily_cd: document.getElementById('daily_cd').checked,
+                        daily_nfs: document.getElementById('daily_nfs').checked,
+                        daily_fd: document.getElementById('daily_fd').checked,
+                        daily_rtb_pep: document.getElementById('daily_rtb_pep').checked
+                    };
+                    
+                    fetch(`/update_daily_status/${dailyId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Daily status updated successfully!');
+                            location.reload(); // Reload to see changes
+                            bootstrap.Modal.getInstance(document.getElementById('dailyStatusModal')).hide();
+                        } else {
+                            alert('Error updating daily status');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
 
       
       </script>

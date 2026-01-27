@@ -57,9 +57,17 @@
                                     {%elif order.Status == "2"%}
                                         <input type="text" name="Status" id="Status" class="form-control" value="Work in Progress" disabled>
                                     {%elif order.Status == "3"%}
-                                        <input type="text" name="Status" id="Status" class="form-control" value="Pending D                                        <input type="text" name="Status" id="Status" class="form-control" value="Pending Revised WO" disabled>
+                                        <input type="text" name="Status" id="Status" class="form-control" value="Pending Docs" disabled>                                       
+                                    {%elif order.Status == "4"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="Pending Revised WO" disabled>
                                     {%elif order.Status == "5"%}
                                         <input type="text" name="Status" id="Status" class="form-control" value="Invoiced" disabled>
+                                    {%elif order.Status == "6"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="Transferred" disabled>
+                                    {%elif order.Status == "7"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="Ready To Bill" disabled>
+                                    {%elif order.Status == "8"%}
+                                        <input type="text" name="Status" id="Status" class="form-control" value="RTB / Pending External Production" disabled>
                                     {%endif%}                                                                                                                                            
                                 </div>
                             </div>

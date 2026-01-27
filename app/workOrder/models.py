@@ -17,6 +17,7 @@ status_choice = (
     ('5', 'Invoiced'),
     ('6', 'Transferred'),
     ('7', 'Ready to Bill'),
+    ('8', 'RTB / Pending External Production')
 )
 
 prodStatus_choice = (
@@ -289,6 +290,12 @@ class Daily(models.Model):
     mobile_sup_comments = models.CharField(max_length=800, blank=True, null=True)
     download_date = models.DateTimeField(null=True, blank=True)
     downloaded_by =  models.CharField(max_length=60, blank=True, null=True)
+    daily_rtb = models.BooleanField(default=False)
+    daily_wp = models.BooleanField(default=False)
+    daily_cd = models.BooleanField(default=False)
+    daily_nfs = models.BooleanField(default=False)
+    daily_fd = models.BooleanField(default=False)
+    daily_rtb_pep = models.BooleanField(default=False)
     
 
     def __str__(self):

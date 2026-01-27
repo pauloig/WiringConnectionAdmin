@@ -49,6 +49,10 @@ from django.http import JsonResponse
 from django.db import transaction
 from workOrder import models as catalogModel
 from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 
 @login_required(login_url='/home/')
 def simple_upload(request):
@@ -4361,6 +4365,53 @@ def update_daily(request, daily):
         return HttpResponseRedirect('/payroll/' + str(per) + '/' + crew.day.strftime("%d")  + '/'+ str(crew.crew) +'/0')
     else:
         return HttpResponseRedirect('/payroll/0/0/0/0')
+
+@require_http_methods(["GET"])
+def get_daily_status(request, daily_id):
+    try:
+        daily = Daily.objects.get(id=daily_id)
+        return JsonResponse({
+            'daily_rtb': daily.daily_rtb,
+            'daily_wp': daily.daily_wp,
+            'daily_cd': daily.daily_cd,
+            'daily_nfs': daily.daily_nfs,
+            'daily_fd': daily.daily_fd,
+            'daily_rtb_pep': daily.daily_rtb_pep
+        })
+    except Daily.DoesNotExist:
+        return JsonResponse({'error': 'Daily not found'}, status=404)
+
+@require_http_methods(["PUT"])
+def update_daily_status(request, daily_id):
+    try:
+        daily = Daily.objects.get(id=daily_id)
+        data = json.loads(request.body)
+        
+        daily.daily_rtb = data.get('daily_rtb', daily.daily_rtb)
+        daily.daily_wp = data.get('daily_wp', daily.daily_wp)
+        daily.daily_cd = data.get('daily_cd', daily.daily_cd)
+        daily.daily_nfs = data.get('daily_nfs', daily.daily_nfs)
+        daily.daily_fd = data.get('daily_fd', daily.daily_fd)
+        daily.daily_rtb_pep = data.get('daily_rtb_pep', daily.daily_rtb_pep)
+        
+        daily.save()
+
+        #Updating Work Order Status if needed
+        if daily.woID:
+            wo = workOrder.objects.filter(id = daily.woID.id).first()
+            if wo:
+                if daily.daily_rtb:
+                    wo.Status = "7"  # RTB                    
+                elif daily.daily_rtb_pep:
+                    wo.Status = "8"  # RTB_PEP
+                
+                wo.save()
+
+        return JsonResponse({'success': True, 'message': 'Daily status updated'})
+    except Daily.DoesNotExist:
+        return JsonResponse({'error': 'Daily not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 def update_ptp_Emp(dailyID, split):
