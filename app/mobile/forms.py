@@ -281,7 +281,8 @@ class DailyMobApprovedForm(forms.ModelForm):
                   'daily_wp',
                   'daily_cd',
                   'daily_nfs',
-                  'daily_fd',           
+                  'daily_fd',         
+                  'daily_rtb_pep',  
                   ]
         
     def __init__(self, *args, **kwargs):        

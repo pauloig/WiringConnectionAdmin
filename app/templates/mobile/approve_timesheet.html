@@ -453,45 +453,61 @@
                         
                     </div>     
                 </div>
-                <div class="col-sm-5 pt-5">
+                <div class="col-sm-2 pt-5">
                         
                             <label class="form-label mr-4 pr-2">this is the only production:  </label> 
                             {% render_field form.daily_production class="form-check-input" %}
                             <label class="form-check-label" for="{{ form.daily_production.id_for_label }}"></label>  
                 </div>
+                <div class="col-sm-3">
+                    <div class="mb-3">
+                        <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Zone</label>
+                        {% render_field form.daily_zone class="form-control" %}
+                        <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
+                    </div> 
+                </div>
             </div>
             </br>     
             <div class="row">                                                                       
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Ready to Bill  </label> 
-                            {% render_field form.daily_rtb class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
-                </div>    
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Work in Progress</label> 
-                            {% render_field form.daily_wp class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
-                </div>      
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Construction Done</label> 
-                            {% render_field form.daily_cd class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
-                </div> 
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Needs Fiber splicing</label> 
-                            {% render_field form.daily_nfs class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
-                </div>   
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Fiber Done</label> 
-                            {% render_field form.daily_fd class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
-                </div>         
+                <div class="col-sm-9">   
+                    <div class="row">                                                                    
+                        <div class="col-sm-2 pt-5">                        
+                                    <label class="form-label mr-4 pr-1">Ready to Bill  </label> 
+                                    {% render_field form.daily_rtb class="form-check-input" %}
+                                    <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
+                        </div>    
+                        <div class="col-sm-2 pt-5">                        
+                                    <label class="form-label mr-4 pr-2">Work in Progress</label> 
+                                    {% render_field form.daily_wp class="form-check-input" %}
+                                    <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
+                        </div>      
+                        <div class="col-sm-3 pt-5">
+                                
+                                    <label class="form-label mr-4 pr-2">Construction Done</label> 
+                                    {% render_field form.daily_cd class="form-check-input" %}
+                                    <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
+                        </div> 
+                        <div class="col-sm-3 pt-5">
+                                
+                                    <label class="form-label mr-4 pr-2">Needs Fiber splicing</label> 
+                                    {% render_field form.daily_nfs class="form-check-input" %}
+                                    <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
+                        </div>   
+                        <div class="col-sm-2 pt-5">
+                                
+                                    <label class="form-label mr-4 pr-2">Fiber Done</label> 
+                                    {% render_field form.daily_fd class="form-check-input" %}
+                                    <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
+                        </div>  
+                    
+                    </div>
+                </div>
+                    <div class="col-sm-3 pt-5">                        
+                                <label class="form-label mr-4 pr-2">RTB / Pending External Production</label> 
+                                {% render_field form.daily_rtb_pep class="form-check-input" %}
+                                <label class="form-check-label" for="{{ form.daily_rtb_pep.id_for_label }}"></label>  
+                    </div>  
+                
                 <!--<div class="col-sm-2">
                     <div class="mb-3">
                         <label for="{{ form.daily_Status.id_for_label }}" class="form-label">Daily Status</label>
@@ -499,19 +515,13 @@
                         <div class="invalid-feedback">{{ form.daily_Status.errors|first }}</div>
                     </div> 
                 </div>-->
-                <div class="col-sm-2">
-                    <div class="mb-3">
-                        <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Zone</label>
-                        {% render_field form.daily_zone class="form-control" %}
-                        <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
-                    </div> 
-                </div>
+                
              
                 <div class="col-sm-1 pt-4">
                     <input type="text" class="form-control d-none" id="daily" name="daily" value="{{dailyWO.id}}">                                         
                 </div> 
             </div>   
-            <div class="row">                                                                       
+            <div class="row mt-3">                                                                       
                 <div class="col-sm-12">
                     <div class="mb-3">
                         <label for="{{ form.daily_comments.id_for_label }}" class="form-label">Tech. Comments</label>
@@ -1297,6 +1307,7 @@
           var statusCD = document.getElementById('id_daily_cd') ? document.getElementById('id_daily_cd').checked : false;
           var statusNFS = document.getElementById('id_daily_nfs') ? document.getElementById('id_daily_nfs').checked : false;
           var statusFD = document.getElementById('id_daily_fd') ? document.getElementById('id_daily_fd').checked : false;
+          var statusRTB_PEP = document.getElementById('id_daily_rtb_pep') ? document.getElementById('id_daily_rtb_pep').checked : false;
 
 
             var techComments = document.getElementById('id_daily_comments');
@@ -1324,16 +1335,18 @@
         if (statusNFS == true )
             StatusText += '☑ Needs Fiber Splicing   ';
         else 
-            StatusText += '☐ Needs Fiber Splicing   ';
-
-    
-    
+            StatusText += '☐ Needs Fiber Splicing   ';    
 
         if (statusFD == true)
             StatusText += '☑ Fiber Done   ';
         else 
             StatusText += '☐ Fiber Done   ';
-                        
+        
+        /*if (statusRTB_PEP == true)
+            StatusText += '☑ RTB / Pending External Production   ';
+        else 
+            StatusText += '☐ RTB / Pending External Production   ';
+                        */
                                
                         
 
@@ -1476,24 +1489,30 @@
     </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Make daily_rtb and daily_wp mutually exclusive
+    // Make daily_rtb, daily_wp, and daily_rtb_pep mutually exclusive
     var rtb = document.getElementById('{{ form.daily_rtb.id_for_label }}');
     var wp = document.getElementById('{{ form.daily_wp.id_for_label }}');
-    if (rtb && wp) {
+    var rtb_pep = document.getElementById('{{ form.daily_rtb_pep.id_for_label }}');
+    
+    if (rtb && wp && rtb_pep) {
         rtb.addEventListener('change', function() {
             if (rtb.checked) {
                 wp.checked = false;
-            }
-            else if (!rtb.checked) {
-                wp.checked = true;
+                rtb_pep.checked = false;
             }
         });
+        
         wp.addEventListener('change', function() {
             if (wp.checked) {
                 rtb.checked = false;
+                rtb_pep.checked = false;
             }
-             else if (!wp.checked) {
-                rtb.checked = true;
+        });
+        
+        rtb_pep.addEventListener('change', function() {
+            if (rtb_pep.checked) {
+                rtb.checked = false;
+                wp.checked = false;
             }
         });
     }

@@ -170,9 +170,9 @@ class workOrderFormAdmin(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['prismID'].disabled = True
-        self.fields['workOrderId'].disabled = True
-        self.fields['PO'].disabled = True       
+        #self.fields['prismID'].disabled = True
+        #self.fields['workOrderId'].disabled = True
+        #self.fields['PO'].disabled = True       
         self.fields['created_date'].disabled = False
         self.fields['createdBy'].disabled = True 
 

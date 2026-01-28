@@ -86,6 +86,7 @@ class DailyMob(models.Model):
     daily_cd = models.BooleanField(default=False)
     daily_nfs = models.BooleanField(default=False)
     daily_fd = models.BooleanField(default=False)
+    daily_rtb_pep = models.BooleanField(default=False)
     daily_production = models.BooleanField(default=False)
     daily_Status = models.IntegerField(default=1, choices = dailyStatus_choice, null=True, blank=True)  
     daily_date = models.DateField(null=True, blank=True)

@@ -2092,14 +2092,17 @@ def approve_timesheet(request, id):
             form.save()
 
             #If Daily is Ready to Bill Update the Work Order Status to 7 - Ready to Bill
-            if obj.daily_rtb:
-                if obj.woID != None:            
+            if obj.woID != None: 
+                if obj.daily_rtb or obj.daily_rtb_pep:                           
                     wo = catalogModel.workOrder.objects.filter(id = obj.woID.id).first()
-                    if wo:
-                        wo.Status = '7'
-                        wo.updated_date = datetime.now()
-                        wo.updatedBy = request.user.username
+                    if wo:                                              
+                        if obj.daily_rtb:
+                            wo.Status = '7'  #Ready to Bill
+                        elif obj.daily_rtb_pep:
+                            wo.Status = '8'  #Ready to Bill PEP
+                        
                         wo.save()
+
 
             # Send email to notify approval
             for emp in dailyEmp:

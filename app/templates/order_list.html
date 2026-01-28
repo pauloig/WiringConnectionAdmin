@@ -174,9 +174,9 @@
                                     <tbody>                                       
                                         {% for order in day_diff %}
                                             <tr                                                                                         
-                                                {%if order.days > 8 and order.partial_inv == 0 %}
+                                                {%if order.days > 5 and order.partial_inv == 0 %}
                                                     style = "background: yellow;"
-                                                {%elif order.days > 8 and order.partial_inv > 0 %}
+                                                {%elif order.days > 5 and order.partial_inv > 0 %}
                                                     style = "background: #9CFF33;"
                                                 {%endif%}
                                             >
@@ -209,6 +209,8 @@
                                                     <td class="p-1">Transferred</td>
                                                 {% elif order.Status == "7" %}
                                                     <td class="p-1">Ready To Bill</td>
+                                                {% elif order.Status == "8" %}
+                                                        <td class="p-1">RTB / Pending External Production</td>
                                                 {%else%}                                              
                                                     <td class="p-1"></td>
                                                 {% endif %} 
