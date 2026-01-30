@@ -1023,10 +1023,11 @@ def order(request, orderID):
     ('1', 'Not Started'),
     ('2', 'Work in Progress'),
     ('7', 'Ready to Bill'),
+    ('8', 'RTB / Pending External Production'),
     ('3', 'Pending Docs'),
     ('4', 'Pending Revised WO'),
     ('5', 'Invoiced'),
-    ('6', 'Transferred'),
+    ('6', 'Transferred'),        
     )
 
     if obj.Status != '5':
@@ -8299,6 +8300,8 @@ def billing_list(request, id, isRestoring):
 
         wo = workOrder.objects.filter(id=id).first()
         context["order"] = wo
+
+        context['status_ready'] = str(wo.Status) in ['2', '7', '8']
         
 
         payItems = DailyItem.objects.filter(DailyID__woID = wo, Status=1)

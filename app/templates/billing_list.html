@@ -315,37 +315,19 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-sm-11">
-                                {%if order.Status == "2"%}
-                                {%if itemCount > 0%}
-                                <a class="btn btn-success" hx-get="/estimate_preview/{{order.id}}/0"
-                                    hx-target="#dialog">Estimate Preview</a>
-                                    <a class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top"
-                                    title="Download Estimate"
-                                    href="/download_estimate_preview/{{order.id}}/0"
-                                    role="button">Download Estimate</a>                                    
-                                {%endif%}
-                                {%if order.Status == "2" and openEstimate and itemCount > 0 %}
-                                <a class="btn btn-primary" href="/partial_estimate/{{order.id}}/True/1/0">Add to Open
-                                    Estimate</a>
-                                {%elif order.Status == "2" and openEstimate == False and emp.is_supervisor == False%}
-                                {%if itemCount > 0%}
-                                <a class="btn btn-info" hx-get="/select_billing_address/{{order.id}}/True/0"
-                                    hx-target="#dialog">Partial Invoice</a>
+                                {% if status_ready %}
+                                    {% if itemCount > 0 %}
+                                        <a class="btn btn-success" hx-get="/estimate_preview/{{order.id}}/0" hx-target="#dialog">Estimate Preview</a>
+                                        <a class="btn btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Download Estimate" href="/download_estimate_preview/{{order.id}}/0" role="button">Download Estimate</a>
+                                    {% endif %}
 
-                                <a class="btn btn-primary" hx-get="/pending_internal_po/{{order.id}}/False/0"
-                                    hx-target="#dialog">Final
-                                    Invoice</a>
-
-
-                                <!--<a class="btn btn-primary" hx-get="/select_billing_address/{{order.id}}/False/0" hx-target="#dialog">Final Invoice</a>-->
-
-                                <!--<a class="btn btn-info" href="/partial_estimate/{{order.id}}/True/1">Partial Invoice</a>
-                                                        <a class="btn btn-primary" href="/partial_estimate/{{order.id}}/False/1" hx-target="#dialog">Final Invoice</a>-->
-                                {%endif%}
-
-                                {%endif%}
-
-                                {%endif%}
+                                    {% if openEstimate and itemCount > 0 %}
+                                        <a class="btn btn-primary" href="/partial_estimate/{{order.id}}/True/1/0">Add to Open Estimate</a>
+                                    {% elif not openEstimate and not emp.is_supervisor and itemCount > 0 %}
+                                        <a class="btn btn-info" hx-get="/select_billing_address/{{order.id}}/True/0" hx-target="#dialog">Partial Invoice</a>
+                                        <a class="btn btn-primary" hx-get="/pending_internal_po/{{order.id}}/False/0" hx-target="#dialog">Final Invoice</a>
+                                    {% endif %}
+                                {% endif %}
                             </div>
 
                         </div>
@@ -397,11 +379,11 @@
                                             <td width="7%" class="p-1">Rate</td>
                                             <td width="10%" class="p-1">Total</td>
                                             <td width="5%" class="p-1">
-                                                {%if order.Status == "2" or order.Status == "4" %}
-                                                {% if emp.is_superAdmin or user.is_staff %}
-                                                <a hx-get="/create_authorized_prod_item/{{order.id}}/0/0"
-                                                    hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
-                                                {%endif%}
+                                                {%if order.Status == "2" or order.Status == "4" or order.Status == "7" or order.Status == "8" %}
+                                                    {% if emp.is_superAdmin or user.is_staff %}
+                                                    <a hx-get="/create_authorized_prod_item/{{order.id}}/0/0"
+                                                        hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
+                                                    {%endif%}
                                                 {%endif%}
                                             </td>
                                         </tr>
@@ -461,7 +443,7 @@
                                             {%endif%}
                                             <td class="p-1">
 
-                                                {%if order.Status == "2" or order.Status == "4"%}
+                                                {%if order.Status == "2" or order.Status == "4" or order.Status == "7" or order.Status == "8"%}
                                                     {% if emp.is_superAdmin or user.is_staff %}
                                                             <a hx-get="/update_authorized_prod_item/{{itemd.idA}}/0/0"
                                                                 hx-target="#dialog"><i class="fa-solid fa-pen-to-square"
