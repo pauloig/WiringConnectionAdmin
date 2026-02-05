@@ -4,6 +4,22 @@
 {% load humanize %}
 {% block container %}
 
+<style>
+    /* Ensure child rows don't affect next row styling */
+    table.dataTable tbody tr.child {
+        background-color: inherit !important;
+    }
+    
+    table.dataTable tbody tr.child td {
+        padding: 0;
+        border: none;
+    }
+    
+    table.dataTable tbody tr.child div {
+        width: 100%;
+    }
+</style>
+
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
@@ -142,7 +158,8 @@
             </div>
         </div>
 
-  
+        
+        
         <div class="row">
             <div class="col-sm-12 my-3">
                 <div class="card">
@@ -154,8 +171,6 @@
                                     <thead class="table-primary">
                                         <tr>
                                             <th scope="col" class="p-1">Order</th>                                            
-                                           <!--  <th scope="col" class="p-1">work Order Id</th>
-                                            <th scope="col" class="p-1">PO</th>-->
                                             <th scope="col" class="p-1">PO Amount</th>    
                                             <th scope="col" class="p-1">Status</th>
                                             <th scope="col" class="p-1">Location</th>
@@ -167,25 +182,21 @@
                                             <th scope="col" class="p-1">Job Name</th>
                                             <th scope="col" class="p-1">Job Address</th>                                
                                             <th scope="col" class="p-1" style="width: 3%">Manage</th>
-                                            <!--<th scope="col" class="p-1" style="width: 3%">Expenses</th>
-                                            <th scope="col" class="p-1" style="width: 5%">Billing</th>-->
                                         </tr>              
                                     </thead>
                                     <tbody>                                       
-                                        {% for order in day_diff %}
+                                         {% for order in day_diff %}
                                             <tr                                                                                         
                                                 {%if order.days > 5 and order.partial_inv == 0 %}
-                                                    style = "background: yellow;"
+                                                    style="background-color: yellow;"
+                                                    data-bg-color="yellow"
                                                 {%elif order.days > 5 and order.partial_inv > 0 %}
-                                                    style = "background: #9CFF33;"
+                                                    style="background-color: #9CFF33;"
+                                                    data-bg-color="#9CFF33"
                                                 {%endif%}
                                             >
                                                 <td class="p-1">{{order.prismID}} - {{order.workOrderId}} - {{order.PO}} </td>
-                                                <!--<td class="p-1"></td>
-                                                <td class="p-1"></td>-->
-                                                
                                                 <td class="p-1">${{order.POAmount|floatformat:2|intcomma}}</td>
-                                                <!-- <td>{{order.Status}}</td> -->
                                                 {% if order.Status == "1" %}
                                                     <td class="p-1">Not Started</td>
                                                 {% elif order.Status == "2" %}
@@ -196,7 +207,6 @@
                                                     </td>
                                                 {% elif order.Status == "3" %}
                                                     <td class="p-1">Pending Docs
-
                                                         {%if order.days > 8 and order.partial_inv > 0 %}    
                                                         / Partial est.
                                                         {%endif%}
@@ -210,7 +220,7 @@
                                                 {% elif order.Status == "7" %}
                                                     <td class="p-1">Ready To Bill</td>
                                                 {% elif order.Status == "8" %}
-                                                        <td class="p-1">RTB / Pending External Production</td>
+                                                    <td class="p-1">RTB / Pending External Production</td>
                                                 {%else%}                                              
                                                     <td class="p-1"></td>
                                                 {% endif %} 
@@ -218,18 +228,20 @@
                                                 <td class="p-1">{{order.WCSup}}</td>
                                                 <td class="p-1">{{order.created_date|date:'Y-m-d H:i'}}</td> 
                                                 <td class="p-1">{{order.UploadDate}}</td>      
-                                                <td class="p-1">
-                                                            {{order.days}} 
-                                                </td>              
+                                                <td class="p-1">{{order.days}}</td>              
                                                 <td class="p-1">{{order.IssuedBy}}</td>
                                                 <td class="p-1">{{order.JobName}}</td>
                                                 <td class="p-1">{{order.JobAddress}}</td>
                                                 <td class="p-1">
-                                                    <div class="d-flex justify-content-center align-items-center">
+                                                    <div class="d-flex justify-content-center align-items-center gap-2">
                                                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Order Details" href="/order_detail/{{order.id}}/False"><i class="fa-solid fa-circle-right" style="color: green;"></i></a>
+                                                        {% if order.Comments %}
+                                                        <button class="btn btn-sm btn-outline-secondary toggle-comments" type="button" data-order-id="{{order.id}}" data-comments="{{order.Comments|escapejs}}" title="Show/Hide Comments"><i class="fa-solid fa-comment"></i></button>
+                                                        {% endif %}
                                                     </div>                                                    
-                                                </td>                                                                                          
-                                            </tr>                                             
+                                                </td>                                                                                         
+                                            </tr> 
+                                            
                                         {% endfor %}
                                     </tbody>                              
                                 </table>
@@ -239,9 +251,66 @@
                 </div>
             </div>
         </div>
-    
-        
         
     </form>
 </div>
+
+<script>
+    
+var ordersTable = null; // Global reference to preserve across operations
+
+(function waitForJqueryAndDataTables() {
+    if (window.jQuery && jQuery.fn && jQuery.fn.DataTable) {
+        jQuery(function($) {
+            // avoid double-init
+            if (!$.fn.dataTable.isDataTable('#orders')) {
+                ordersTable = $('#orders').DataTable({
+                    orderCellsTop: true,
+                    fixedHeader: false,
+                    rowCallback: function(row, data, index) {
+                        // Preserve background color on every row draw
+                        var $row = $(row);
+                        var bgColor = $row.data('bg-color');
+                        if (bgColor) {
+                            $row.css('background-color', bgColor);
+                        }
+                    }
+                });
+            } else {
+                ordersTable = $('#orders').DataTable();
+            }
+
+            // attach single handler (off first to prevent duplicate handlers)
+            $('#orders').off('click', '.toggle-comments').on('click', '.toggle-comments', function(e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var tr = $btn.closest('tr');
+                var row = ordersTable.row(tr);
+                var bgColor = tr.data('bg-color') || 'transparent';
+
+                if (row.child.isShown()) {
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    var comments = $btn.data('comments') || '';
+                    var safe = $('<div/>').text(comments).html();
+                    var content = '<td colspan="12"><div class="p-3" style="background-color: ' + bgColor + '; border: none;"><strong>Comments:</strong> ' + safe + '</div></td>';
+                    row.child(content).show();
+                    tr.addClass('shown');
+                }
+                
+                // Trigger table draw to invoke rowCallback for all rows
+                setTimeout(function() {
+                    ordersTable.rows().invalidate().draw(false);
+                }, 50);
+            });
+        });
+    } else {
+        // poll until jQuery/DataTables loaded
+        setTimeout(waitForJqueryAndDataTables, 50);
+    }
+})(); 
+
+</script> 
+
 {% endblock %}

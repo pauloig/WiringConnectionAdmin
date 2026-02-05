@@ -51,6 +51,7 @@ from workOrder import models as catalogModel
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count, F
 import json
 
 
@@ -442,7 +443,7 @@ def listOrders(request):
     logInAuditLog(request, opType, opDetail)
 
 
-    """Adding  Order List with Problems"""
+    """ Adding  Order List with Problems
     woProblemList = []
     woPList = []
     if emp:
@@ -463,7 +464,7 @@ def listOrders(request):
                         woProblemList.append(i.woID.id)
                     
             woPList = workOrder.objects.filter(id__in = woProblemList, Status = 2)
-        
+     """   
 
 
     """try:"""
@@ -520,7 +521,6 @@ def listOrders(request):
     if emp:
         if emp.is_superAdmin:                
             if estatus == "0" and loc == "0":   
-                #orders = workOrder.objects.exclude(linkedOrder__isnull = False, uploaded = False )    
                 if pid != None and pid != "":
                     orders = workOrder.objects.filter(prismID__exact = pid).exclude(linkedOrder__isnull = False, uploaded = False)    
                 elif addR != None and addR !="":
@@ -559,8 +559,10 @@ def listOrders(request):
 
                     orders = workOrder.objects.filter(id__in = woInvLits ).exclude(linkedOrder__isnull = False, uploaded = False) 
                 else:  
-                    orders = workOrder.objects.filter(id = -1)  
-                    orders = woPList 
+                    #orders = woPList 
+                    orders = workOrder.objects.filter(id = -1)   
+                    
+                    
             else:
                 if estatus != "0" and loc != "0":
                     orders = workOrder.objects.filter(Status = estatus, Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )     
@@ -733,6 +735,10 @@ def listOrders(request):
 
     return render(request,'order_list.html',context)
 
+def get_optimized_orders(orders_queryset):
+    """Apply prefetch_related to any orders queryset"""
+    return orders_queryset.prefetch_related('woinvoice_set')
+
    
 @login_required(login_url='/home/')
 def order_list_location(request, userID):
@@ -833,7 +839,7 @@ def order_list_sup(request):
 
 
     if emp.is_manager:
-
+        context["perfil"]="Manager" 
         locaList = employeeLocation.objects.filter(employeeID = emp)
                 
         locationList = []
@@ -899,6 +905,7 @@ def order_list_sup(request):
 
         return render(request,'order_list_sup.html',context)
     elif emp.is_supervisor:
+        context["perfil"]="Supervisor" 
         if estatus == "0" and loc == "0":     
             if pid != None and pid != "":
                 orders = workOrder.objects.filter(WCSup__employeeID__exact=emp.employeeID, prismID__exact = pid).exclude(linkedOrder__isnull = False, uploaded = False)   
@@ -936,6 +943,8 @@ def order_list_sup(request):
                     orders = workOrder.objects.filter(WCSup__employeeID__exact=emp.employeeID, id__in = woInvLits ).exclude(linkedOrder__isnull = False, uploaded = False)    
             else:     
                 orders = workOrder.objects.filter(WCSup__employeeID__exact=emp.employeeID).exclude(linkedOrder__isnull = False, uploaded = False )            
+                #orders = None
+                           
         else:
             if estatus != "0" and loc != "0":
                 orders = workOrder.objects.filter(WCSup__employeeID__exact=emp.employeeID, Status = estatus, Location = locationObject).exclude(linkedOrder__isnull = False, uploaded = False )                 
@@ -1180,8 +1189,10 @@ def updateDupOrder(request,pID, dupID):
         dupOrder = workOrderDuplicate.objects.filter(id=dupID).first()
 
         primaryOrder = workOrder.objects.filter(id = pID).first()
+        
+        enabled_status = ['2','3','4','5','7','8']
 
-        if int(primaryOrder.Status) >= 2 and int(primaryOrder.Status) <= 5:
+        if str(primaryOrder.Status) in enabled_status:
             order = workOrder.objects.filter(id = pID).first()
             primaryOrder.prismID = dupOrder.prismID
             primaryOrder.workOrderId = dupOrder.workOrderId
@@ -4133,7 +4144,7 @@ def orders_payroll(request, dailyID, LocID):
     WOdailyList = list(Daily.objects.filter(Period = daily.Period, day = daily.day, Location__LocationID = LocID).exclude(woID = None).values_list('woID__id',flat=True))
 
 
-    wo = workOrder.objects.filter(Status__in = [1,2]).exclude(Location__in = loca).exclude(id__in = WOdailyList )
+    wo = workOrder.objects.filter(Status__in = [1,2,7,8]).exclude(Location__in = loca).exclude(id__in = WOdailyList )
     context = {}    
     context["orders"] = wo
     context["emp"] = emp    
@@ -10299,10 +10310,11 @@ def vendor_subcontractor_list(request,woID, tipoOp, id):
 
 
 
-def date_difference(orders):
+"""def date_difference(orders):   
+    
     day_diff = []
-    partial_inv = 0
-
+    date_format = "%Y-%m-%d"
+    today = datetime.now().date()
 
     for i in orders:
         
@@ -10326,7 +10338,59 @@ def date_difference(orders):
             days_overdue = 0
             partial_inv = 0
 
-        day_diff.append({'id':i.id, 'days': days_overdue, 'prismID': i.prismID, 'workOrderId': i.workOrderId, 'PO': i.PO, 'POAmount':i.POAmount, 'Status': i.Status,  'Location':i.Location, 'WCSup': i.WCSup, 'created_date': i.created_date, 'UploadDate':i.UploadDate, 'IssuedBy':i.IssuedBy, 'JobName': i.JobName, 'JobAddress': i.JobAddress, 'partial_inv': partial_inv  })
+        day_diff.append({'id':i.id, 'days': days_overdue, 'prismID': i.prismID, 'workOrderId': i.workOrderId, 'PO': i.PO, 'POAmount':i.POAmount, 'Status': i.Status,  'Location':i.Location, 'WCSup': i.WCSup, 'created_date': i.created_date, 'UploadDate':i.UploadDate, 'IssuedBy':i.IssuedBy, 'JobName': i.JobName, 'JobAddress': i.JobAddress, 'partial_inv': partial_inv, 'Comments': i.Comments  })
+    
+    return day_diff
+    """
+
+from django.db.models import Prefetch, Count
+
+def date_difference(orders):
+    """Optimized version with prefetch_related to avoid N+1 queries"""
+    
+    # Prefetch related invoices using the correct reverse relation name
+    orders = orders.prefetch_related('woinvoice_set')
+    
+    day_diff = []
+    date_format = "%Y-%m-%d"
+    today = datetime.now().date()
+    
+    for i in orders:
+        if validate_decimals(i.Status) >= 2 and validate_decimals(i.Status) <= 4:
+            try:
+                if i.UploadDate:
+                    upload_date = datetime.strptime(i.UploadDate[0:10], date_format).date()
+                    days_overdue = (today - upload_date).days
+                else:
+                    days_overdue = 0
+                
+                # Count invoices from prefetched data (no DB query!)
+                partial_inv = i.woinvoice_set.all().count()
+            except Exception as e:
+                days_overdue = 0
+                partial_inv = 0
+        else:
+            days_overdue = 0
+            partial_inv = 0
+        
+        day_diff.append({
+            'id': i.id,
+            'days': days_overdue,
+            'prismID': i.prismID,
+            'workOrderId': i.workOrderId,
+            'PO': i.PO,
+            'POAmount': i.POAmount,
+            'Status': i.Status,
+            'Location': i.Location,
+            'WCSup': i.WCSup,
+            'created_date': i.created_date,
+            'UploadDate': i.UploadDate,
+            'IssuedBy': i.IssuedBy,
+            'JobName': i.JobName,
+            'JobAddress': i.JobAddress,
+            'partial_inv': partial_inv,
+            'Comments': i.Comments
+        })
     
     return day_diff
 

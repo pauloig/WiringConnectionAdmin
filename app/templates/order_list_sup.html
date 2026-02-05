@@ -136,6 +136,8 @@
             </div>
         </div>     
 
+        {{perfil}}
+
         <div class="row">
             <div class="col-sm-12 my-3">
                 <div class="card">
@@ -167,11 +169,15 @@
                                     </thead>
                                     <tbody>                                       
                                         {% for order in day_diff %}
-                                            <tr 
-                                                {%if order.days > 5%}
-                                                    style = "background: yellow;"
+                                            <tr                                                                                         
+                                                {%if order.days > 5 and order.partial_inv == 0 %}
+                                                    style="background-color: yellow;"
+                                                    data-bg-color="yellow"
+                                                {%elif order.days > 5 and order.partial_inv > 0 %}
+                                                    style="background-color: #9CFF33;"
+                                                    data-bg-color="#9CFF33"
                                                 {%endif%}
-                                                >
+                                            >
                                                     <td class="p-1">{{order.prismID}} - {{order.workOrderId}} - {{order.PO}} </td>
                                                     <td>${{order.POAmount|floatformat:2|intcomma}}</td>
                                                     <!-- <td>{{order.Status}}</td> -->
@@ -206,10 +212,15 @@
                                                     <td class="p-1">{{order.JobAddress}}</td>
                         
                                                     <td class="p-1">
-                                                        <div class="d-flex justify-content-center align-items-center">
+                                                        <div class="d-flex justify-content-center align-items-center gap-2">
                                                             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Order Details" href="/order_detail/{{order.id}}/True"><i class="fa-solid fa-circle-right" style="color: green;"></i></a>
-                                                        </div>                                                    
-                                                    </td>          
+                                                        </div> 
+                                                        {% if order.Comments %}
+                                                            <button class="btn btn-sm btn-outline-secondary toggle-comments" type="button" data-order-id="{{order.id}}" data-comments="{{order.Comments|escapejs}}" title="Show/Hide Comments"><i class="fa-solid fa-comment"></i></button>
+                                                        {% endif %}                                                   
+                                                    </td>     
+                                                    
+                                                     
                                                     
                                                 </tr>   
                                         {% endfor %}
@@ -223,4 +234,62 @@
         </div>
     </form>
 </div>
+
+<script>
+    
+var ordersTable = null; // Global reference to preserve across operations
+
+(function waitForJqueryAndDataTables() {
+    if (window.jQuery && jQuery.fn && jQuery.fn.DataTable) {
+        jQuery(function($) {
+            // avoid double-init
+            if (!$.fn.dataTable.isDataTable('#orders')) {
+                ordersTable = $('#orders').DataTable({
+                    orderCellsTop: true,
+                    fixedHeader: false,
+                    rowCallback: function(row, data, index) {
+                        // Preserve background color on every row draw
+                        var $row = $(row);
+                        var bgColor = $row.data('bg-color');
+                        if (bgColor) {
+                            $row.css('background-color', bgColor);
+                        }
+                    }
+                });
+            } else {
+                ordersTable = $('#orders').DataTable();
+            }
+
+            // attach single handler (off first to prevent duplicate handlers)
+            $('#orders').off('click', '.toggle-comments').on('click', '.toggle-comments', function(e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var tr = $btn.closest('tr');
+                var row = ordersTable.row(tr);
+                var bgColor = tr.data('bg-color') || 'transparent';
+
+                if (row.child.isShown()) {
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    var comments = $btn.data('comments') || '';
+                    var safe = $('<div/>').text(comments).html();
+                    var content = '<td colspan="12"><div class="p-3" style="background-color: ' + bgColor + '; border: none;"><strong>Comments:</strong> ' + safe + '</div></td>';
+                    row.child(content).show();
+                    tr.addClass('shown');
+                }
+                
+                // Trigger table draw to invoke rowCallback for all rows
+                setTimeout(function() {
+                    ordersTable.rows().invalidate().draw(false);
+                }, 50);
+            });
+        });
+    } else {
+        // poll until jQuery/DataTables loaded
+        setTimeout(waitForJqueryAndDataTables, 50);
+    }
+})(); 
+
+</script> 
 {% endblock %}
