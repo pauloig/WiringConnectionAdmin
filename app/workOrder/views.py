@@ -6161,7 +6161,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
        
 
 
-    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO','Total Expenses', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address']
+    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO','Total Expenses', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_title) # at 0 row 0 column 
@@ -6218,7 +6218,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
 
        
 
-        if item.Status == "1":
+        """if item.Status == "1":
              ws.write(row_num, 9, "Not Started", font_style) 
         elif item.Status == "2":
              ws.write(row_num, 9, "Work in Progress", font_style) 
@@ -6229,7 +6229,14 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         elif item.Status == "5":
              ws.write(row_num, 9, "Invoiced", font_style)
         else:
-             ws.write(row_num, 9, "", font_style)
+             ws.write(row_num, 9, "", font_style)"""
+        
+        try:
+            status_label = next((label for key, label in status_choice if str(key) == str(item.Status)), "")
+        except Exception:
+            status_label = ""
+        
+        ws.write(row_num, 9, status_label, font_style)
 
         
         if item.Location != None:
@@ -6242,10 +6249,11 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         else:
             ws.write(row_num, 11, '', font_style) # at 0 row 0 column 
 
-        ws.write(row_num, 12, item.UploadDate, font_style) # at 0 row 0 column 
-        ws.write(row_num, 13, item.IssuedBy, font_style) # at 0 row 0 column 
-        ws.write(row_num, 14, item.JobName, font_style) # at 0 row 0 column 
-        ws.write(row_num, 15, item.JobAddress, font_style) # at 0 row 0 column      
+        ws.write(row_num, 12, item.UploadDate, font_style)  
+        ws.write(row_num, 13, item.IssuedBy, font_style) 
+        ws.write(row_num, 14, item.JobName, font_style) 
+        ws.write(row_num, 15, item.JobAddress, font_style)      
+        ws.write(row_num, 16, item.Comments, font_style)       
 
         
     
@@ -6256,7 +6264,8 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
     ws.col(12).width = 4000
     ws.col(13).width = 9000
     ws.col(14).width = 9000
-    ws.col(15).width = 9000
+    ws.col(15).width = 15000
+    ws.col(16).width = 15000
 
     filename = 'orders.xls'    
     response = HttpResponse(content_type='application/ms-excel')
