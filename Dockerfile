@@ -18,7 +18,7 @@ RUN python -m venv /py
 RUN pip install tk
 RUN apk add tk
 RUN /py/bin/pip install --upgrade pip && \
-    /py/bin/pip install --upgrade setuptools && \
+    /py/bin/pip install --upgrade "setuptools<58.0.0" && \
     apk add --update --no-cache postgresql-client && \
     apk add --update --no-cache --virtual .tmp-deps \
         build-base postgresql-dev musl-dev linux-headers && \
