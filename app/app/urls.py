@@ -100,9 +100,15 @@ urlpatterns = [
     path('delete_daily/<id>/<LocID>',views.delete_daily),
     path('status_log/<id>/<isSupervisor>',views.status_log),
     path('supervisor_approval/<id>',views.supervisor_appoval),
+    # **** URL's for Payroll and  Period ****
     path('close_payroll/<id>',views.close_payroll),
+    path('open_period/<id>',views.open_period),
     path('payroll_detail/<id>',views.payroll_detail),
     path('get_order_list/<estatus>/<loc>/<pid>/<addR>/<invNumber>/<invAmount>/<invAmountF>/<superV>',views.get_order_list),
+    
+    
+    
+    
     path('get_emp_list/',views.get_emp_list),
     path('get_item_list/',views.get_item_list),
     path('vendor_list/',views.vendor_list),

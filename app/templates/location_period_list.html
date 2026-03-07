@@ -51,7 +51,9 @@
                                     {%if period.status == 1%}
                                         <a class="btn btn-info btn" hx-get="/supervisor_approval/{{period.id}}" hx-target="#dialog"><i class="fa-sharp fa-solid fa-circle-check fa-2x m-2"></i></br>approve sup.</a>                                
                                     {%elif period.status == 2%}                                    
-                                        <a class="btn btn-warning btn" hx-get="/close_payroll/{{period.id}}" hx-target="#dialog"><i class="fa-solid fa-lock fa-2x m-2"></i></br>Close Payroll</a>                                
+                                        <a class="btn btn-warning btn" hx-get="/close_payroll/{{period.id}}" hx-target="#dialog"><i class="fa-solid fa-lock fa-2x m-2"></i></br>Close Payroll</a>                                                                  
+                                    {% elif period.status == 3%}
+                                        <a class="btn btn-warning btn" onclick="open_period({{period.id}})"> <i class="fa-solid fa-unlock fa-2x m-2"></i></br>Open Period</a>                                
                                     {%endif%}
                                 {%endif%}
 
@@ -338,4 +340,17 @@
         </div>               
     
 </div>
+
+<script>
+    function open_period(id){
+            event.preventDefault();
+            if (confirm(`Are you sure to Open this Period?`))
+            {           
+                window.location.href = `/open_period/${id}`;
+        
+                
+            }  
+        }
+</script>
+
 {% endblock %}

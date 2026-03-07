@@ -236,7 +236,7 @@ class period(models.Model):
     toDate = models.DateField()
     payDate = models.DateField()
     weekRange = models.CharField(max_length=100, blank=True, null=True)
-    status = models.IntegerField()
+    status = models.IntegerField() #Pending to define List of choices
     approved_date = models.DateTimeField(null=True, blank=True)
     approvedBy = models.CharField(max_length=60, blank=True, null=True)
     closed_date = models.DateTimeField(null=True, blank=True)

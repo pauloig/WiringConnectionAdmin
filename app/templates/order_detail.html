@@ -100,11 +100,12 @@
                             
                             <div class="col-sm-12">
                                 <div class="d-flex justify-content-end">     
-                                    <button hx-get="/wo_comment_log/{{order.id}}/{{isSupervisor}}" class="btn btn-success py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="View Comments">
-                                        <i class="fa-solid fa-comment"></i>
-                                    </button>
-                                    <button hx-get="/get_wo_comment_log/{{order.id}}" class="btn btn-primary py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Comment">
+                                    <button hx-get="/wo_comment_log/{{order.id}}/{{isSupervisor}}" class="btn btn-success py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="Add Comment">
                                         <i class="fa-solid fa-comment-medical"></i>
+                                    </button>
+                                    <button hx-get="/get_wo_comment_log/{{order.id}}" class="btn btn-primary py-2 mx-1" hx-target="#dialog" data-bs-toggle="tooltip" data-bs-placement="top" title="View Comments">
+                                        <i class="fa-solid fa-comment"></i>
+                                        
                                     </button>  
                                     <button type="button" class="btn btn-warning py-2 mx-1" data-bs-toggle="modal" data-bs-target="#uploadInvoiceModal" data-bs-toggle="tooltip" data-bs-placement="top" title="Upload Invoice">
                                         <i class="fa-solid fa-file-upload"></i>

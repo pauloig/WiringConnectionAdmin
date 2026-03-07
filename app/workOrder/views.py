@@ -53,6 +53,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, F
 import json
+from dateutil import parser
 
 
 @login_required(login_url='/home/')
@@ -6161,7 +6162,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
        
 
 
-    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO','Total Expenses', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
+    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO','Total Expenses','Billing Amount','Pending Billing','Invoiced Amount', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_title) # at 0 row 0 column 
@@ -6178,7 +6179,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         ws.write(row_num, 0, item.prismID, font_style) # at 0 row 0 column 
         ws.write(row_num, 1, item.workOrderId, font_style) # at 0 row 0 column 
         ws.write(row_num, 2, item.PO, font_style) # at 0 row 0 column 
-        ws.write(row_num, 3, "$" + str(item.POAmount), font_style) # at 0 row 0 column 
+        ws.write(row_num, 3, f"$ {item.POAmount}", font_style) # at 0 row 0 column 
 
         dailys = Daily.objects.filter(woID = item)
         dailyDetail = []
@@ -6210,62 +6211,75 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         else:
             balance_per = 0
 
-        ws.write(row_num, 4, "$" + str(empTotal), font_style)
-        ws.write(row_num, 5, "$" + str(poTotal),  font_style)
-        ws.write(row_num, 6, "$" + str(totalExp),  font_style)
-        ws.write(row_num, 7, "$" + str(balance),  font_style)
-        ws.write(row_num, 8, balance_per,  font_style)
-
-       
-
-        """if item.Status == "1":
-             ws.write(row_num, 9, "Not Started", font_style) 
-        elif item.Status == "2":
-             ws.write(row_num, 9, "Work in Progress", font_style) 
-        elif item.Status == "3":
-             ws.write(row_num, 9, "Pending Docs", font_style)
-        elif item.Status == "4":
-             ws.write(row_num, 9, "Pending Revised WO", font_style)
-        elif item.Status == "5":
-             ws.write(row_num, 9, "Invoiced", font_style)
-        else:
-             ws.write(row_num, 9, "", font_style)"""
+        ws.write(row_num, 4, f"$ {empTotal:.2f}", font_style)
+        ws.write(row_num, 5, f"$ {poTotal:.2f}",  font_style)
+        ws.write(row_num, 6, f"$ {totalExp:.2f}",  font_style)
+        
+        #New Columns for Billing Amount, Pending Billing and Invoiced Amount
+        # Calculte Invoiced Amount
+        invoicedAmount = 0
+        woInv = woInvoice.objects.filter(woID = item)
+        for i in woInv:
+            invoicedAmount += validate_decimals(i.total)
+        
+        
+        ws.write(row_num, 9, f"$ {invoicedAmount:.2f}",  font_style)
+        ws.write(row_num, 10, f"$ {balance:.2f}",  font_style)
+        ws.write(row_num, 11, f"{balance_per:.2f}%",  font_style)        
         
         try:
             status_label = next((label for key, label in status_choice if str(key) == str(item.Status)), "")
         except Exception:
             status_label = ""
         
-        ws.write(row_num, 9, status_label, font_style)
+        ws.write(row_num, 12, status_label, font_style)
 
         
         if item.Location != None:
-            ws.write(row_num, 10, item.Location.name, font_style) # at 0 row 0 column 
+            ws.write(row_num, 13, item.Location.name, font_style) # at 0 row 0 column 
         else:
-             ws.write(row_num, 10, '', font_style) 
+             ws.write(row_num, 13, '', font_style) 
         
         if item.WCSup != None:
-            ws.write(row_num, 11, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
+            ws.write(row_num, 14, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
         else:
-            ws.write(row_num, 11, '', font_style) # at 0 row 0 column 
+            ws.write(row_num, 14, '', font_style) # at 0 row 0 column 
 
-        ws.write(row_num, 12, item.UploadDate, font_style)  
-        ws.write(row_num, 13, item.IssuedBy, font_style) 
-        ws.write(row_num, 14, item.JobName, font_style) 
-        ws.write(row_num, 15, item.JobAddress, font_style)      
-        ws.write(row_num, 16, item.Comments, font_style)       
+        try:            
+            upload_date = parser.parse(item.UploadDate) if item.UploadDate else ''
+            string_upload_date = datetime.strftime(upload_date, "%m/%d/%Y") if upload_date else ''
+        except Exception:
+            string_upload_date = item.UploadDate
+        
+        #aqui
+        
+        ws.write(row_num, 15, string_upload_date, font_style)  
+        ws.write(row_num, 16, item.IssuedBy, font_style) 
+        ws.write(row_num, 17, item.JobName, font_style) 
+        ws.write(row_num, 18, item.JobAddress, font_style)      
+        ws.write(row_num, 19, item.Comments, font_style)       
 
         
     
-
-
+    ws.col(1).width = 3500
+    ws.col(2).width = 3500
+    ws.col(3).width = 3500
+    ws.col(4).width = 3500
+    ws.col(5).width = 4500
+    ws.col(6).width = 4500
+    ws.col(7).width = 5500
+    ws.col(8).width = 5500
+    ws.col(9).width = 5500
     ws.col(10).width = 3500
-    ws.col(11).width = 5000
-    ws.col(12).width = 4000
-    ws.col(13).width = 9000
-    ws.col(14).width = 9000
-    ws.col(15).width = 15000
-    ws.col(16).width = 15000
+    ws.col(11).width = 3500
+    ws.col(12).width = 5500
+    ws.col(13).width = 5500
+    ws.col(14).width = 5000
+    ws.col(15).width = 4000
+    ws.col(16).width = 9000
+    ws.col(17).width = 11000
+    ws.col(18).width = 15000
+    ws.col(19).width = 20000
 
     filename = 'orders.xls'    
     response = HttpResponse(content_type='application/ms-excel')
@@ -7052,6 +7066,26 @@ def close_payroll(request, id):
 
    
     return render(request, "close_payroll.html", context)
+
+
+@login_required
+def open_period(request,id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+
+    per = period.objects.filter(status=2).first()
+    context["per"] = per
+    
+    actual_period = get_object_or_404(period, id = id)
+    
+    #Changing the period Status to Open
+    actual_period.status = 1
+    actual_period.save()
+    
+    return HttpResponseRedirect('/location_period_list/' + str(id))
+    
+    
+    
 
 @login_required(login_url='/home/')
 def payroll_detail(request, id):
@@ -10365,7 +10399,7 @@ def date_difference(orders):
     today = datetime.now().date()
     
     for i in orders:
-        if validate_decimals(i.Status) >= 2 and validate_decimals(i.Status) <= 4:
+        if validate_decimals(i.Status) in (2,3,4,6,7,8):
             try:
                 if i.UploadDate:
                     upload_date = datetime.strptime(i.UploadDate[0:10], date_format).date()
