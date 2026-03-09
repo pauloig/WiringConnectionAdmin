@@ -6184,6 +6184,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         dailys = Daily.objects.filter(woID = item)
         dailyDetail = []
 
+        #Calculate Payroll
         empTotal = 0
         for itemd in dailys:
             dailyEmp = DailyEmployee.objects.filter(DailyID = itemd)
@@ -6199,6 +6200,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         for ep in extProduction:
             epTotal += validate_decimals(ep.total_invoice)
 
+        #Internal PO
         internalpo = internalPO.objects.filter(woID=item)
         poTotal = 0
         for po in internalpo:
@@ -6221,8 +6223,19 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         woInv = woInvoice.objects.filter(woID = item)
         for i in woInv:
             invoicedAmount += validate_decimals(i.total)
+            
+        #Calculate Billing Amount
+        billing_amount = 0        
+        billing_amount = validate_decimals(empTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
         
         
+        #Calculate Pending Billing
+        pending_billing = 0
+        pending_billing = validate_decimals(billing_amount) - validate_decimals(invoicedAmount)
+        
+        
+        ws.write(row_num, 7, f"$ {billing_amount:.2f}",  font_style)
+        ws.write(row_num, 8, f"$ {pending_billing:.2f}",  font_style)
         ws.write(row_num, 9, f"$ {invoicedAmount:.2f}",  font_style)
         ws.write(row_num, 10, f"$ {balance:.2f}",  font_style)
         ws.write(row_num, 11, f"{balance_per:.2f}%",  font_style)        
@@ -7060,8 +7073,15 @@ def close_payroll(request, id):
         obj.status = 3
         obj.closedBy = request.user.username
         obj.closed_date = datetime.now()
-        obj.save()        
-        create_period(request, id)
+        obj.save()    
+        
+        
+        #Validate if the next period exist, if not create it                
+        next_period = period.objects.filter(id__gt = id, status__in = (1,2)).count()
+        
+        if next_period == 0:
+            create_period(request, id)
+        
         return HttpResponseRedirect('/period_list/') 
 
    

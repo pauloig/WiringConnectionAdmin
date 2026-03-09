@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('upload/',views.simple_upload),
     path('upload_payroll/',views.upload_payroll),
+    
     ## URL's for Work Order
     path('upload_invoice/<int:order_id>/', views.upload_invoice, name='upload_invoice'),
     path('order_list/',views.listOrders),
