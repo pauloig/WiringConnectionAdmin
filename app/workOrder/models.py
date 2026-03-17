@@ -121,6 +121,44 @@ class workOrder(models.Model):
 
     def __str__(self):
         return self.prismID + " - " + self.workOrderId + " - " + self.PO
+    
+class DeletedWorkOrders(models.Model):
+    prismID = models.CharField(max_length=200)
+    workOrderId= models.CharField(max_length=200)
+    PO = models.CharField(max_length=200)
+    POAmount	= models.CharField(max_length=200, blank=True, null=True)
+    ConstType	= models.CharField(max_length=200, blank=True, null=True)
+    ConstCoordinator= models.CharField(max_length=200, blank=True, null=True)	
+    WorkOrderDate= models.CharField(max_length=200, blank=True, null=True)
+    EstCompletion= models.CharField(max_length=200, blank=True, null=True)	
+    IssuedBy= models.CharField(max_length=200, blank=True, null=True)	
+    JobName	= models.CharField(max_length=200, blank=True, null=True)
+    JobAddress	= models.CharField(max_length=200, blank=True, null=True)
+    SiteContactName	= models.CharField(max_length=200, blank=True, null=True)
+    SitePhoneNumber	= models.CharField(max_length=200, blank=True, null=True)
+    Comments	= models.CharField(max_length=200, blank=True, null=True)
+    Status	= models.CharField(max_length=20, blank=True, null=True, choices = status_choice)
+    CloseDate	= models.CharField(max_length=200, blank=True, null=True)
+    WCSup	= models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, db_column='WCSup')
+    UploadDate	= models.CharField(max_length=200, blank=True, null=True)
+    UserName= models.CharField(max_length=200, blank=True, null=True)
+    Location = models.ForeignKey(Locations, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded = models.BooleanField(default=False)
+    linkedOrder = models.CharField(max_length=600, null=True, blank=True)
+    pre_invoice = models.CharField(max_length=200, null=True, blank=True)
+    invoice = models.CharField(max_length=200, null=True, blank=True)
+    invoiceFile = models.FileField(null=True, upload_to="InvoiceWO")
+    created_date = models.DateTimeField(blank=True, null=True)
+    createdBy = models.CharField(max_length=60, blank=True, null=True)
+    deleted_date = models.DateTimeField(blank=True, null=True)
+    deletedBy = models.CharField(max_length=60, blank=True, null=True)
+    
+
+    class Meta:
+        unique_together = ('prismID', 'workOrderId','PO')
+
+    def __str__(self):
+        return self.prismID + " - " + self.workOrderId + " - " + self.PO
 
 class workOrderDuplicate(models.Model):
     prismID = models.CharField(max_length=200, blank=True, null=True)

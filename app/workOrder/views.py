@@ -1146,9 +1146,46 @@ def delete_order(request, id):
     per = period.objects.filter(status__in=(1,2)).first()
     context["per"] = per
 
-    try:        
+    try:       
+                
         obj = get_object_or_404(workOrder, id = id)
-
+        
+        #Moving WO to Deleted WO table
+        delWO = DeletedWorkOrders.objects.create(
+            prismID = obj.prismID,
+            workOrderId = obj.workOrderId,
+            PO = obj.PO,
+            POAmount = obj.POAmount,
+            ConstType = obj.ConstType,
+            ConstCoordinator = obj.ConstCoordinator,
+            WorkOrderDate = obj.WorkOrderDate,           
+            EstCompletion = obj.EstCompletion,
+            IssuedBy = obj.IssuedBy,
+            JobName = obj.JobName,
+            JobAddress = obj.JobAddress,
+            SiteContactName = obj.SiteContactName,
+            SitePhoneNumber = obj.SitePhoneNumber,
+            Comments = obj.Comments,                        
+            Status = obj.Status,
+            CloseDate = obj.CloseDate,
+            WCSup = obj.WCSup,
+            UploadDate = obj.UploadDate,
+            UserName = obj.UserName,
+            Location = obj.Location,
+            uploaded = obj.uploaded,
+            linkedOrder = obj.linkedOrder,
+            pre_invoice = obj.pre_invoice,
+            invoice = obj.invoice,
+            invoiceFile = obj.invoiceFile,
+            created_date = obj.created_date,
+            createdBy = obj.createdBy,
+            deleted_date = datetime.now(),
+            deletedBy = request.user.username
+        )
+        
+        
+        #If Everything is ok then delete the WO and all the related records
+        
         status_log = woStatusLog.objects.filter(woID = obj)
         status_log.delete()
 
@@ -6193,6 +6230,12 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
                 empTotal += validate_decimals(empI.payout)                
 
         #woo = workOrder.objects.filter(id = item.id)
+        
+        #Daily Item Production
+        dailyItem = DailyItem.objects.filter(DailyID__woID = item)
+        dailyItemTotal = 0
+        for di in dailyItem:
+            dailyItemTotal += validate_decimals(di.price) * validate_decimals(di.quantity)
 
         #External Production
         extProduction = externalProduction.objects.filter(woID = item)
@@ -6224,9 +6267,9 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         for i in woInv:
             invoicedAmount += validate_decimals(i.total)
             
-        #Calculate Billing Amount
+        #Calculate Billing Amount = Daily Producton Item + Internal PO + External Production
         billing_amount = 0        
-        billing_amount = validate_decimals(empTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
+        billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
         
         
         #Calculate Pending Billing

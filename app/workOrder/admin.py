@@ -8,6 +8,12 @@ class  workOrderAdmin(admin.ModelAdmin):
     list_filter = ('id','prismID','workOrderId','PO','Status','created_date')
 
 
+@admin.register(DeletedWorkOrders)
+class  DeletedWorkOrdersAdmin(admin.ModelAdmin):
+    list_display = ('id','prismID','workOrderId','PO','Status','deleted_date')
+    search_fields = ('id','prismID','workOrderId','PO','Status','deleted_date')
+    list_filter = ('id','prismID','workOrderId','PO','Status','deleted_date')
+
 class  authorizedBillingAdmin(admin.ModelAdmin):
     list_display = ('id','woID','itemID', 'estimate','invoice', 'quantity','total')
     search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO', 'estimate')
