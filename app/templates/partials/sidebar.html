@@ -32,6 +32,7 @@
             {% if emp.is_superAdmin  or emp.is_admin or user.is_staff %} 
             <li class="active">
                 <a aria-current="page" class="d-block text-light p-2" href="/order_list/"><i class="icon ion-md-clipboard"></i> List</a>
+                <a aria-current="page" class="d-block text-light p-2" href="/deleted_order_list/"><i class="icon ion-md-clipboard"></i> Deleted Orders</a>
             </li> 
             {% endif %}
 

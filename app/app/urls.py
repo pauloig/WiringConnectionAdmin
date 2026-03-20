@@ -23,6 +23,9 @@ urlpatterns = [
     path('order/<str:orderID>',views.order),
     path('delete_order/<str:id>',views.delete_order),
     path('order_supervisor/<str:orderID>',views.order_supervisor),
+    path('deleted_order_list/',views.DeletedlistOrders),
+    path('deleted_order_detail/<id>',views.deleted_order_detail), 
+    path('restore_delete_order/<str:id>',views.restore_delete_order),
 
 
     path('truncateData/',views.truncateData),

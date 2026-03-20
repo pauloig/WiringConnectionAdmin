@@ -413,6 +413,21 @@ def upload_payroll(request):
     return render(request,'upload_payroll.html', {'countInserted':countInserted, 'countRejected':countRejected, 'countUpdated' : countUpdated, 'emp':emp, 'per': per})
 
 
+
+@login_required(login_url='/home/')
+def DeletedlistOrders(request):   
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = period.objects.filter(status__in=(1,2)).first()
+    
+    
+    orders = DeletedWorkOrders.objects.all()
+    context={}
+    context["orders"]=orders
+    
+    return render(request,'deleted_order_list.html',context)
+    
+    
+
 @login_required(login_url='/home/')
 def listOrders(request):   
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()
@@ -1184,7 +1199,7 @@ def delete_order(request, id):
         )
         
         
-        #If Everything is ok then delete the WO and all the related records
+        #If Everything is ok then delete the WO and all the related records                
         
         status_log = woStatusLog.objects.filter(woID = obj)
         status_log.delete()
@@ -1196,6 +1211,60 @@ def delete_order(request, id):
         
         context["message"] = "Somenthing went Wrong! " + str(e)
         return render(request, "order.html", context)
+
+@login_required(login_url='/home/')
+@transaction.atomic    
+def restore_delete_order(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    try:       
+                
+        obj = get_object_or_404(DeletedWorkOrders, id = id)
+        
+        #Moving Deleted WO to WO table
+        WO = workOrder.objects.create(
+            prismID = obj.prismID,
+            workOrderId = obj.workOrderId,
+            PO = obj.PO,
+            POAmount = obj.POAmount,
+            ConstType = obj.ConstType,
+            ConstCoordinator = obj.ConstCoordinator,
+            WorkOrderDate = obj.WorkOrderDate,           
+            EstCompletion = obj.EstCompletion,
+            IssuedBy = obj.IssuedBy,
+            JobName = obj.JobName,
+            JobAddress = obj.JobAddress,
+            SiteContactName = obj.SiteContactName,
+            SitePhoneNumber = obj.SitePhoneNumber,
+            Comments = obj.Comments,                        
+            Status = obj.Status,
+            CloseDate = obj.CloseDate,
+            WCSup = obj.WCSup,
+            UploadDate = obj.UploadDate,
+            UserName = obj.UserName,
+            Location = obj.Location,
+            uploaded = obj.uploaded,
+            linkedOrder = obj.linkedOrder,
+            pre_invoice = obj.pre_invoice,
+            invoice = obj.invoice,
+            invoiceFile = obj.invoiceFile,
+            created_date = obj.created_date,
+            createdBy = obj.createdBy            
+        )
+        
+        
+        #If Everything is ok then delete the WO restored
+
+        obj.delete()
+        
+        return HttpResponseRedirect('/deleted_order_list/')
+    except Exception as e:
+        
+        context["message"] = "Somenthing went Wrong! " + str(e)
+        return render(request, "deleted_order_detail.html", context)
     
 
 @login_required(login_url='/home/')
@@ -9078,6 +9147,39 @@ def order_detail(request, id,isSupervisor):
     context["general_log"] = statusLog
   
     return render(request, "order_detail.html", context)
+
+@login_required(login_url='/home/')
+def deleted_order_detail(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+    obj = get_object_or_404(DeletedWorkOrders, id = id)
+ 
+
+   
+    form = DeletedworkOrderForm(request.POST or None, instance = obj)
+
+
+    if form.is_valid(): 
+        anterior = workOrder.objects.filter(id = id).first()    
+         
+        if form.instance.Status != anterior.Status:
+            form.instance.UploadDate = datetime.now()
+            log = woStatusLog( 
+                            woID = anterior,
+                            currentStatus = anterior.Status,
+                            nextStatus = form.instance.Status,
+                            createdBy = request.user.username,
+                            created_date = datetime.now()
+                            )
+            log.save()
+        form.save()       
+        return HttpResponseRedirect('/order_detail/' + str(form.instance.id) + '/False')
+ 
+    context["form"] = form
+    context["emp"] = emp   
+    return render(request, "deleted_order_detail.html", context)
 
 @login_required(login_url='/home/')
 def upload_invoice(request, order_id):
