@@ -6337,8 +6337,17 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
             invoicedAmount += validate_decimals(i.total)
             
         #Calculate Billing Amount = Daily Producton Item + Internal PO + External Production
-        billing_amount = 0        
-        billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
+        billing_amount = 0    
+        
+        
+        woCalculate = workOrder.objects.filter(id = item.id).first()
+        production_invoiced, produnction_pending_billing = calculate_billing_amount(request, woCalculate)
+        
+        # production_invoiced + produnction_pending_billing + (internalPO * 10%)
+        billing_amount = validate_decimals(production_invoiced) + validate_decimals(produnction_pending_billing) + (validate_decimals(poTotal) * validate_decimals('1.1')) 
+        
+        # validate if it is necessary add this formula tor the cases that the order have no production but have internal PO and External Production, in that case the billing amount will be the sum of the internal PO with 10% and the external production, but if the order have production the billing amount will be the sum of the production invoiced, production pending billing and the internal PO with 10% and the external production, this formula is to avoid that some orders that have no production but have internal PO and External Production have a billing amount of 0 when they should have a billing amount different from 0 because of the internal PO and External Production.
+        #billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
         
         
         #Calculate Pending Billing
@@ -11073,3 +11082,308 @@ def update_woEstimate_comment(request, woID, estimateID):
     context["form"] = form
     context["emp"] = emp
     return render(request, "update_woEstimate_comment.html", context)
+
+
+def calculate_billing_amount(request, wo):
+    
+    #Validate if invoice exist for the order
+    #wo = workOrder.objects.filter(id = woID.id).first()
+    invoices = woInvoice.objects.filter(woID = wo)
+    isRestoring = False
+    errorMessage = ""
+    
+    #TOTAL BILLING AMOUNT INVOICED
+    totalInvoiced = 0
+                
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    
+    wo = workOrder.objects.filter(id=wo.id).first()    
+    
+    #Get all the items associated with an invoice and Estimate and group by itemID and location
+
+    payItems = DailyItem.objects.filter(DailyID__woID = wo, estimate__isnull = False )
+    itemResume = []
+
+    try:
+        for data in payItems:
+
+            itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
+            amount = 0
+            amount = Decimal(str(data.quantity)) * Decimal(str(data.itemID.price))  
+            if itemResult != None:                  
+                itemResume[itemResult]['quantity'] += data.quantity
+                itemResume[itemResult]['amount'] += amount
+            else:            
+                itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False})
+        
+        
+    except Exception as e:
+        print(str(e)) 
+
+    # Group External Production by Item
+    try:
+        extProduction = externalProdItem.objects.filter(externalProdID__woID = wo, estimate__isnull = False)
+
+        for data in extProduction:
+
+            itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
+            amount = 0
+            amount = Decimal(str(data.quantity)) * Decimal(str(data.itemID.price))  
+            if itemResult != None:                  
+                itemResume[itemResult]['quantity'] += data.quantity
+                itemResume[itemResult]['amount'] += amount
+            else:            
+                itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False})
+        
+        
+    except Exception as e:
+        print(str(e)) 
+
+    itemFinal = []    
+            
+    authorizedItem = authorizedBilling.objects.filter(woID = wo, estimate__isnull = False)
+    qtyP = 0
+    totalP = 0
+    qtyA = 0
+    totalA = 0
+
+    for itemA in authorizedItem:
+        itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == itemA.itemID.item.itemID), None)
+
+        if itemResult != None:          
+            itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+            qtyP += validate_decimals(itemResume[itemResult]['quantity'])
+            totalP += validate_decimals(itemResume[itemResult]['amount'])
+            qtyA += validate_decimals(itemA.quantity)
+            totalA += validate_decimals(itemA.total)
+        else:
+            itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+            qtyA += validate_decimals(itemA.quantity)
+            totalA += validate_decimals(itemA.total)
+
+    #Getting Partial Estimates
+    openEstimate = woEstimate.objects.filter(woID = wo, Status = 1).count()
+
+    #Adding Billable Hours
+
+    bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True, estimate__isnull = False).exclude(Status=4)
+
+    totalHours = 0
+    totalHoursRate =  0
+
+    totalInvoiced += validate_decimals(totalP)
+        
+    ############### calculation the production without invoice ############
+    pendingProduction = 0
+    
+    try:
+        
+
+        #wo = workOrder.objects.filter(id=woID).first()
+        context["order"] = wo
+
+        context['status_ready'] = str(wo.Status) in ['2', '7', '8']
+        
+
+        payItems = DailyItem.objects.filter(DailyID__woID = wo, Status=1)
+        itemResume = []
+
+
+        #list estimate numbers
+        estimateList = woEstimate.objects.filter(woID = wo)
+        estimateFList = []
+        for eList in estimateList:
+            invoiceO = woInvoice.objects.filter(woID = wo, estimateNumber = eList.estimateNumber).first()
+            if invoiceO:
+                invoiceNum = invoiceO.invoiceNumber
+            else:
+                invoiceNum = 0
+
+            adjustment = woAdjustment.objects.filter(woID = wo, estimateNumber = eList.estimateNumber).first()
+            adj = False
+
+            if adjustment:
+                adj = True
+            
+            estimateFList.append({'woID': eList.woID, 'estimateNumber': eList.estimateNumber, 'invoiceNumber':invoiceNum, 'Status':eList.Status, 'is_partial':eList.is_partial, 'created_date': eList.created_date, 'createdBy': eList.createdBy, 'adjustment': adj})
+
+        context["estimateList"] = estimateFList
+
+        #list estimate numbers
+        estimateList = woInvoice.objects.filter(woID = wo)
+        context["invoiceList"] = estimateList
+
+        try:
+            for data in payItems:                
+
+                itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
+                amount = 0
+                
+                #Calculate amount with DailyItem.price
+                #amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.itemID.price)))  
+                amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.price)))  
+
+                if amount == 0:
+                    amount = Decimal(str(validate_decimals(data.quantity))) * Decimal(str(validate_decimals(data.itemID.price))) 
+
+
+                if amount == 0:
+                    #Calculate amount with DailyItem.price
+                    #errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.itemID.price)) + ' Amount ' + str(validate_decimals(amount))
+                    errorMessage = "There is a Problem with " + data.itemID.item.itemID + ' - ' + data.itemID.item.name + ' Price: '+ str(validate_decimals(data.price)) + ' Amount ' + str(validate_decimals(amount))
+
+                if itemResult != None:                                      
+                    itemResume[itemResult]['quantity'] += data.quantity
+                    itemResume[itemResult]['amount'] += amount
+                    if data.isAuthorized == False:
+                        itemResume[itemResult]['updateQuantity'] += data.quantity
+                        itemResume[itemResult]['updateAmount'] += amount
+                else:            
+                    if data.isAuthorized == False:
+                        #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
+                        #Adding Price from Amount/Qty                        
+                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
+                    else:
+                        #itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        
+                        #if data.price == 0 then use the Item Catalog Price
+                        if data.price == 0 or data.price == None:
+                            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+                        else:                        
+                            #Adding Price from Amount/Qty
+                            itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+
+                if data.isAuthorized == False:
+                    currentItem = DailyItem.objects.filter(id = data.id).first()
+                    currentItem.isAuthorized = True               
+                    currentItem.authorized_date = datetime.now()
+                    currentItem.save()
+        
+        except Exception as e:
+            errorMessage += str(e) + ' primero \n\n'
+            print(str(e)) 
+
+        # Group External Production by Item
+        try:
+            extProduction = externalProdItem.objects.filter(externalProdID__woID = wo, Status=1)
+
+            for data in extProduction:
+
+                itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == data.itemID.item.itemID), None)
+                amount = 0
+                amount = Decimal(str(data.quantity)) * Decimal(str(data.itemID.price))  
+                if itemResult != None:                  
+                    itemResume[itemResult]['quantity'] += data.quantity
+                    itemResume[itemResult]['amount'] += amount
+
+                    if data.isAuthorized == False:
+                        itemResume[itemResult]['updateQuantity'] += data.quantity
+                        itemResume[itemResult]['updateAmount'] += amount
+                else:          
+                    if data.isAuthorized == False:
+                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':amount, 'updateQuantity':data.quantity})
+                        
+                    else:                      
+                        itemResume.append({'item':data.itemID.item.itemID, 'name': data.itemID.item.name, 'quantity': data.quantity, 'price':data.itemID.price, 'amount':amount,'Encontrado':False, 'updateAmount':0, 'updateQuantity':0})
+
+                if data.isAuthorized == False:
+                    currentItem = externalProdItem.objects.filter(id = data.id).first()
+                    currentItem.isAuthorized = True               
+                    currentItem.authorized_date = datetime.now()
+                    currentItem.save() 
+            
+        except Exception as e:
+            errorMessage += str(e) + ' segundo \n\n'
+            print(str(e)) 
+
+        itemFinal = []    
+
+
+        #Insert Production in Authorized Items
+        for itemR in itemResume:
+
+            #Validating if Item exists in Authorized Item
+            countItem = authorizedBilling.objects.filter(woID = wo, Status = 1, itemID__item__itemID = itemR['item']).count()
+
+            if countItem == 0:
+                #Getting the Item Price
+                iPrice = itemPrice.objects.filter(item__itemID=itemR['item'], location__LocationID = wo.Location.LocationID).first()
+
+                if iPrice:
+
+                    authI = authorizedBilling(
+                                woID = wo,
+                                itemID = iPrice,
+                                quantity = itemR['quantity'],
+                                total = itemR['amount'],
+                                createdBy = request.user.username,
+                                created_date = datetime.now(),
+                                transferQty = 0
+                            )
+
+                    authI.save()     
+
+                else:
+                    errorMessage += 'Item ' + str(itemR['item']) + ' does not have a price definition for ' + wo.Location.name + '. ' +  os.linesep 
+            else:
+                existingAB = authorizedBilling.objects.filter(woID = wo, Status = 1, itemID__item__itemID = itemR['item']).first()
+                if isRestoring == "True":
+                    existingAB.quantity = itemR['quantity']
+                    existingAB.total = float(itemR['amount'])
+                    existingAB.save()
+                else:                  
+                    existingAB.quantity += itemR['updateQuantity']
+                    existingAB.total += float(itemR['updateAmount'])
+                    existingAB.save()
+
+
+        authorizedItem = authorizedBilling.objects.filter(woID = wo, Status = 1)
+        qtyP = 0
+        totalP = 0
+        qtyA = 0
+        totalA = 0
+
+        for itemA in authorizedItem:
+            itemResult = next((i for i, item in enumerate(itemResume) if item["item"] == itemA.itemID.item.itemID), None)
+
+            if itemResult != None and itemA.transferFrom == None:    
+                if itemA.quantity > 0:
+                    priceA = itemA.total / itemA.quantity
+                else:
+                    priceA = 0
+                        
+                #itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+                itemFinal.append({'item':itemResume[itemResult]['item'], 'name': itemResume[itemResult]['name'], 'quantity': itemResume[itemResult]['quantity'], 'transferFrom': itemA.transferFrom, 'price': itemResume[itemResult]['price'], 'amount':itemResume[itemResult]['amount'], 'quantityA': itemA.quantity, 'priceA': itemResume[itemResult]['price'], 'amountA':itemA.total, 'idA': itemA.id})
+                qtyP += validate_decimals(itemResume[itemResult]['quantity'])
+                totalP += validate_decimals(itemResume[itemResult]['amount'])
+                qtyA += validate_decimals(itemA.quantity)
+                totalA += validate_decimals(itemA.total)
+            else:
+
+                if itemA.quantity > 0:
+                    priceA = itemA.total / itemA.quantity
+                else:
+                    priceA = 0
+
+                #itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':itemA.itemID.price, 'amountA':itemA.total, 'idA': itemA.id})
+                itemFinal.append({'item':itemA.itemID.item.itemID, 'name': itemA.itemID.item.name, 'quantity': None, 'transferFrom': itemA.transferFrom ,'price': None, 'amount':None, 'quantityA': itemA.quantity, 'priceA':priceA, 'amountA':itemA.total, 'idA': itemA.id})
+                qtyA += validate_decimals(itemA.quantity)
+                totalA += validate_decimals(itemA.total)
+
+        #Getting Partial Estimates
+        openEstimate = woEstimate.objects.filter(woID = wo, Status = 1).count()
+
+
+        #Getting Internal POs
+        internal = internalPO.objects.filter(woID = wo)
+
+        vendorList = vendorSubcontrator(request) 
+        
+        pendingProduction += validate_decimals(totalP)
+        
+    except Exception as e:
+        errorMessage += str(e) + 'ultimo \n'
+        print(str(e)) 
+        
+    return totalInvoiced, pendingProduction
