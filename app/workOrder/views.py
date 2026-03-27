@@ -11087,8 +11087,7 @@ def update_woEstimate_comment(request, woID, estimateID):
 def calculate_billing_amount(request, wo):
     
     #Validate if invoice exist for the order
-    #wo = workOrder.objects.filter(id = woID.id).first()
-    invoices = woInvoice.objects.filter(woID = wo)
+    
     isRestoring = False
     errorMessage = ""
     
@@ -11144,7 +11143,8 @@ def calculate_billing_amount(request, wo):
 
     itemFinal = []    
             
-    authorizedItem = authorizedBilling.objects.filter(woID = wo, estimate__isnull = False)
+    #authorizedItem = authorizedBilling.objects.filter(woID = wo, estimate__isnull = False)
+    authorizedItem = authorizedBilling.objects.filter(woID = wo)
     qtyP = 0
     totalP = 0
     qtyA = 0
