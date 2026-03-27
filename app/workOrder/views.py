@@ -6344,7 +6344,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         production_invoiced, produnction_pending_billing = calculate_billing_amount(request, woCalculate)
         
         # production_invoiced + produnction_pending_billing + (internalPO * 10%)
-        billing_amount = validate_decimals(production_invoiced) + validate_decimals(produnction_pending_billing) + (validate_decimals(poTotal) * validate_decimals('1.1')) 
+        billing_amount = validate_decimals(production_invoiced) + (validate_decimals(poTotal) * validate_decimals('1.1')) #  + validate_decimals(produnction_pending_billing)
         
         # validate if it is necessary add this formula tor the cases that the order have no production but have internal PO and External Production, in that case the billing amount will be the sum of the internal PO with 10% and the external production, but if the order have production the billing amount will be the sum of the production invoiced, production pending billing and the internal PO with 10% and the external production, this formula is to avoid that some orders that have no production but have internal PO and External Production have a billing amount of 0 when they should have a billing amount different from 0 because of the internal PO and External Production.
         #billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
@@ -11102,7 +11102,8 @@ def calculate_billing_amount(request, wo):
     
     #Get all the items associated with an invoice and Estimate and group by itemID and location
 
-    payItems = DailyItem.objects.filter(DailyID__woID = wo, estimate__isnull = False )
+    #payItems = DailyItem.objects.filter(DailyID__woID = wo, estimate__isnull = False )
+    payItems = DailyItem.objects.filter(DailyID__woID = wo )
     itemResume = []
 
     try:
@@ -11123,7 +11124,8 @@ def calculate_billing_amount(request, wo):
 
     # Group External Production by Item
     try:
-        extProduction = externalProdItem.objects.filter(externalProdID__woID = wo, estimate__isnull = False)
+        #extProduction = externalProdItem.objects.filter(externalProdID__woID = wo, estimate__isnull = False)
+        extProduction = externalProdItem.objects.filter(externalProdID__woID = wo)
 
         for data in extProduction:
 
@@ -11167,7 +11169,8 @@ def calculate_billing_amount(request, wo):
 
     #Adding Billable Hours
 
-    bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True, estimate__isnull = False).exclude(Status=4)
+    #bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True, estimate__isnull = False).exclude(Status=4)
+    bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True).exclude(Status=4)
 
     totalHours = 0
     totalHoursRate =  0
