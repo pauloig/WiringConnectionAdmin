@@ -112,8 +112,9 @@
 
           </li>
  
-          {% if emp.is_superAdmin  or emp.is_admin or emp.accounts_payable or user.is_staff %}
+          {% if emp.is_superAdmin  or emp.is_admin or user.is_staff %}
             <a aria-current="page" class="d-block text-light p-2" href="/internal_po_list/"><i class="icon ion-md-barcode"></i> Internal PO</a>
+            <a aria-current="page" class="d-block text-light p-2" href="/deleted_internal_po_list/"><i class="icon ion-md-barcode"></i> Deleted Internal PO</a>
           {%endif%}
         
       <div class="mb-5">

@@ -27,15 +27,19 @@ class  internalPOAdmin(admin.ModelAdmin):
 class  internalPOAdmin(admin.ModelAdmin):
     list_display = ('id','poNumber')
     search_fields = ('id','poNumber')
+    
+class DeletedInternalPOAdmin(admin.ModelAdmin):
+    list_display = ('id','woID_d','poNumber')
+    search_fields = ('id','woID_d__prismID','woID_d__workOrderId','woID_d__PO', 'poNumber')
 
 class  DailyAdmin(admin.ModelAdmin):
     list_display = ('id','woID', 'crew', 'Location','Period','day')
     search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO')
 
 class DailyItemAdmin(admin.ModelAdmin):
-    list_display = ('id','itemID','DailyID','invoice')
+    list_display = ('id','itemID','DailyID','estimate','invoice', 'quantity','total')
     search_fields = ('id','itemID__item__itemID', 'DailyID__woID__prismID','invoice')
-
+    
 class externalProductionAdmin(admin.ModelAdmin):
     list_display = ('id','woID',)
     search_fields = ('id','woID__prismID','woID__workOrderId','woID__PO')
@@ -96,6 +100,7 @@ admin.site.register(itemPrice,itemPriceAdmin)
 admin.site.register(payroll)
 admin.site.register(payrollDetail)
 admin.site.register(internalPO,internalPOAdmin)
+admin.site.register(DeletedInternalPO, DeletedInternalPOAdmin)
 admin.site.register(period)
 admin.site.register(Daily, DailyAdmin)
 admin.site.register(DailyEmployee, DailyEmployeeAdmin)

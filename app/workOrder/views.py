@@ -1266,6 +1266,51 @@ def restore_delete_order(request, id):
         context["message"] = "Somenthing went Wrong! " + str(e)
         return render(request, "deleted_order_detail.html", context)
     
+def restore_delete_internal_po(request, id):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    try:       
+                
+        obj = get_object_or_404(DeletedInternalPO, id = id)
+        
+        #Moving Deleted Internal PO to Internal PO  table
+        
+        internalPO.objects.create(
+            poNumber = obj.poNumber,
+            woID = obj.woID_d,
+            vendor = obj.vendor,
+            supervisor= obj.supervisor_d,
+            pickupEmployee = obj.pickupEmployee_d,
+            product = obj.product,
+            quantity = obj.quantity,
+            total = obj.total,
+            nonBillable = obj.nonBillable,
+            isAmountRounded = obj.isAmountRounded,
+            estimate = obj.estimate,
+            invoice = obj.invoice,
+            Status = obj.Status,
+            receipt = obj.receipt,
+            transferFromPO = obj.transferFromPO_d,
+            transferToPO = obj.transferToPO_d,
+            transfer_date = obj.transfer_date,
+            transferBy = obj.transferBy,
+            created_date = obj.created_date,
+            createdBy = obj.createdBy            
+        )
+        
+        #If Everything is ok then delete the WO restored
+
+        obj.delete()
+        
+        return HttpResponseRedirect('/deleted_internal_po_list/')
+    except Exception as e:
+        
+        context["message"] = "Somenthing went Wrong! " + str(e)
+        return render(request, "update_deleted_po.html", context)
+    
 
 @login_required(login_url='/home/')
 def order_supervisor(request, orderID):
@@ -1865,6 +1910,32 @@ def po_list(request, id):
 
     return render(request, "po_order_list.html", context)
 
+
+@login_required(login_url='/home/')
+def deleted_internal_po_list(request):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    per = period.objects.filter(status__in=(1,2)).first()
+
+
+    context = {}  
+    poStatus = "0"
+    woStatus = "0"
+    poNumber = ""
+    pid = ""
+    
+    context["per"] = per
+    context["selectEstatus"] = "-1"
+    context["selectWOEstatus"] = "-1"
+    context["emp"] = emp
+
+    vendorList = vendorSubcontrator(request) 
+    context["vendorList"] = vendorList
+    
+    context["po"] = DeletedInternalPO.objects.all().order_by('-id')
+
+
+    return render(request, "deleted_internal_po_list.html", context)
+
 @login_required(login_url='/home/')
 def internal_po_list(request):
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()
@@ -2271,6 +2342,91 @@ def update_po(request, id, woID, selectedvs):
     context["emp"] = emp
     return render(request, "update_po.html", context)
 
+@login_required(login_url='/home/')
+def update_deleted_po(request, id, woID, selectedvs):
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context ={}
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    context["woID"] = int(woID)
+
+    context["po"] = DeletedInternalPO.objects.filter(id = id).first()
+    context["id"] = id
+
+
+    vendorList = vendorSubcontrator(request)
+
+    context['vendorList']= vendorList
+
+    obj = get_object_or_404(DeletedInternalPO, id = id )
+
+    if selectedvs != "0":
+        itemResult = next((i for i, item in enumerate(vendorList) if item["id"] == selectedvs), None)
+    else:
+        itemResult = next((i for i, item in enumerate(vendorList) if item["id"] == obj.vendor), None)
+
+
+    if itemResult != None:
+        context['selectedvs2'] = vendorList[itemResult]
+    else:
+        context['selectedvs2'] = ""    
+
+    
+    form = DeletedInternalPOForm(request.POST or None, instance = obj )
+
+    
+    status_update = (
+    (1, 'Open'),
+    (3, 'Invoiced'),
+    )
+
+    if obj.Status == 1:
+        context["status_update"] = "Permitido de Open a Invoiced"
+        form.fields['Status'].choices = status_update
+
+
+    
+    context["order"] = obj.woID_d.prismID + " - " + obj.woID_d.workOrderId + " - " + obj.woID_d.PO
+    context["order"] = obj.woID_d.prismID + " - " + obj.woID_d.workOrderId + " - " + obj.woID_d.PO
+
+    
+ 
+    if form.is_valid():
+        vendor = request.POST.get('vendor') 
+        
+        if vendor == "0":
+            form.instance.vendor = None
+        else:
+            form.instance.vendor = vendor
+
+
+        if form.instance.poNumber == None:
+            form.instance.poNumber = form.instance.id
+
+        try:         
+            newFile = request.FILES['myfile']
+            form.instance.receipt = newFile
+
+        except Exception as e:
+            None
+
+        form.instance.createdBy = request.user.username
+        form.instance.created_date = datetime.now()
+            
+        form.save()
+
+        if int(woID) > 0:
+            return HttpResponseRedirect("/po_list/" + str(obj.woID.id))
+        elif int(woID) < 0:
+            return HttpResponseRedirect("/billing_list/" + str(obj.woID.id) + "/False")
+        else:
+            return HttpResponseRedirect("/internal_po_list/")
+
+    context["form"] = form
+    context["emp"] = emp
+    return render(request, "update_deleted_po.html", context)
+
 
 @login_required(login_url='/home/')
 def unlink_po(request, id, woID):
@@ -2336,6 +2492,34 @@ def delete_po(request, id, woID):
     context["emp"] = emp
  
     if request.method == 'POST':
+        
+        #Create a copy of the PO in case it needs to be linked again
+        
+        DeletedInternalPO.objects.create(
+            poNumber = obj.poNumber,
+            woID_d = obj.woID,
+            vendor = obj.vendor,
+            supervisor_d = obj.supervisor,
+            pickupEmployee_d = obj.pickupEmployee,
+            product = obj.product,
+            quantity = obj.quantity,
+            total = obj.total,
+            nonBillable = obj.nonBillable,
+            isAmountRounded = obj.isAmountRounded,
+            estimate = obj.estimate,
+            invoice = obj.invoice,
+            Status = obj.Status,
+            receipt = obj.receipt,
+            transferFromPO_d = obj.transferFromPO,
+            transferToPO_d = obj.transferToPO,
+            transfer_date = obj.transfer_date,
+            transferBy = obj.transferBy,
+            created_date = obj.created_date,
+            createdBy = obj.createdBy,
+            deleted_date = datetime.now(),
+            deletedBy = request.user.username
+        )
+        
         obj.delete()
 
         if int(woID) > 0:

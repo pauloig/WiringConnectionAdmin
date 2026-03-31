@@ -26,6 +26,7 @@ urlpatterns = [
     path('deleted_order_list/',views.DeletedlistOrders),
     path('deleted_order_detail/<id>',views.deleted_order_detail), 
     path('restore_delete_order/<str:id>',views.restore_delete_order),
+    path('restore_delete_internal_po/<str:id>',views.restore_delete_internal_po),
 
 
     path('truncateData/',views.truncateData),
@@ -51,9 +52,11 @@ urlpatterns = [
     path('create_item_price/<id>',views.create_item_price),
     path('update_item_price/<id>',views.update_item_price),
     path('po_list/<id>',views.po_list),
+    path('deleted_internal_po_list/',views.deleted_internal_po_list),
     path('internal_po_list/',views.internal_po_list),
     path('get_internal_po_list/<estatus>/<woEstatus>/<poNumber>/<pid>',views.get_internal_po_list),
     path('update_po/<id>/<woID>/<selectedvs>',views.update_po),
+    path('update_deleted_po/<id>/<woID>/<selectedvs>',views.update_deleted_po),
     path('unlink_po/<id>/<woID>',views.unlink_po),
     path('delete_po/<id>/<woID>',views.delete_po),
     path('create_po/<id>/<selectedvs>',views.create_po),

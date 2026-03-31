@@ -1,0 +1,129 @@
+{% extends 'index.html' %} 
+{%load static%}
+{% block title %} CREATE ITEMS {% endblock %} 
+
+{% block container %}
+
+<script>
+    function confirmDelete(itemID) {        
+     
+        if (confirm("Are you sure you want to Restore this Internal PO?")) {
+            window.location.href = `/restore_delete_internal_po/${itemID}`;
+        }
+     
+    }
+</script>  
+
+<div class="container">
+    <form method='post' enctype="multipart/form-data">
+        {% csrf_token %}      
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card rounded">
+                    <h6 class="card-header card-header-wc" >Deleted PO</h6>
+                   
+                    <div class="card-body">  
+                            <div class="row"> 
+                                <div class="col-lg-12">
+
+                                    
+                                    <div class="mb-3">    
+                                        <label for="PID" class="form-label">Vendor - Subcontractor</label>                
+                                        <div class="input-group mb-3">                                          
+                                                                                                                               
+                                            <input type="text" class="form-control" placeholder="Select Vendor" aria-label="vendorName" id="vendorName" name="vendorName" aria-describedby="basic-addon1" value="{{selectedvs2.name}}" disabled>
+                                            <input type="text" class="form-control" placeholder="Select Vendor" aria-label="vendor" id="vendor" name="vendor" aria-describedby="basic-addon1" value="{{selectedvs2.id}}" hidden>                                                
+                                            <button hx-get="/vendor_subcontractor_list/{{woID}}/update_po/{{id}}" class="btn btn-primary py-2" hx-target="#dialog" ><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>
+                                            <a href="/create_vendor_modal/{{woID}}/1/{{id}}" type="button" class="btn btn-success"><i class="fa-sharp fa-solid fa-plus"> V</i></a>      
+                                            <a href="/create_subcontractor_modal/{{woID}}/1/{{id}}" type="button" class="btn btn-success"><i class="fa-sharp fa-solid fa-plus"> S</i></a>      
+                                            </div>                                      
+                                    </div>    
+                                    
+                                     <!--
+                                    <div class="mb-3">
+                                        <label for="vendor" class="form-label">Vendor - Subcontractor</label>                                    
+                                        <select class="form-select" name="vendor" id="vendor"> 
+                                            <option value ="0" > ---</option>
+                                            {% for i in vendorList%}                                                
+                                                {% if i.id == po.vendor %} 
+                                                    <option value ="{{i.id}}" selected> {{i.id}} - {{i.name}}</option>
+                                                {%else%}
+                                                    <option value ="{{i.id}}" > {{i.id}} - {{i.name}}</option>
+                                                {%endif%}
+
+                                            {%endfor%}
+                                        </select>  
+                                    </div>   -->
+                                                              
+                                </div>                                                                                
+                            </div> 
+                            <div class="row"> 
+                                <div class="col-lg-12">
+                                    <div class="mb-3">    
+                                        <label for="PID" class="form-label">Work Order:</label>                
+                                        <div class="input-group mb-3">                                         
+                                               <input type="text" class="form-control" placeholder="Work Order" aria-label="woID" id="woID" name="woID" aria-describedby="basic-addon1" value="{{order}}" disabled>                                                                                        
+                                        </div>                                      
+                                    </div>                                                         
+                                </div>                                                                                
+                            </div>                                    
+                            <div class="row">
+                                  <!-- Using the formset -->
+                                {{ form.as_p }}
+                            </div>
+                            <div class="row"> 
+                                <div class="col-lg-12">
+                                    <div class="mb-3">    
+                                        <label for="PID" class="form-label">Transfer From:</label>                
+                                        <div class="input-group mb-3">                                         
+                                               <input type="text" placeholder="Work Order" aria-label="woID" id="woID" name="woID" aria-describedby="basic-addon1" value="{{transferFromPO}}" disabled>                                                                                        
+                                        </div>                                      
+                                    </div>                                                         
+                                </div>                                                                                
+                            </div>              
+                            <div class="row">
+                                <div class="col-lg-8">
+                                  <label class="form-label" for="file">Select Receipt</label>  
+                                                                    
+                                  <div class="input-group-btn">
+                                      <div class="input-group mb-3">
+                                        {% if po.receipt != '' and po.receipt != None %}   
+                                            <a class="mx-5" href="/static/media/{{po.receipt}}" target="_blank">View Actual File</a>  
+                                        {%endif%}
+                                          <input type="file" class="form-control" id="file" name="myfile" accept="application/pdf, image/png, image/jpeg">
+                                          <label class="input-group-text " for="file">Select File</label>
+                                      </div>
+                                  </div>                                
+                                </div>  
+                                <div class="col-lg-4">
+                                    
+                                </div>
+                            </div>     
+                            <div class="row">
+                                <div class="col-lg-6">  
+                                    <div class="form-outline" style="align-items: center;">                                       
+                                        <!-- <input type="submit" value="Save"> -->
+                                         {% if emp.is_superAdmin  or user.is_staff %}    
+                                            {%if po.Status == 1%}                                     
+                                                <!-- <a class="btn btn-warning" hx-get="/restore_deleted_po/{{po.id}}/{{woID}}" hx-target="#dialog">Restore</a> -->
+                                                <a class="btn btn-warning" role="button" onclick="confirmDelete('{{po.id}}')">Restore</a>
+                                            {%endif%}                                            
+                                        {%endif%}
+                                        
+                                      
+                                        <a href="/deleted_internal_po_list/" type="button" class="btn btn-danger">Close</a> 
+                                      
+                                       
+
+                                       
+                                    </div>
+                                </div>
+                            </div>                                    
+                    </div>
+                </div>                 
+            </div>
+        </div>      
+    </form>
+</div>
+{% endblock %}

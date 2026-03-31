@@ -556,6 +556,37 @@ class internalPO(models.Model):
 
     def __str__(self):
         return str(self.woID) + " - " + str(self.id)
+    
+
+class DeletedInternalPO(models.Model):
+    poNumber = models.IntegerField(null=True, blank=True)
+    woID_d = models.ForeignKey(workOrder, on_delete=models.CASCADE, db_column ='woID_d', related_name='woID_d')
+    vendor = models.CharField(max_length=50, null=True, blank=True)
+    supervisor_d = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, db_column='supervisor_d', related_name='supervisor_d')
+    pickupEmployee_d = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, db_column='pickupEmployee_d', related_name='pickupEmployee_d')
+    product = models.CharField(max_length=600, blank=True, null=True)
+    quantity = models.CharField(max_length=20, blank=True, null=True)
+    total = models.CharField(max_length=20, blank=True, null=True)
+    nonBillable = models.BooleanField(default=False)
+    isAmountRounded = models.BooleanField(default=True)
+    estimate = models.CharField(max_length=50, null=True, blank=True)
+    invoice = models.CharField(max_length=50, null=True, blank=True)
+    Status = models.IntegerField(default=1, choices = prodStatus_choice)
+    receipt = models.FileField(null=True, upload_to="po")
+    transferFromPO_d = models.ForeignKey(workOrder, on_delete=models.CASCADE, null=True, blank=True, db_column ='transferFromPO_d', related_name='transferFromPO_d')
+    transferToPO_d = models.ForeignKey(workOrder, on_delete=models.CASCADE, null=True, blank=True, db_column ='transferToPO_d', related_name='transferToPO_d')
+    transfer_date = models.DateTimeField(null=True, blank=True)
+    transferBy = models.CharField(max_length=60, blank=True, null=True)
+    created_date = models.DateTimeField(blank=True, null=True)
+    createdBy = models.CharField(max_length=60, blank=True, null=True)
+    deleted_date = models.DateTimeField(blank=True, null=True)
+    deletedBy = models.CharField(max_length=60, blank=True, null=True)
+
+    class Meta:
+        unique_together = ('id', 'woID_d')
+
+    def __str__(self):
+        return str(self.woID_d) + " - " + str(self.id)
 
 class externalProduction(models.Model):
     woID = models.ForeignKey(workOrder, on_delete=models.CASCADE, db_column ='woID')
