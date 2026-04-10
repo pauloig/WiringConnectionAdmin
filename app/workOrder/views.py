@@ -4205,22 +4205,21 @@ def location_period_list(request, id):
     
     
     if request.user.is_staff:
-        loca = Locations.objects.all().order_by("LocationID")
+        loca = Locations.objects.filter(is_active=True).order_by("LocationID")
     else:
         if emp:
             if emp.is_superAdmin:
-                loca = Locations.objects.all().order_by("LocationID")
+                loca = Locations.objects.filter(is_active=True).order_by("LocationID")
             elif emp.Location != None:
                 
-                locaList = employeeLocation.objects.filter(employeeID = emp)
-                
+                locaList = employeeLocation.objects.filter(employeeID = emp)                
                 locationList = []
                 locationList.append(emp.Location.LocationID)
                 
                 for i in locaList:
                     locationList.append(i.LocationID.LocationID)
                 
-                loca = Locations.objects.filter(LocationID__in =locationList)
+                loca = Locations.objects.filter(LocationID__in =locationList, is_active=True).order_by("LocationID")
             else:
                 loca = Locations.objects.filter(LocationID = -1)
 
@@ -6528,7 +6527,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         production_invoiced, produnction_pending_billing = calculate_billing_amount(request, woCalculate)
         
         # production_invoiced + produnction_pending_billing + (internalPO * 10%)
-        billing_amount = validate_decimals(production_invoiced) + (validate_decimals(poTotal) * validate_decimals('1.1')) #  + validate_decimals(produnction_pending_billing)
+        billing_amount = validate_decimals(produnction_pending_billing) + validate_decimals(production_invoiced)  + (validate_decimals(poTotal) * validate_decimals('1.1'))  
         
         # validate if it is necessary add this formula tor the cases that the order have no production but have internal PO and External Production, in that case the billing amount will be the sum of the internal PO with 10% and the external production, but if the order have production the billing amount will be the sum of the production invoiced, production pending billing and the internal PO with 10% and the external production, this formula is to avoid that some orders that have no production but have internal PO and External Production have a billing amount of 0 when they should have a billing amount different from 0 because of the internal PO and External Production.
         #billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
@@ -6614,13 +6613,13 @@ def get_summary(request, perID):
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()
 
     if request.user.is_staff:
-        loca = Locations.objects.all().order_by("LocationID")
+        loca = Locations.objects.filter(is_active=True).order_by("LocationID")
     else:
         if emp:
             if emp.is_superAdmin:
-                loca = Locations.objects.all().order_by("LocationID")
+                loca = Locations.objects.filter(is_active=True).order_by("LocationID")
             elif emp.Location != None:
-                loca = Locations.objects.filter(LocationID = emp.Location.LocationID)
+                loca = Locations.objects.filter(LocationID = emp.Location.LocationID, is_active=True)
             else:
                 loca = Locations.objects.filter(LocationID = -1)
 
@@ -11277,7 +11276,7 @@ def calculate_billing_amount(request, wo):
     
     #TOTAL BILLING AMOUNT INVOICED
     totalInvoiced = 0
-                
+    pendingProduction = 0
 
     per = period.objects.filter(status__in=(1,2)).first()
     
@@ -11407,7 +11406,7 @@ def calculate_billing_amount(request, wo):
 
     itemFinal = []    
             
-    """authorizedItem = authorizedBilling.objects.filter(woID = wo, estimate__isnull = True)
+    authorizedItem = authorizedBilling.objects.filter(woID = wo, estimate__isnull = True)
     #authorizedItem = authorizedBilling.objects.filter(woID = wo)
     qtyP = 0
     totalP = 0
@@ -11435,10 +11434,10 @@ def calculate_billing_amount(request, wo):
     
 
     totalHours = 0
-    totalHoursRate =  0"""
+    totalHoursRate =  0
 
-    totalInvoiced += validate_decimals(totalP)
-    pendingProduction = 0
+    pendingProduction += validate_decimals(totalP)
+    
     
     
         
