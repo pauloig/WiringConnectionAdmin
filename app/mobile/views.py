@@ -1966,8 +1966,28 @@ def approve_timesheet(request, id):
 
     if form.is_valid():
         try:
-            form.instance.daily_date = datetime.now()
+            form.instance.daily_date = datetime.now()           
             form.save()
+            
+            #Validate if the id Mobile Exists in the Daily Table
+            exists_in_daily = catalogModel.Daily.objects.filter(mobile_id=obj.id).exists()
+            if exists_in_daily:
+                
+                form.instance.Status = 4
+                form.instance.approved_by = request.user.username
+                form.instance.approved_date = datetime.now()
+                form.save()
+                
+                context['form']= form     
+                context["emp"] = emp
+                context["dailyEmp"] = dailyEmp
+                context["dailyItem"] = dailyItem
+                context["superV"] = superV
+                context["dailyWO"] = obj
+                context["id"] = id
+                context["errorMessage"] = "Error: This timesheet has already been approved." 
+                #return render(request, "mobile/approve_timesheet.html", context)
+                return HttpResponseRedirect('/mobile/supervisor_list/')
 
             #Get the pdf daily Html
             htlmDaily = request.POST.get('htmlDaily')
