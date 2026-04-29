@@ -6534,8 +6534,17 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         
         
         #Calculate Pending Billing
+        
+        #pending_billing = validate_decimals(billing_amount) - validate_decimals(invoicedAmount)
+    
+        #Getting the Internal POs that not included in estimates and Invoices and are billables
+        internalPOs = internalPO.objects.filter(woID=item, nonBillable=False, invoice__isnull = True, estimate__isnull = True)
+        pending_POs = 0
+        for i in internalPOs:
+            pending_POs += validate_decimals(i.total) * validate_decimals('1.1') # assuming that the billing amount of the internal PO is the total with a 10% increase, this formula is to avoid that some internal POs that are not included in estimates and Invoices and are billables have a pending billing amount of 0 when they should have a pending billing amount different from 0 because of the internal PO
+        
         pending_billing = 0
-        pending_billing = validate_decimals(billing_amount) - validate_decimals(invoicedAmount)
+        pending_billing = validate_decimals(produnction_pending_billing) + validate_decimals(pending_POs)
         
         
         ws.write(row_num, 7, f"$ {billing_amount:.2f}",  font_style)
