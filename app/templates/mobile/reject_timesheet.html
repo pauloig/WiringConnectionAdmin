@@ -11,7 +11,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <style>
    /* CSS will go here */
@@ -25,6 +26,7 @@
       flex-wrap: wrap;
       gap: 15px;
       margin-top: 20px;
+      min-height: 150px;
   }
   
   .document-thumbnail {
@@ -126,6 +128,32 @@
       font-size: 14px;
   }
   
+  .download-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+  }
+  
+  .download-btn:hover {
+      opacity: 1;
+  }
+  
+  .download-icon {
+      color: #3498db;
+      font-size: 14px;
+  }
+  
   /* Modal Styles */
   .preview-modal .modal-content {
       background-color: rgba(0,0,0,0.9);
@@ -191,36 +219,33 @@
   }
   
   .preview-modal .modal-dialog {
-   max-width: 800px; /* Smaller fixed width */
-}
-
-.preview-modal .modal-content {
-   max-height: 80vh;
-   overflow: auto;
-}
-
-#pdfCanvas {
-   border: 1px solid #444;
-   max-height: 55vh !important; /* Reduced canvas height */
-   width: auto !important; /* Allow natural width */
-}
-
-.pdf-controls {
-   padding: 8px;
-   background: rgba(0,0,0,0.7);
-   border-radius: 4px;
-   margin-top: 10px !important;
-}
-
-.pdf-controls button {
-   padding: 3px 10px;
-   font-size: 0.85rem;
-   border-radius: 3px;
-}
-
-
-  </style>
-
+      max-width: 800px;
+  }
+  
+  .preview-modal .modal-content {
+      max-height: 80vh;
+      overflow: auto;
+  }
+  
+  #pdfCanvas {
+      border: 1px solid #444;
+      max-height: 55vh !important;
+      width: auto !important;
+  }
+  
+  .pdf-controls {
+      padding: 8px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 4px;
+      margin-top: 10px !important;
+  }
+  
+  .pdf-controls button {
+      padding: 3px 10px;
+      font-size: 0.85rem;
+      border-radius: 3px;
+  }
+</style>
 
 <div class="container">
     <form method='post' action="{{request.path}}" class="modal-content" id="rejectedTimseheet">
@@ -231,16 +256,6 @@
         </div>              
        
         <div class="modal-body">  
-                     
-            {% comment %} <div class="row">
-                <div class="col-lg-12">
-                    <div class="mb3-mobile">
-                        <label for="{{ form.EmployeeID.id_for_label }}" class="form-label">Employee</label>
-                        {% render_field form.EmployeeID  name="date" id="date" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.EmployeeID.errors|first }}</div>
-                    </div>    
-                </div>                    
-            </div>    {% endcomment %}
             <div class="row">               
                 <div class="col-sm-2">               
                     <div class="mb3-mobile">
@@ -260,7 +275,7 @@
                 <div class="col-lg-1">
                     <div class="mb3-mobile">
                         <label for="{{ form.crew.id_for_label }}" class="form-label">Crew</label>
-                        {% render_field form.crew  name="crew" id="crew" class="form-control" %}
+                        {% render_field form.crew name="crew" id="crew" class="form-control" %}
                         <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
                     </div>    
                 </div>     
@@ -269,9 +284,8 @@
                         <label for="PID" class="form-label">PID - Work Order - PO</label>               
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{dailyWO.woID.prismID}} - {{dailyWO.woID.workOrderId}} - {{dailyWO.woID.PO}}" disabled>                                                                                             
-                              <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.id}}"> 
-                              <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.pdfDaily}}"> 
-
+                            <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.id}}"> 
+                            <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.pdfDaily}}"> 
                         </div>                                      
                     </div>        
                 </div> 
@@ -286,10 +300,9 @@
                                         <option value="{{sup.employeeID}}" selected>{{sup.first_name}} {{sup.last_name}}</option>  
                                     {% else %}     
                                         <option value="{{sup.employeeID}}">{{sup.first_name}} {{sup.last_name}}</option>   
-                                    {%endif%}            
+                                    {% endif %}            
                                 {% endfor %}      
                             </select>   
-                           
                         </div>                                            
                     </div>                                                                                                                                                                          
                 </div>  
@@ -302,81 +315,24 @@
                             <input class="form-check-input" type="checkbox" value="True" id="split" name="split" checked disabled>
                         {% else %}
                             <input class="form-check-input" type="checkbox" value="False" id="splpit" name="split" disabled>
-                        {%endif%}
-                        <label class="form-check-label" for="flexCheckDefault">
-                          Split
-                        </label>
-                      </div>
+                        {% endif %}
+                        <label class="form-check-label" for="flexCheckDefault">Split</label>
+                    </div>
                 </div>    
             </div>   
-
-            
-            </br>     
-            <!--<div class="row">                                                                       
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Ready to Bill  </label> 
-                            {% render_field form.daily_rtb|attr:"disabled:disabled" class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
-                </div>    
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Work in Progress</label> 
-                            {% render_field form.daily_wp|attr:"disabled:disabled" class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
-                </div>      
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Construction Done</label> 
-                            {% render_field form.daily_cd|attr:"disabled:disabled" class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
-                </div> 
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Needs Fiber splicing</label> 
-                            {% render_field form.daily_nfs|attr:"disabled:disabled" class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
-                </div>   
-                <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">Fiber Done</label> 
-                            {% render_field form.daily_fd|attr:"disabled:disabled" class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
-                </div>                        
-                <div class="col-sm-2">
-                    <div class="mb-3">
-                        <label for="{{ form.daily_zone.id_for_label }}" class="form-label">Zone</label>
-                        {% render_field form.daily_zone|attr:"disabled:disabled" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.daily_zone.errors|first }}</div>
-                    </div> 
-                </div>
-             
-                <div class="col-sm-1 pt-4">
-                    <input type="text" class="form-control d-none" id="daily" name="daily" value="{{dailyWO.id}}">                                         
-                </div> 
-                <div class="row">                                                                       
-                <div class="col-sm-12">
-                    <div class="mb-3">
-                        <label for="{{ form.daily_comments.id_for_label }}" class="form-label">Tech. Comments</label>
-                        {% render_field form.daily_comments|attr:"disabled:disabled" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.daily_comments.errors|first }}</div>
-                    </div> 
-                </div>
-            </div>
-            </div>-->
             
             <div class="row">
                 <div class="col-sm-12">
-                    {%if dailyWO.total_pay != 100 %}
-                        <h4 style="color:red;"> The Total % to Pay must be equal to 100</h4>
-                    {%endif%}
-                    
+                    {% if dailyWO.total_pay != 100 %}
+                        <h4 style="color:red;">The Total % to Pay must be equal to 100</h4>
+                    {% endif %}
                 </div>
             </div>
+            
             <div class="row">                           
                 <div class="col-sm-8 px-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if dailyWO.total_pay > 0 %}{{dailyWO.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+                        <h6 class="card-header card-header-wc">Employee List - % To Pay = {% if dailyWO.total_pay > 0 %}{{dailyWO.total_pay|floatformat:2|intcomma}}%{% endif %}</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12 px-1">
@@ -396,25 +352,24 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {%for emp in dailyEmp %}
+                                            {% for emp in dailyEmp %}
                                                 <tr>                                                       
                                                     <td class="p-1">{{emp.EmployeeID}} 
-                                                        {% if emp.is_own_vehicle%}      
-                                                            <span class="badge bg-success text-white ml-2"> OV </span>      
-                                                        {%endif%}
+                                                        {% if emp.is_own_vehicle %}      
+                                                            <span class="badge bg-success text-white ml-2">OV</span>      
+                                                        {% endif %}
                                                     </td>
                                                     <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
-                                                    <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                    <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                                    <td class="p-1">{% if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                    <td class="p-1">{% if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                     <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
-                                                    <td class="p-1" style="color: red;">{%if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                    <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                                                                    
+                                                    <td class="p-1" style="color: red;">{% if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                    <td class="p-1" style="color: red;">{% if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                 </tr>
-                                            {%endfor%}
+                                            {% endfor %}
                                         </tbody>                                                
                                     </table>
                                 </div>
@@ -424,253 +379,205 @@
                 </div>
                 <div class="col-sm-4 px-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >ITEM LIST  -     TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
-                        
+                        <h6 class="card-header card-header-wc">ITEM LIST - TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}}</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12 px-1">
-                                    <table  class="table table-sm table-bordered table-striped">
+                                    <table class="table table-sm table-bordered table-striped">
                                         <thead>
                                             <tr class="table-primary">                                                    
                                                 <td width="20%" class="p-1">Item</td>
                                                 <td width="20%" class="p-1">Qty.</td>
                                                 <td width="20%" class="p-1">Price</td>
                                                 <td width="20%" class="p-1">Total</td>  
-                                               
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {%for itemd in dailyItem %}
+                                            {% for itemd in dailyItem %}
                                                 <tr>
                                                     <td class="p-1">{{itemd.itemID.item.itemID}}</td>
                                                     <td class="p-1">{{itemd.quantity}}</td>
                                                     <td class="p-1">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>                                                       
                                                 </tr>
-                                            {%endfor%}
+                                            {% endfor %}
                                         </tbody>                                                
                                     </table>
                                 </div>
                             </div>                                                
                         </div>
                     </div>  
-                    
                 </div>  
             </div>                                     
-        
-    </br>
-        <div class="row">
-            <div class="col-sm-12 px-1 mx-1">
-                <div class="card">
-                    <h6 class="card-header card-header-wc" >Docs List</h6>
-                    <div class="card-body">
-                        <table class="table table-sm">                                 
-                            <h3 class="mb-3">Maps
-                                {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        {%if item.Status == 1 or item.Status == 5%}        
-                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/1" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
-                                        {%endif%}
-                                    {%endif%}
-                                {% endif %}
-                            </h3>
-                            <div class="documents-container">
-                                {%if not dailyDocs %}
-                                    <p>No Maps Included</p>                                                 
-                                {%endif%}
-                                {% for itemd in dailyDocs %}
-                                <div class="document-thumbnail" 
-                                     data-url="{{ itemd.document.url }}"
-                                     data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                    
-                                    <div class="thumbnail-content">
-                                        {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                            <div class="pdf-thumbnail">
-                                                <i class="fas fa-file-pdf pdf-icon"></i>
-                                                <small class="text-muted">PDF Document</small>
-                                                <canvas class="d-none"></canvas>
-                                            </div>
-                                        {% else %}
-                                            <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                        {% endif %}
-                                        
-                                        <div class="overlay">
-                                            <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                        </div>
-                                    </div>
-                                    
-                                    {% if item.Status == 1 or item.Status == 5 %}
-                                        <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                            <i class="fas fa-times delete-icon"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                            </div>
-                       
+        </br>
 
-                            <h3 class="mb-3 mt-3">Pictures
-                                {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        {%if item.Status == 1 or item.Status == 5%}        
-                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/2" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
-                                        {%endif%}
-                                    {%endif%}
-                                {% endif %}
-                            </h3>
-                                <div class="documents-container">
-                                    {%if not dailyDocsPic %}
-                                        <p>No Pictures Included</p>     
-                                    {%endif%}
-                                    {% for itemd in dailyDocsPic %}
-                                    <div class="document-thumbnail" 
-                                        data-url="{{ itemd.document.url }}"
-                                        data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                        
-                                        <div class="thumbnail-content">
-                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                <div class="pdf-thumbnail">
-                                                    <i class="fas fa-file-pdf pdf-icon"></i>
-                                                    <small class="text-muted">PDF Document</small>
-                                                    <canvas class="d-none"></canvas>
-                                                </div>
-                                            {% else %}
-                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                            {% endif %}
-                                            
-                                            <div class="overlay">
-                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        {% if item.Status == 1 or item.Status == 5 %}
-                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                <i class="fas fa-times delete-icon"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-
-                            <h3 class="mb-3 mt-3">Material Backup
-                                {% if item.supervisor != None and item.woID != None %}
-                                    {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                        {%if item.Status == 1 or item.Status == 5%}        
-                                            <a href="/mobile/create_daily_docs/{{item.id}}/{{selectedLocation}}/3" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
-                                        {%endif%}
-                                    {%endif%}
-                                {% endif %}
-                            </h3>       
-                                <div class="documents-container">
-                                    {%if not dailyDocsMB %}
-                                        <p>No Material Backup Included</p>     
-                                    {%endif%}
-                                    {% for itemd in dailyDocsMB %}
-                                    <div class="document-thumbnail" 
-                                        data-url="{{ itemd.document.url }}"
-                                        data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                        
-                                        <div class="thumbnail-content">
-                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                <div class="pdf-thumbnail">
-                                                    <i class="fas fa-file-pdf pdf-icon"></i>
-                                                    <small class="text-muted">PDF Document</small>
-                                                    <canvas class="d-none"></canvas>
-                                                </div>
-                                            {% else %}
-                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                            {% endif %}
-                                            
-                                            <div class="overlay">
-                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        {% if item.Status == 1 or item.Status == 5 %}
-                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                <i class="fas fa-times delete-icon"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                </div>                            
-                            </div>                                   
+            <!-- DOCS LIST SECTION WITH LAZY LOADING -->
+            <div class="row">
+                <div class="col-sm-12 px-1 mx-1">
+                    <div class="card">
+                        <h6 class="card-header card-header-wc">Docs List</h6>
+                        <div class="card-body">
                             
-                        </table>                                               
-                    </div>
-                </div>    
+                            <!-- Store document data in JavaScript (from Django context) -->
+                            <script>
+                                // Global variable to store document data for lazy loading
+                                var docsData = {
+                                    maps: [
+                                        {% for doc in dailyDocs %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ],
+                                    pictures: [
+                                        {% for doc in dailyDocsPic %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ],
+                                    material: [
+                                        {% for doc in dailyDocsMB %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ]
+                                };
+                            </script>
+                            
+                            <!-- Global download buttons -->
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-success btn-sm" onclick="downloadAllImagesOriginal()">
+                                    <i class="fas fa-file-download"></i> Download All
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm" onclick="downloadEachImageAsPDF()">
+                                    <i class="fas fa-file-download"></i> Download All PDF
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            
+                            <!-- MAPS SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Maps</h3>
+                                    <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="maps">
+                                        <i class="fas fa-images"></i> Load Thumbnails
+                                    </button>
+                                </div>
+                                <div id="maps-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view maps
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PICTURES SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Pictures</h3>
+                                    <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="pictures">
+                                        <i class="fas fa-images"></i> Load Thumbnails
+                                    </button>
+                                </div>
+                                <div id="pictures-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view pictures
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MATERIAL BACKUP SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Material Backup</h3>
+                                    <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="material">
+                                        <i class="fas fa-images"></i> Load Thumbnails
+                                    </button>
+                                </div>
+                                <div id="material-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view material backup
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                </div>
             </div>
-      </div>    
                 
-                
-                <div class="row mt-4">
-                    <div class="col-lg-12">
-                        <span class="d-flex justify-content-center">
-                            {% if dailyWO.Status == 2 %}
-                                {%if not emp.is_superAdmin and not user.is_staff %}
-                                    <h4>Are you sure to Reject this Daily? </h4>
-                                    <h4 style="color:red;"> {{errorMessage}}</h4>
-                                {% endif %}  
-                            {% endif %}  
-                        </span>
-                    </div>
-                </div>  
-                <div class="col-lg-12 pt-4">
-                    <div class="">
-                        <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <span class="d-flex justify-content-center">
                         {% if dailyWO.Status == 2 %}
-                            {%if emp.is_superAdmin or user.is_staff %}
-                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}                                
-                            {% else %}
-                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
-                            {%endif%}
-                        {% elif dailyWO.Status == 6  %}
-                            {%if emp.is_superAdmin or user.is_staff %}
-                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
-                            {% else %}
-                                {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}
-                            {%endif%}
+                            {% if not emp.is_superAdmin and not user.is_staff %}
+                                <h4>Are you sure to Reject this Daily?</h4>
+                                <h4 style="color:red;">{{errorMessage}}</h4>
+                            {% endif %}  
+                        {% endif %}  
+                    </span>
+                </div>
+            </div>  
+            
+            <div class="col-lg-12 pt-4">
+                <div class="">
+                    <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
+                    {% if dailyWO.Status == 2 %}
+                        {% if emp.is_superAdmin or user.is_staff %}
+                            {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}                                
+                        {% else %}
+                            {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
+                        {% endif %}
+                    {% elif dailyWO.Status == 6 %}
+                        {% if emp.is_superAdmin or user.is_staff %}
+                            {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required" name="crew" id="crew" class="form-control" %}
                         {% else %}
                             {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}
                         {% endif %}
-                           
-                        
-                        <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
-                    </div>    
+                    {% else %}
+                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20"|attr:"required:required"|attr:"disabled:disabled" name="crew" id="crew" class="form-control" %}
+                    {% endif %}
+                    <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
                 </div>    
-            </div>         
+            </div>    
+        </div>         
         
         <div class="modal-footer">   
-           
-            
             {% if dailyWO.Status == 2 %}
-                {%if not emp.is_superAdmin and not user.is_staff%}
+                {% if not emp.is_superAdmin and not user.is_staff %}
                     <input class="btn btn-primary" type="submit" value="Reject">
                 {% endif %}
-            {% elif dailyWO.Status == 6  %}
-                {%if emp.is_superAdmin or user.is_staff%}
+            {% elif dailyWO.Status == 6 %}
+                {% if emp.is_superAdmin or user.is_staff %}
                     <input class="btn btn-primary" type="submit" value="Reject">
                 {% endif %}
             {% endif %}
-                
-                   
-           
             <a type="button" class="btn btn-danger" href="/mobile/{{origen}}/">Cancel</a> 
         </div>
     </form>
+    
     <!-- Preview Modal -->
     <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Changed from modal-xl to modal-lg -->
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-body p-3"> <!-- Added padding -->
-                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;"> <!-- Reduced height -->
+                <div class="modal-body p-3">
+                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;">
                     <div id="pdfPreview" class="w-100 d-none">
                         <div class="d-flex justify-content-center">
-                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas> <!-- Constrained dimensions -->
+                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas>
                         </div>
-                        <div class="pdf-controls mt-2"> <!-- Smaller controls -->
+                        <div class="pdf-controls mt-2">
                             <button id="prevPage" class="btn btn-sm btn-outline-light">
                                 <i class="fas fa-chevron-left"></i> Prev
                             </button>
@@ -687,189 +594,489 @@
         </div>
     </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            // Initialize PDF.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-    
-    // Variables for PDF handling
-    let pdfDoc = null;
-    let pageNum = 1;
-    let pageRendering = false;
-    let pageNumPending = null;
-    const scale = 1.5;
-    
-    // DOM elements
-    const pdfCanvas = document.getElementById('pdfCanvas');
-    const ctx = pdfCanvas.getContext('2d');
-    const currentPageSpan = document.getElementById('currentPage');
-    const totalPagesSpan = document.getElementById('totalPages');
-    const prevPageBtn = document.getElementById('prevPage');
-    const nextPageBtn = document.getElementById('nextPage');
-    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-    
-    // Generate PDF thumbnails
-    document.addEventListener('DOMContentLoaded', function() {
-        const pdfThumbnails = document.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        const scale = 1.5;
         
-        pdfThumbnails.forEach(thumbnail => {
-            const pdfUrl = thumbnail.getAttribute('data-url');
-            const canvas = thumbnail.querySelector('canvas');
+        // DOM elements
+        let pdfCanvas = null;
+        let ctx = null;
+        let currentPageSpan = null;
+        let totalPagesSpan = null;
+        let prevPageBtn = null;
+        let nextPageBtn = null;
+        let previewModal = null;
+        
+        // Initialize PDF functions when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            pdfCanvas = document.getElementById('pdfCanvas');
+            if (pdfCanvas) {
+                ctx = pdfCanvas.getContext('2d');
+            }
+            currentPageSpan = document.getElementById('currentPage');
+            totalPagesSpan = document.getElementById('totalPages');
+            prevPageBtn = document.getElementById('prevPage');
+            nextPageBtn = document.getElementById('nextPage');
             
-            pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
-                return pdf.getPage(1);
-            }).then(function(page) {
-                const viewport = page.getViewport({ scale: 0.5 });
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+            if (document.getElementById('previewModal')) {
+                previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            }
+            
+            // Check if pdfjsLib is available
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+                console.log('PDF.js initialized successfully');
+            } else {
+                console.warn('pdfjsLib not loaded yet, waiting...');
+                // Retry after a short delay
+                setTimeout(function() {
+                    if (typeof pdfjsLib !== 'undefined') {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+                        console.log('PDF.js initialized successfully after delay');
+                    } else {
+                        console.error('pdfjsLib failed to load');
+                    }
+                }, 500);
+            }
+        });
+        
+        // Show PDF in modal
+        window.showPdfPreview = function(url) {
+            const imagePreview = document.getElementById('imagePreview');
+            const pdfPreview = document.getElementById('pdfPreview');
+            if (imagePreview) imagePreview.classList.add('d-none');
+            if (pdfPreview) pdfPreview.classList.remove('d-none');
+            
+            if (typeof pdfjsLib === 'undefined') {
+                alert('PDF viewer is initializing. Please try again in a moment.');
+                return;
+            }
+            
+            pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                pdfDoc = pdf;
+                if (totalPagesSpan) totalPagesSpan.textContent = pdf.numPages;
+                pageNum = 1;
+                
+                if (currentPageSpan) currentPageSpan.textContent = pageNum;
+                if (prevPageBtn) prevPageBtn.disabled = true;
+                if (nextPageBtn) nextPageBtn.disabled = pdf.numPages <= 1;
+                
+                renderPage(pageNum);
+            }).catch(function(error) {
+                console.error('PDF preview error:', error);
+                alert('Error loading PDF document');
+            });
+            
+            if (previewModal) previewModal.show();
+        };
+        
+        // Render PDF page
+        function renderPage(num) {
+            if (!pdfDoc) return;
+            pageRendering = true;
+            
+            pdfDoc.getPage(num).then(function(page) {
+                if (!pdfCanvas) return;
+                const viewport = page.getViewport({ scale: scale });
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
                 
                 const renderContext = {
-                    canvasContext: canvas.getContext('2d'),
+                    canvasContext: ctx,
                     viewport: viewport
                 };
                 
                 page.render(renderContext).promise.then(function() {
-                    thumbnail.querySelector('.pdf-thumbnail').innerHTML = '';
-                    thumbnail.querySelector('.pdf-thumbnail').appendChild(canvas);
-                    canvas.classList.remove('d-none');
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
                 });
-            }).catch(function(error) {
-                console.error('PDF thumbnail error:', error);
             });
-        });
-        
-        // Set up click handlers for thumbnails
-        document.querySelectorAll('.thumbnail-content').forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                const parent = this.closest('.document-thumbnail');
-                const url = parent.getAttribute('data-url');
-                const type = parent.getAttribute('data-type');
-                
-                if (type === 'pdf') {
-                    showPdfPreview(url);
-                } else {
-                    showImagePreview(url);
-                }
-            });
-        });
-    });
-    
-    // Show PDF in modal
-    function showPdfPreview(url) {
-        document.getElementById('imagePreview').classList.add('d-none');
-        document.getElementById('pdfPreview').classList.remove('d-none');
-        
-        pdfjsLib.getDocument(url).promise.then(function(pdf) {
-            pdfDoc = pdf;
-            totalPagesSpan.textContent = pdf.numPages;
-            pageNum = 1;
             
-            // Reset UI
-            currentPageSpan.textContent = pageNum;
-            prevPageBtn.disabled = true;
-            nextPageBtn.disabled = pdf.numPages <= 1;
-            
-            // Render initial page
-            renderPage(pageNum);
-        }).catch(function(error) {
-            console.error('PDF preview error:', error);
-            alert('Error loading PDF document');
-        });
-        
-        previewModal.show();
-    }
-    
-    // Render PDF page
-    function renderPage(num) {
-        pageRendering = true;
-        
-        pdfDoc.getPage(num).then(function(page) {
-            const viewport = page.getViewport({ scale: scale });
-            pdfCanvas.width = viewport.width;
-            pdfCanvas.height = viewport.height;
-            
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: viewport
-            };
-            
-            page.render(renderContext).promise.then(function() {
-                pageRendering = false;
-                if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
-                }
-            });
-        });
-        
-        currentPageSpan.textContent = num;
-        prevPageBtn.disabled = num <= 1;
-        nextPageBtn.disabled = num >= pdfDoc.numPages;
-    }
-    
-    // Queue PDF page rendering
-    function queueRenderPage(num) {
-        if (pageRendering) {
-            pageNumPending = num;
-        } else {
-            renderPage(num);
+            if (currentPageSpan) currentPageSpan.textContent = num;
+            if (prevPageBtn) prevPageBtn.disabled = num <= 1;
+            if (nextPageBtn) nextPageBtn.disabled = num >= pdfDoc.numPages;
         }
-    }
-    
-    // Previous page button
-    prevPageBtn.addEventListener('click', function() {
-        if (pageNum <= 1) return;
-        pageNum--;
-        queueRenderPage(pageNum);
-    });
-    
-    // Next page button
-    nextPageBtn.addEventListener('click', function() {
-        if (pageNum >= pdfDoc.numPages) return;
-        pageNum++;
-        queueRenderPage(pageNum);
-    });
-    
-    // Show image in modal
-    function showImagePreview(url) {
-        document.getElementById('pdfPreview').classList.add('d-none');
-        const imgPreview = document.getElementById('imagePreview');
-        imgPreview.src = url;
-        imgPreview.classList.remove('d-none');
-        previewModal.show();
-    }
+        
+        // Queue PDF page rendering
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+        
+        // Previous page button
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', function() {
+                if (pageNum <= 1) return;
+                pageNum--;
+                queueRenderPage(pageNum);
+            });
+        }
+        
+        // Next page button
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', function() {
+                if (pageNum >= (pdfDoc?.numPages || 0)) return;
+                pageNum++;
+                queueRenderPage(pageNum);
+            });
+        }
+        
+        // Show image in modal
+        window.showImagePreview = function(url) {
+            const pdfPreview = document.getElementById('pdfPreview');
+            const imagePreview = document.getElementById('imagePreview');
+            if (pdfPreview) pdfPreview.classList.add('d-none');
+            if (imagePreview) {
+                imagePreview.src = url;
+                imagePreview.classList.remove('d-none');
+            }
+            if (previewModal) previewModal.show();
+        };
+        
+        window.downloadFile = function(url) {
+            // If the file is a PDF, just download it directly
+            if (url.toLowerCase().endsWith('.pdf')) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = url.split('/').pop();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                return;
+            }
+            // Create an image element to load the image
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = url;
 
+            img.onload = function () {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (img.height * imgWidth) / img.width;
+                pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+                const fileName = url.split('/').pop().split('.')[0] + '.pdf';
+                pdf.save(fileName);
+            };
 
-    function delete_daily_emp(id, selectedLocation){
-        event.preventDefault();
-        if (confirm(`Are you sure to remove this Employee?`))
-        {           
-            window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
-    
+            img.onerror = function () {
+                alert('Failed to load the image. Please try again.');
+            };
+        };
+
+        window.downloadAllImagesAsPDF = function() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            let images = [];
+
+            document.querySelectorAll('.documents-container .document-thumbnail[data-type="image"] .thumbnail-img').forEach(img => {
+                images.push(img.src);
+            });
+
+            if (images.length === 0) {
+                alert('No images to download.');
+                return;
+            }
+
+            let loaded = 0;
+            images.forEach((src, idx) => {
+                const image = new Image();
+                image.crossOrigin = "anonymous";
+                image.src = src;
+                image.onload = function () {
+                    const imgWidth = pdf.internal.pageSize.getWidth();
+                    const imgHeight = (image.height * imgWidth) / image.width;
+                    if (idx > 0) pdf.addPage();
+                    pdf.addImage(image, 'JPEG', 0, 0, imgWidth, imgHeight);
+                    loaded++;
+                    if (loaded === images.length) {
+                        pdf.save('All_Doc_Images.pdf');
+                    }
+                };
+                image.onerror = function () {
+                    loaded++;
+                    if (loaded === images.length) {
+                        pdf.save('All_Doc_Images.pdf');
+                    }
+                };
+            });
+        };
+
+        window.downloadEachImageAsPDF = function() {
+            const { jsPDF } = window.jspdf;
+            const images = document.querySelectorAll('.documents-container .document-thumbnail[data-type="image"] .thumbnail-img');
+
+            if (images.length === 0) {
+                alert('No images to download.');
+                return;
+            }
+
+            const zip = new JSZip();
+            let processed = 0;
+
+            images.forEach((img) => {
+                const image = new Image();
+                image.crossOrigin = "anonymous";
+                image.src = img.src;
+
+                image.onload = function () {
+                    const pdf = new jsPDF();
+                    const imgWidth = pdf.internal.pageSize.getWidth();
+                    const imgHeight = (image.height * imgWidth) / image.width;
+                    pdf.addImage(image, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+                    let fileName = img.src.split('/').pop();
+                    fileName = fileName.replace(/\.[^/.]+$/, ".pdf");
+
+                    const pdfBlob = pdf.output('blob');
+                    zip.file(fileName, pdfBlob);
+
+                    processed++;
+                    if (processed === images.length) {
+                        zip.generateAsync({ type: "blob" })
+                            .then(function(content) {
+                                saveAs(content, "images_pdfs.zip");
+                            });
+                    }
+                };
+
+                image.onerror = function () {
+                    processed++;
+                    if (processed === images.length) {
+                        zip.generateAsync({ type: "blob" })
+                            .then(function(content) {
+                                saveAs(content, "images_pdfs.zip");
+                            });
+                    }
+                };
+            });
+        };
+
+        window.downloadAllImagesOriginal = function() {
+            const images = document.querySelectorAll('.documents-container .document-thumbnail[data-type="image"] .thumbnail-img');
+            if (images.length === 0) {
+                alert('No images to download.');
+                return;
+            }
+
+            const zip = new JSZip();
+            let count = 0;
+
+            images.forEach((img, idx) => {
+                const url = img.src;
+                const fileName = url.split('/').pop();
+
+                fetch(url)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        zip.file(fileName, blob);
+                        count++;
+                        if (count === images.length) {
+                            zip.generateAsync({ type: "blob" })
+                                .then(function(content) {
+                                    saveAs(content, "images.zip");
+                                });
+                        }
+                    })
+                    .catch(() => {
+                        count++;
+                        if (count === images.length) {
+                            zip.generateAsync({ type: "blob" })
+                                .then(function(content) {
+                                    saveAs(content, "images.zip");
+                                });
+                        }
+                    });
+            });
+        };
+
+        window.delete_daily_docs = function(id, selectedLocation) {
+            if (confirm('Are you sure to remove this attachment?')) {           
+                window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
+            }  
+        };
+        
+        // LAZY LOADING FUNCTIONALITY FOR DOCUMENTS
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadButtons = document.querySelectorAll('.load-thumbnails-btn');
             
-        }  
-    }
-  
-    function delete_daily_item(id, selectedLocation){
-      event.preventDefault();
-      if (confirm(`Are you sure to remove this Item?`))
-      {           
-          window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
-  
-          
-      }  
-  }
-  
-  function delete_daily_docs(id, selectedLocation){
-      event.preventDefault();
-      if (confirm(`Are you sure to remove this attachment?`))
-      {           
-          window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
-  
-          
-      }  
-  }
-  </script>
+            loadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    const containerId = `${section}-container`;
+                    const container = document.getElementById(containerId);
+                    
+                    if (!container) return;
+                    
+                    // Check if already loaded
+                    if (container.getAttribute('data-loaded') === 'true') {
+                        alert('Thumbnails already loaded for this section');
+                        return;
+                    }
+                    
+                    // Get documents data for this section
+                    let documents = [];
+                    if (section === 'maps') {
+                        documents = window.docsData?.maps || [];
+                    } else if (section === 'pictures') {
+                        documents = window.docsData?.pictures || [];
+                    } else if (section === 'material') {
+                        documents = window.docsData?.material || [];
+                    }
+                    
+                    if (documents.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-muted" style="padding: 20px; text-align: center;">
+                                <i class="fas fa-folder-open fa-2x mb-2"></i><br>
+                                No documents found in this section
+                            </div>
+                        `;
+                        container.setAttribute('data-loaded', 'true');
+                        return;
+                    }
+                    
+                    // Clear container and render thumbnails
+                    container.innerHTML = '';
+                    renderThumbnails(container, documents);
+                    container.setAttribute('data-loaded', 'true');
+                });
+            });
+        });
+        
+        // Function to render thumbnails from pre-loaded data
+        function renderThumbnails(container, documents) {
+            documents.forEach(doc => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'document-thumbnail';
+                thumbDiv.setAttribute('data-url', doc.url);
+                thumbDiv.setAttribute('data-type', doc.url.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image');
+                thumbDiv.setAttribute('data-doc-id', doc.id);
+                
+                const thumbnailContent = document.createElement('div');
+                thumbnailContent.className = 'thumbnail-content';
+                
+                if (doc.url.toLowerCase().endsWith('.pdf')) {
+                    thumbnailContent.innerHTML = `
+                        <div class="pdf-thumbnail">
+                            <i class="fas fa-file-pdf pdf-icon"></i>
+                            <small class="text-muted">PDF Document</small>
+                            <canvas class="d-none" style="width:100%; height:auto;"></canvas>
+                        </div>
+                    `;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = doc.url;
+                    img.alt = 'Document';
+                    img.className = 'thumbnail-img';
+                    thumbnailContent.appendChild(img);
+                }
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+                overlay.innerHTML = '<i class="fas fa-magnifying-glass-plus overlay-icon"></i>';
+                thumbnailContent.appendChild(overlay);
+                
+                const downloadBtn = document.createElement('div');
+                downloadBtn.className = 'download-btn';
+                downloadBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    window.downloadFile(doc.url);
+                };
+                downloadBtn.innerHTML = '<i class="fas fa-download download-icon"></i>';
+                thumbnailContent.appendChild(downloadBtn);
+                
+                thumbDiv.appendChild(thumbnailContent);
+                
+                // Add delete button - check if user has permission to delete
+                {% if dailyWO.Status == 1 or dailyWO.Status == 5 %}
+                    const deleteBtn = document.createElement('div');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        window.delete_daily_docs(doc.id, {{ selectedLocation|default:0 }});
+                    };
+                    deleteBtn.innerHTML = '<i class="fas fa-times delete-icon"></i>';
+                    thumbDiv.appendChild(deleteBtn);
+                {% endif %}
+                
+                thumbnailContent.addEventListener('click', function() {
+                    const url = thumbDiv.getAttribute('data-url');
+                    const type = thumbDiv.getAttribute('data-type');
+                    
+                    if (type === 'pdf') {
+                        if (typeof window.showPdfPreview === 'function') {
+                            window.showPdfPreview(url);
+                        } else {
+                            console.error('showPdfPreview not ready yet');
+                            alert('PDF viewer is initializing. Please try again.');
+                        }
+                    } else {
+                        if (typeof window.showImagePreview === 'function') {
+                            window.showImagePreview(url);
+                        } else {
+                            console.error('showImagePreview not ready yet');
+                            alert('Image viewer is initializing. Please try again.');
+                        }
+                    }
+                });
+                
+                container.appendChild(thumbDiv);
+            });
+            
+            // Generate PDF thumbnails for any PDFs in this container
+            function generatePdfThumbnails() {
+                if (typeof pdfjsLib === 'undefined') {
+                    setTimeout(generatePdfThumbnails, 200);
+                    return;
+                }
+                
+                const pdfThumbnails = container.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+                pdfThumbnails.forEach(thumbnail => {
+                    const pdfUrl = thumbnail.getAttribute('data-url');
+                    const canvas = thumbnail.querySelector('canvas');
+                    
+                    if (canvas && pdfUrl) {
+                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                            return pdf.getPage(1);
+                        }).then(function(page) {
+                            const viewport = page.getViewport({ scale: 0.5 });
+                            canvas.width = viewport.width;
+                            canvas.height = viewport.height;
+                            
+                            const renderContext = {
+                                canvasContext: canvas.getContext('2d'),
+                                viewport: viewport
+                            };
+                            
+                            page.render(renderContext).promise.then(function() {
+                                const pdfThumb = thumbnail.querySelector('.pdf-thumbnail');
+                                if (pdfThumb) {
+                                    pdfThumb.innerHTML = '';
+                                    pdfThumb.appendChild(canvas);
+                                    canvas.classList.remove('d-none');
+                                }
+                            });
+                        }).catch(function(error) {
+                            console.error('PDF thumbnail error:', error);
+                        });
+                    }
+                });
+            }
+            
+            setTimeout(generatePdfThumbnails, 100);
+        }
+    </script>
 </div>
 {% endblock %}

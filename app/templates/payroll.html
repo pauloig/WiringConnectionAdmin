@@ -11,30 +11,27 @@
         if (confirm(`Are you sure to remove this attachment?`))
         {           
             window.location.href = `/delete_daily_docs/${id}/${selectedLocation}`;
-    
-            
         }  
     }
 
-
-      // helper to get CSRF token from cookie
+    // helper to get CSRF token from cookie
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-        }
         }
         return cookieValue;
     }
 
     // Wrapper: download file and, only if this is the item.pdfDaily file, record the download in DB
-  function downloadFileAndRecord(url, dailyId) {
+    function downloadFileAndRecord(url, dailyId) {
         // Solo actuar para PDFs
         if (!url || !url.toLowerCase().endsWith('.pdf')) {
             downloadFile(url);
@@ -54,8 +51,8 @@
         fetch(`/record_daily_pdf_download/${dailyId}`, {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             },
             credentials: 'same-origin',
             body: JSON.stringify({ url: url })
@@ -69,11 +66,10 @@
         .finally(() => {
             // Esperar un breve tiempo para asegurar que el navegador inició la descarga
             setTimeout(() => {
-            location.reload();
-            }, 800); // ajustar (ms) según sea necesario
+                location.reload();
+            }, 800);
         });
-        }
-
+    }
 
     function downloadFile(url) {
         // If the file is a PDF, just download it directly
@@ -86,10 +82,9 @@
             document.body.removeChild(link);
             return;
         }
-        // ...existing code for image download as PDF...
         // Create an image element to load the image
         const img = new Image();
-        img.crossOrigin = "anonymous"; // Handle cross-origin issues
+        img.crossOrigin = "anonymous";
         img.src = url;
 
         img.onload = function () {
@@ -105,7 +100,7 @@
             pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
 
             // Save the PDF
-            const fileName = url.split('/').pop().split('.')[0] + '.pdf'; // Extract file name and change extension to .pdf
+            const fileName = url.split('/').pop().split('.')[0] + '.pdf';
             pdf.save(fileName);
         };
 
@@ -205,10 +200,6 @@
         });
     }
 
-
-    
-        
-
     function downloadAllImagesOriginal() {
         const images = document.querySelectorAll('.documents-container .document-thumbnail[data-type="image"] .thumbnail-img');
         if (images.length === 0) {
@@ -223,7 +214,6 @@
             const url = img.src;
             const fileName = url.split('/').pop();
 
-            // Fetch image as blob
             fetch(url)
                 .then(response => response.blob())
                 .then(blob => {
@@ -248,243 +238,137 @@
         });
     }
 
-  </script>
+    // Global variable to store document data for lazy loading
+    let docsData = {
+        maps: [],
+        pictures: [],
+        material: []
+    };
 
+</script>
 
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<!-- Add in your <head> or before your script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-
 <style>
-   /* CSS will go here */
-   :root {
-      --thumbnail-width: 220px;
-      --thumbnail-height: 165px;
-  }
-  
-  .documents-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 20px;
-  }
-  
-  .document-thumbnail {
-      position: relative;
-      width: var(--thumbnail-width);
-      height: var(--thumbnail-height);
-      transition: transform 0.2s ease;
-      border-radius: 4px;
-      overflow: hidden;
-  }
-  
-  .document-thumbnail:hover {
-      transform: scale(1.03);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-  
-  .thumbnail-content {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      cursor: pointer;
-  }
-  
-  .thumbnail-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-  }
-  
-  .pdf-thumbnail {
-      width: 100%;
-      height: 100%;
-      background-color: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-  }
-  
-  .pdf-thumbnail canvas {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-  }
-  
-  .pdf-icon {
-      font-size: 2rem;
-      color: #e74c3c;
-      margin-bottom: 5px;
-  }
-  
-  .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-  }
-  
-  .document-thumbnail:hover .overlay {
-      opacity: 1;
-  }
-  
-  .overlay-icon {
-      color: white;
-      font-size: 1.5rem;
-  }
-  
-  .delete-btn {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: white;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 2;
-      opacity: 0.8;
-      transition: opacity 0.2s ease;
-  }
-  
-  .delete-btn:hover {
-      opacity: 1;
-  }
-  
-  .delete-icon {
-      color: #e74c3c;
-      font-size: 14px;
-  }
-  
-  /* Modal Styles */
-
-  .preview-modal .modal-dialog {
-    max-width: 95vw; /* ocupar hasta 90% del ancho de la ventana */
-    margin: 0 auto;
-    height: auto;
-  }
-
-  .preview-modal .modal-content {
-        max-height: 95vh; /* permitir que el modal ocupe casi toda la ventana */
-        background-color: rgba(0,0,0,0.92);
-        overflow: hidden; /* el scroll lo maneja modal-body */
+    :root {
+        --thumbnail-width: 220px;
+        --thumbnail-height: 165px;
+    }
+    
+    .documents-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 20px;
+        min-height: 150px;
+    }
+    
+    .document-thumbnail {
         position: relative;
-  }
-  
-  .preview-modal .modal-body {
-      padding: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* importante: evitar centrar verticalmente */
-    overflow: auto;          /* permitir scroll interno si el contenido es mayor */
-    max-height: calc(95vh - 48px); /* dejar espacio para botones/header */
-    box-sizing: border-box;
-  }
-  
-  .modal-img {
-      max-height: 60vh;
-      max-width: 80%;
-      object-fit: contain;
-  } 
-  
-  .pdf-controls {
-    position: relative;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    background: rgba(0,0,0,0.6);
-    padding: 8px;
-    margin: 12px auto 0;
-    border-radius: 6px;
-    width: auto;
-  }
-
-  
-  .pdf-controls button {
-      background: none;
-      border: 1px solid white;
-      color: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-  }
-  
-  .pdf-controls button:hover {
-      background: rgba(255,255,255,0.1);
-  }
-  
-  .page-counter {
-      color: white;
-      font-size: 1rem;
-      min-width: 80px;
-      text-align: center;
-  }
-  
-  .btn-close-white {
-      filter: invert(1);
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      z-index: 1;
-  }
-  
-
-
-.preview-modal .modal-content {
-   max-height: 80vh;
-   overflow: auto;
-}
-
-
-
-#pdfCanvas {
-   border: 1px solid #444;
-   
-    width: 50% !important; /* ocupar el ancho disponible del contenedor */
-    height: 50%  !important;
-    display: block;
-}
-
-.pdf-controls {
-   padding: 8px;
-   background: rgba(0,0,0,0.7);
-   border-radius: 4px;
-   margin-top: 10px !important;
-}
-
-.pdf-controls button {
-   padding: 3px 10px;
-   font-size: 0.85rem;
-   border-radius: 3px;
-}
-
-
-.download-btn {
+        width: var(--thumbnail-width);
+        height: var(--thumbnail-height);
+        transition: transform 0.2s ease;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .document-thumbnail:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .thumbnail-content {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .thumbnail-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .pdf-thumbnail {
+        width: 100%;
+        height: 100%;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    
+    .pdf-thumbnail canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .pdf-icon {
+        font-size: 2rem;
+        color: #e74c3c;
+        margin-bottom: 5px;
+    }
+    
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    .document-thumbnail:hover .overlay {
+        opacity: 1;
+    }
+    
+    .overlay-icon {
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+    
+    .delete-btn:hover {
+        opacity: 1;
+    }
+    
+    .delete-icon {
+        color: #e74c3c;
+        font-size: 14px;
+    }
+    
+    .download-btn {
         position: absolute;
         top: 5px;
         left: 5px;
@@ -500,20 +384,100 @@
         opacity: 0.8;
         transition: opacity 0.2s ease;
     }
-
+    
     .download-btn:hover {
         opacity: 1;
     }
-
+    
     .download-icon {
         color: #3498db;
         font-size: 14px;
     }
-
-    /* Comments Styles*/
     
-
-        /* Base styles for comments */
+    /* Preview Modal Styles */
+    .preview-modal .modal-dialog {
+        max-width: 95vw;
+        margin: 0 auto;
+        height: auto;
+    }
+    
+    .preview-modal .modal-content {
+        max-height: 95vh;
+        background-color: rgba(0,0,0,0.92);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .preview-modal .modal-body {
+        padding: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow: auto;
+        max-height: calc(95vh - 48px);
+        box-sizing: border-box;
+    }
+    
+    .modal-img {
+        max-height: 60vh;
+        max-width: 80%;
+        object-fit: contain;
+    }
+    
+    .pdf-controls {
+        position: relative;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.6);
+        padding: 8px;
+        margin: 12px auto 0;
+        border-radius: 6px;
+        width: auto;
+    }
+    
+    .pdf-controls button {
+        background: none;
+        border: 1px solid white;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .pdf-controls button:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .page-counter {
+        color: white;
+        font-size: 1rem;
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    .btn-close-white {
+        filter: invert(1);
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        z-index: 1;
+    }
+    
+    #pdfCanvas {
+        border: 1px solid #444;
+        width: 50% !important;
+        height: 50% !important;
+        display: block;
+    }
+    
+    /* Comments Styles */
     .comment-box {
         padding: 12px;
         border-radius: 6px;
@@ -543,21 +507,6 @@
         word-break: break-word;
     }
     
-    /* Document thumbnail styles */
-    .document-thumbnail {
-        position: relative;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .document-thumbnail:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
     /* Responsive adjustments */
     @media (max-width: 992px) {
         .col-sm-12.pt-3 {
@@ -569,22 +518,16 @@
             min-width: 100% !important;
         }
     }
-
-     /* Comments Styles*/
-
-  </style>
-
-
-  
+</style>
 
 <div class="container">
     <form method='post' enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="row">
-            <div class="col-sm-2" style = "margin: 0px !important; padding: 0px !important;">
+            <div class="col-sm-2" style="margin: 0px !important; padding: 0px !important;">
                 <div class="card">
-                    <h6 class="card-header card-header-wc" >Period {{period.periodID}}  -  {{location.name}}</h6>
+                    <h6 class="card-header card-header-wc">Period {{period.periodID}} - {{location.name}}</h6>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-sm-5 px-1"><strong>From</strong></div>
@@ -596,7 +539,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-5 px-1"><strong>Pay Date</strong></div>
-                            <div class="col-sm-7 px-1">{{period.payDate  }}</div>
+                            <div class="col-sm-7 px-1">{{period.payDate}}</div>
                         </div>
                         <div class="row">
                             <div class="col-sm-5 px-1"><strong>Weeks</strong></div>
@@ -604,191 +547,184 @@
                         </div>
                     </div>
                 </div>
-                 
-            </div>    
+            </div>
+            
             <div class="col-sm-5">
                 <div class="card">
-                    <h6 class="card-header card-header-wc" >Week 1</h6>
+                    <h6 class="card-header card-header-wc">Week 1</h6>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-sm-12">
-                                {% for item in week1 %}                                                                        
+                                {% for item in week1 %}
                                     {% if item.selected %}
                                         <a class="btn btn-success position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
-                                            {{item.shortDate}}                                            
-                                        </a> 
-                                    {%else%}
+                                            {{item.shortDate}}
+                                        </a>
+                                    {% else %}
                                         <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                             {{item.shortDate}}
                                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
-                                            {{item.Total|intcomma}}                                            
+                                                {{item.Total|intcomma}}
                                             </span>
-                                        </a> 
-                                    {% endif %}                                       
-                                {% endfor %}  
-                                <input class="form-control" type="text" placeholder="day Selected" aria-label="day Selected" id="daySelected" style="display: none">                             
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                                <input class="form-control" type="text" placeholder="day Selected" aria-label="day Selected" id="daySelected" style="display: none">
                             </div>
                         </div>
-                                     
-                    </div> 
+                    </div>
                 </div>
-            </div>     
+            </div>
+            
             <div class="col-sm-5">
                 <div class="card">
-                    <h6 class="card-header card-header-wc" >Week 2</h6>
+                    <h6 class="card-header card-header-wc">Week 2</h6>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-sm-12">                               
-                                {% for item in week2 %}                                 
-                                    
+                            <div class="col-sm-12">
+                                {% for item in week2 %}
                                     {% if item.selected %}
                                         <a class="btn btn-success position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
-                                            {{item.shortDate}}                                            
-                                        </a> 
-                                    {%else%}
+                                            {{item.shortDate}}
+                                        </a>
+                                    {% else %}
                                         <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day}}/0/{{selectedLocation}}"> 
                                             {{item.shortDate}}
                                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:0.7rem;">
-                                            {{item.Total|intcomma}}                                            
+                                                {{item.Total|intcomma}}
                                             </span>
-                                        </a> 
-                                    {% endif %}                                       
-                                {% endfor %}  
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
-                                     
-                    </div> 
+                    </div>
                 </div>
-            </div>            
-        </div>         
-        <div class="row py-2">
-            <div class="col-sm-9">   
-                {% if selectedDay > 0 %}
-                    {%if emp.is_superAdmin  or user.is_staff  or period.status == 1%}  
-
-                        <a class="btn btn-success px-2" href="/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}">
-                            Add Crew
-                        </a> 
-                    {%endif%}
-                {%endif%}   
-                {% for item in crew %}                         
-                    {% if item.crew == selectedCrew %}
-                        <a class="btn btn-warning px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
-                            {%if item.sent_by == None%}
-                                crew {{item.crew}}
-                            {%else%}
-                                {{item.sent_by}} {{item.crew_by_user}}
-                            {%endif%}
-                        </a>
-                    {%else%}
-                        {%if item.approved_by != None%}
-
-                            {%if item.download_date != None%}
-                                <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
-                            {%else%}
-                                <a class="btn btn-info position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">                                 
-                            {%endif%}
-
-
-                                {%if item.sent_by == None%}
-                                    crew {{item.crew}}
-                                {%else%}
-                                    {{item.sent_by}} {{item.crew_by_user}}
-                                {%endif%}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size:0.7rem;">
-                                    {% comment %} <i class="fa fa-mobile fa-xs" aria-hidden="true"></i>                                             {% endcomment %}
-                                    Mob
-                                </span>
-                            </a>
-                        {%else%}
-
-                            {%if item.download_date != None%}
-                                <a class="btn btn-primary px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
-                            {%else%}  
-                                <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
-                                
-                            {%endif%}
-                                {%if item.sent_by == None%}
-                                    crew {{item.crew}}
-                                {%else%}
-                                    {{item.sent_by}} {{item.crew_by_user}}
-                                {%endif%}
-                            </a>
-
-                        {%endif%}
-                    {%endif%} 
-                {%endfor%}
-                  
-                               
-            </div>
-            <div class="col-sm-1">   
-                {%if selectedDay > 0 and selectedCrew > 0 %}      
-                    {% for item in crew %} 
-                        {% if item.crew == selectedCrew %}
-                            {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}
-                                <a class="btn btn-danger px-2 mx-5" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a>
-                            {%endif%}
-                        {%endif%}
-                    {%endfor%}
-                {%endif%}
-            </div>
-          
-            <div class="col-sm-1">                  
-                <a class="btn btn-success " hx-get="/payroll_audit_delete/{{period.id}}/{{selectedLocation}}/{{selectedDay}}" hx-target="#dialog">Audit</i></a>       
-            </div>
-            <div class="col-sm-1">                  
-                <a class="btn btn-danger " href="/home/">Close</a>         
             </div>
         </div>
+        
+        <div class="row py-2">
+            <div class="col-sm-9">
+                {% if selectedDay > 0 %}
+                    {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                        <a class="btn btn-success px-2" href="/create_daily/{{period.id}}/{{selectedDay}}/{{selectedLocation}}">
+                            Add Crew
+                        </a>
+                    {% endif %}
+                {% endif %}
+                {% for item in crew %}
+                    {% if item.crew == selectedCrew %}
+                        <a class="btn btn-warning px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {% if item.sent_by == None %}
+                                crew {{item.crew}}
+                            {% else %}
+                                {{item.sent_by}} {{item.crew_by_user}}
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        {% if item.approved_by != None %}
+                            {% if item.download_date != None %}
+                                <a class="btn btn-primary position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {% else %}
+                                <a class="btn btn-info position-relative px-2 mx-3 my-2" style="text-align:start !important;" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {% endif %}
+                            {% if item.sent_by == None %}
+                                crew {{item.crew}}
+                            {% else %}
+                                {{item.sent_by}} {{item.crew_by_user}}
+                            {% endif %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size:0.7rem;">
+                                Mob
+                            </span>
+                        </a>
+                        {% else %}
+                            {% if item.download_date != None %}
+                                <a class="btn btn-primary px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {% else %}
+                                <a class="btn btn-info px-2" href="/payroll/{{period.id}}/{{item.day|date:'d'}}/{{item.crew}}/{{selectedLocation}}" role="button">
+                            {% endif %}
+                            {% if item.sent_by == None %}
+                                crew {{item.crew}}
+                            {% else %}
+                                {{item.sent_by}} {{item.crew_by_user}}
+                            {% endif %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+                {% endfor %}
+            </div>
+            
+            <div class="col-sm-1">
+                {% if selectedDay > 0 and selectedCrew > 0 %}
+                    {% for item in crew %}
+                        {% if item.crew == selectedCrew %}
+                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                <a class="btn btn-danger px-2 mx-5" hx-get="/delete_daily/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-trash-can"></i></a>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="col-sm-1">
+                <a class="btn btn-success" hx-get="/payroll_audit_delete/{{period.id}}/{{selectedLocation}}/{{selectedDay}}" hx-target="#dialog">Audit</a>
+            </div>
+            
+            <div class="col-sm-1">
+                <a class="btn btn-danger" href="/home/">Close</a>
+            </div>
+        </div>
+        
         <div class="row">
             <div class="col-lg-12 px-1">
                 <div class="card">
-                    <h6 class="card-header card-header-wc text-center"> {{selectedDate}}  </h6>
+                    <h6 class="card-header card-header-wc text-center">{{selectedDate}}</h6>
                     <div class="card-body">
-                        {% for item in crew %} 
+                        {% for item in crew %}
                             {% if item.crew == selectedCrew %}
-                                <div class="row">                           
-                                    
+                                <div class="row">
                                     <div class="col-sm-5">
-                                        <div class="mb-3">    
-                                            <label for="PID" class="form-label">PID - Work Order - PO</label>                
+                                        <div class="mb-3">
+                                            <label for="PID" class="form-label">PID - Work Order - PO</label>
                                             <div class="input-group mb-3">
-                                                <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}" disabled>                                                                                             
-                                                    {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                                                        <button hx-get="/orders_payroll/{{item.id}}/{{selectedLocation}}" class="btn btn-primary py-2" hx-target="#dialog" ><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>                                                
-                                                    {%endif%}
-                                                </div>                                      
-                                        </div>        
-                                    </div>                                  
+                                                <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{item.woID.prismID}} - {{item.woID.workOrderId}} - {{item.woID.PO}}" disabled>
+                                                {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                    <button hx-get="/orders_payroll/{{item.id}}/{{selectedLocation}}" class="btn btn-primary py-2" hx-target="#dialog"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="col-sm-7">
                                         <div class="mb-3">
                                             <label for="PID" class="form-label">Address</label>
-                                            <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{item.woID.JobAddress}}" disabled>                                    
-                                        </div>     
+                                            <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{item.woID.JobAddress}}" disabled>
+                                        </div>
                                     </div>
                                 </div>
-                                </br>     
-                                <div class="row">                                                                       
-                                    <div class="col-sm-3">      
-                                        <div class="mb-3">                                                                                                                                                                                      
+                                
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <div class="mb-3">
                                             <label for="supervisor" class="form-label">Supervisor</label>
                                             <div class="input-group mb-3">
                                                 <select class="form-select" name="supervisor" id="supervisor" disabled>
-                                                    <option value ="0" selected>Select Supervisor</option>
-                                                    {% for sup in superV %}    
-                                                        {% if sup.employeeID|slugify == item.supervisor %}                                                 
-                                                            <option value="{{sup.employeeID}}" selected>{{sup.first_name}} {{sup.last_name}}</option>  
-                                                        {% else %}     
-                                                            <option value="{{sup.employeeID}}">{{sup.first_name}} {{sup.last_name}}</option>   
-                                                        {%endif%}            
-                                                    {% endfor %}      
-                                                </select>   
-                                                {% if emp.is_superAdmin  or user.is_staff  or period.status == 1 %}                                                                                               
+                                                    <option value="0" selected>Select Supervisor</option>
+                                                    {% for sup in superV %}
+                                                        {% if sup.employeeID|slugify == item.supervisor %}
+                                                            <option value="{{sup.employeeID}}" selected>{{sup.first_name}} {{sup.last_name}}</option>
+                                                        {% else %}
+                                                            <option value="{{sup.employeeID}}">{{sup.first_name}} {{sup.last_name}}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                                {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
                                                     <button type="button" class="btn btn-primary py-2" data-bs-toggle="modal" data-bs-target="#updateSup"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>
-                                                {%endif%}
-                                            </div>                                            
-                                        </div>                                                                                                                                                                          
-                                    </div>  
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="col-sm-1">
                                         <div>
                                             <label class="form-label" for="">dist. payment</label>
@@ -798,287 +734,196 @@
                                                 <input class="form-check-input" type="checkbox" value="True" id="split" name="split" checked disabled>
                                             {% else %}
                                                 <input class="form-check-input" type="checkbox" value="False" id="splpit" name="split" disabled>
-                                            {%endif%}
-                                            <label class="form-check-label" for="flexCheckDefault">
-                                              Split
-                                            </label>
-                                          </div>
-                                    </div>                                    
-                                     <!--<div class="col-sm-2">
+                                            {% endif %}
+                                            <label class="form-check-label" for="flexCheckDefault">Split</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-sm-1">
                                         <div class="mb-3">
-                                           <label class="form-label" id="ov_l">% own Vehicle</label> 
-                                            <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if item.own_vehicle > 0 %}{{item.own_vehicle}}{%endif%}" min="0" max="100" disabled>                                  
-                                            
-                                        </div> 
-                                    </div>-->
-                                    <div class="col-sm-1">
-                                        <div class="mb-3">                                            
-                                            <label class="form-label" id="ov_l">Reported By</label> 
-                                            <input type="input" class="form-control"   value="{%if item.sent_by != None%}{{item.sent_by}}{%endif%}" disabled>                                  
-                                        </div> 
+                                            <label class="form-label" id="ov_l">Reported By</label>
+                                            <input type="input" class="form-control" value="{% if item.sent_by != None %}{{item.sent_by}}{% endif %}" disabled>
+                                        </div>
                                     </div>
+                                    
                                     <div class="col-sm-1">
-                                        <div class="mb-3">                                            
-                                            <label class="form-label" id="ov_l">Approved By</label> 
-                                            <input type="input" class="form-control"   value="{%if item.approved_by != None%}{{item.approved_by}}{%endif%}" disabled>                                  
-                                        </div> 
+                                        <div class="mb-3">
+                                            <label class="form-label" id="ov_l">Approved By</label>
+                                            <input type="input" class="form-control" value="{% if item.approved_by != None %}{{item.approved_by}}{% endif %}" disabled>
+                                        </div>
                                     </div>
+                                    
                                     <div class="col-sm-2 pt-4">
-                                        <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">                                         
-                                    </div> 
+                                        <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">
+                                    </div>
+                                    
                                     <div class="col-sm-4">
-                                        <!-- Buttons and Document Thumbnail -->
                                         <div class="d-flex align-items-center gap-3 flex-nowrap" style="flex-shrink: 0;">
                                             <a class="btn btn-success p-3" hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</a>
-                                            
                                             {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
                                                 <button type="button" class="btn btn-primary p-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                                                     Upload Daily
-                                                </button> 
-                                            {% endif %}
-                                        </div>    
-                                            
-                                        
-                                    </div>
-                                </form>
-
-
-                                
-                                    <div class="col-sm-12 pt-3 d-flex flex-nowrap align-items-start gap-3" style="overflow-x: auto; padding-bottom: 10px;">
-                                        <!-- Comments Row - now side by side with other elements -->
-                                        <div class="d-flex gap-3" style="min-width: 50%; flex: 1;">
-                                            {% if item.mobile_tech_comments %}
-                                                <div class="comment-box tech-comment flex-grow-1">
-                                                    <strong class="comment-label">Tech Comments:</strong> 
-                                                    <div class="comment-content">{{item.mobile_tech_comments}}</div>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {% if item.mobile_sup_comments %} 
-                                                <div class="comment-box supervisor-comment flex-grow-1">
-                                                    <strong class="comment-label">Supervisor Comments:</strong> 
-                                                    <div class="comment-content">{{item.mobile_sup_comments}}</div>
-                                                </div>
+                                                </button>
                                             {% endif %}
                                         </div>
-
-                                        
-
-
-                                        {% if item.pdfDaily != '' and item.pdfDaily != None %}
-                                                <div class="document-thumbnail" 
-                                                    data-url="{{ item.pdfDaily.url }}"
-                                                    data-type="{% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
-                                                    style="width: 120px; height: 120px; flex-shrink: 0;">
-                                                    
-                                                    <div class="thumbnail-content">
-                                                        {% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}
-                                                            <div class="pdf-thumbnail">
-                                                                <i class="fas fa-file-pdf pdf-icon"></i>
-                                                                <small class="text-muted">PDF Document</small>
-                                                                <canvas class="d-none"></canvas>
-                                                            </div>
-                                                        {% else %}
-                                                            <img src="{{ item.pdfDaily.url }}" alt="Document" class="thumbnail-img">
-                                                        {% endif %}
-                                                        
-                                                        <div class="overlay">
-                                                            <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                        </div>
-
-                                                        <div class="download-btn" onclick="downloadFileAndRecord('{{ item.pdfDaily.url }}', {{ item.id }}); event.stopPropagation();">
-                                                            <i class="fas fa-download download-icon"></i>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {% if item.Status == 1 or item.Status == 5 %}
-                                                        <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                            <i class="fas fa-times delete-icon"></i>
-                                                        </div>
-                                                    {% endif %}
-                                                </div>
-                                                
-                                            {% endif %}
-                                        
-                                        
                                     </div>
+                                </div>
                                 
-                                   
-
-                                   <!--
-                                
-                                    <div class="col-sm-12 pt-3">
-
-                                        <div class="comments-row">
-                                            <div class="comment-box tech-comment">
-                                                <strong class="comment-label">Tech Comments:</strong> 
+                                <div class="col-sm-12 pt-3 d-flex flex-nowrap align-items-start gap-3" style="overflow-x: auto; padding-bottom: 10px;">
+                                    <div class="d-flex gap-3" style="min-width: 50%; flex: 1;">
+                                        {% if item.mobile_tech_comments %}
+                                            <div class="comment-box tech-comment flex-grow-1">
+                                                <strong class="comment-label">Tech Comments:</strong>
                                                 <div class="comment-content">{{item.mobile_tech_comments}}</div>
                                             </div>
-                                            
-                                            <div class="comment-box supervisor-comment">
-                                                <strong class="comment-label">Supervisor Comments:</strong> 
+                                        {% endif %}
+                                        
+                                        {% if item.mobile_sup_comments %}
+                                            <div class="comment-box supervisor-comment flex-grow-1">
+                                                <strong class="comment-label">Supervisor Comments:</strong>
                                                 <div class="comment-content">{{item.mobile_sup_comments}}</div>
                                             </div>
-                                        </div>
-                                        
-                                        <a class="btn btn-success p-3 " hx-get="/payroll_audit/{{item.id}}" hx-target="#dialog">Audit Log</i></a>
-                                        {% if emp.is_superAdmin  or user.is_staff  or period.status == 1%}
-                                            <button type="button" class="btn btn-primary p-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                                upload daily
-                                            </button> 
-                                            
-                                        {%endif%}
-                                        {% if item.pdfDaily != '' and item.pdfDaily != None %}                                        
-                                            <!--<a class="btn btn-primary p-3" href="/static/media/{{item.pdfDaily}}" target="_blank"> View Daily</a>  
-
-                                            <div class="document-thumbnail" 
-                                                data-url="{{ item.pdfDaily.url }}"
-                                                data-type="{% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                                
-                                                <div class="thumbnail-content">
-                                                    {% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}
-                                                        <div class="pdf-thumbnail">
-                                                            <i class="fas fa-file-pdf pdf-icon"></i>
-                                                            <small class="text-muted">PDF Document</small>
-                                                            <canvas class="d-none"></canvas>
-                                                        </div>
-                                                    {% else %}
-                                                        <img src="{{ item.pdfDaily.url }}" alt="Document" class="thumbnail-img">
-                                                    {% endif %}
-                                                    
-                                                    <div class="overlay">
-                                                        <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                    </div>
-
-                                                     <div class="download-btn" onclick="downloadFile('{{ item.pdfDaily.url }}'); event.stopPropagation();">
-                                                                    <i class="fas fa-download download-icon"></i>
-                                                                </div>
-                                                </div>
-                                                
-                                                {% if item.Status == 1 or item.Status == 5 %}
-                                                    <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                        <i class="fas fa-times delete-icon"></i>
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-
-                                        {% endif %}                                          
-                                    </div>-->
-                                </div>   
-                                <div class="row mb-2">
-                                     <div class="col-sm-1">
-                                     </div>
-                                     <div class="col-sm-10 d-flex gap-3">
-
-                                        <!-- ...existing code... -->
-                                                <div class="col-sm-12 d-flex gap-3">
-                                                    {% if item.mobile_id %}
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>                                                        
-                                                            Ready To Bill
-                                                        </label>                                                    
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
-                                                            Work in Progress
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_cd %}checked{% endif %} disabled>
-                                                            Construction Done
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_nfs %}checked{% endif %} disabled>
-                                                            Needs Fiber splicing
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_fd %}checked{% endif %} disabled>
-                                                            Fiber Done
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb_pep %}checked{% endif %} disabled>
-                                                            RTB / Pending External Production
-                                                        </label>
-                                                    {% elif item.mobile_id == None %}
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_rtb %}checked{% endif %} disabled>                                                        
-                                                            Ready To Bill
-                                                        </label>                                                    
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_wp %}checked{% endif %} disabled>
-                                                            Work in Progress
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_cd %}checked{% endif %} disabled>
-                                                            Construction Done
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_nfs %}checked{% endif %} disabled>
-                                                            Needs Fiber splicing
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_fd %}checked{% endif %} disabled>
-                                                            Fiber Done
-                                                        </label>
-                                                        <span style="margin-right: 10px;"></span>
-                                                        <label class="form-check-label me-2">
-                                                            <input type="checkbox" class="form-check-input" {% if item.daily_rtb_pep %}checked{% endif %} disabled>
-                                                            RTB / Pending External Production
-                                                        </label>
-                                                        <span style="margin-right: 4px;"></span>
-                                                        <button type="button" class="btn btn-primary btn-sm"     onclick="openDailyStatusModal({{item.id}})">
-                                                            <i class="fa-solid fa-pen-to-square"></i>
-                                                        </button>
-                                                        
-                                                    {%endif%}
-                                                </div>
-                                                <!-- ...existing code... -->
+                                        {% endif %}
                                     </div>
-                                        <div class="col-sm-2">
-                                                {% if item.downloaded_by != None %}
-                                                    <strong>Downloaded:</strong>
-                                                        {{ item.download_date|date:"m/d/Y H:i" }}
-                                                    </br>
-                                                    <strong>Downloaded By:</strong>
-                                                    {{item.downloaded_by}}
+                                    
+                                    {% if item.pdfDaily != '' and item.pdfDaily != None %}
+                                        <div class="document-thumbnail" 
+                                            data-url="{{ item.pdfDaily.url }}"
+                                            data-type="{% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
+                                            style="width: 120px; height: 120px; flex-shrink: 0;">
+                                            <div class="thumbnail-content">
+                                                {% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}
+                                                    <div class="pdf-thumbnail">
+                                                        <i class="fas fa-file-pdf pdf-icon"></i>
+                                                        <small class="text-muted">PDF Document</small>
+                                                        <canvas class="d-none"></canvas>
+                                                    </div>
+                                                {% else %}
+                                                    <img src="{{ item.pdfDaily.url }}" alt="Document" class="thumbnail-img">
                                                 {% endif %}
-                                                
-                                                
+                                                <div class="overlay">
+                                                    <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
+                                                </div>
+                                                <div class="download-btn" onclick="downloadFileAndRecord('{{ item.pdfDaily.url }}', {{ item.id }}); event.stopPropagation();">
+                                                    <i class="fas fa-download download-icon"></i>
+                                                </div>
+                                            </div>
+                                            {% if item.Status == 1 or item.Status == 5 %}
+                                                <div class="delete-btn" onclick="delete_daily_docs({{ item.id }}, {{ selectedLocation }}); event.stopPropagation();">
+                                                    <i class="fas fa-times delete-icon"></i>
+                                                </div>
+                                            {% endif %}
                                         </div>
-
-
+                                    {% endif %}
                                 </div>
+                                
+                                <div class="row mb-2">
+                                    <div class="col-sm-1"></div>
+                                    <div class="col-sm-10 d-flex gap-3">
+                                        <div class="col-sm-12 d-flex gap-3">
+                                            {% if item.mobile_id %}
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb %}checked{% endif %} disabled>
+                                                    Ready To Bill
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_wp %}checked{% endif %} disabled>
+                                                    Work in Progress
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_cd %}checked{% endif %} disabled>
+                                                    Construction Done
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_nfs %}checked{% endif %} disabled>
+                                                    Needs Fiber splicing
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_fd %}checked{% endif %} disabled>
+                                                    Fiber Done
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if mobileInfo.daily_rtb_pep %}checked{% endif %} disabled>
+                                                    RTB / Pending External Production
+                                                </label>
+                                            {% elif item.mobile_id == None %}
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_rtb %}checked{% endif %} disabled>
+                                                    Ready To Bill
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_wp %}checked{% endif %} disabled>
+                                                    Work in Progress
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_cd %}checked{% endif %} disabled>
+                                                    Construction Done
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_nfs %}checked{% endif %} disabled>
+                                                    Needs Fiber splicing
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_fd %}checked{% endif %} disabled>
+                                                    Fiber Done
+                                                </label>
+                                                <span style="margin-right: 10px;"></span>
+                                                <label class="form-check-label me-2">
+                                                    <input type="checkbox" class="form-check-input" {% if item.daily_rtb_pep %}checked{% endif %} disabled>
+                                                    RTB / Pending External Production
+                                                </label>
+                                                <span style="margin-right: 4px;"></span>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="openDailyStatusModal({{item.id}})">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        {% if item.downloaded_by != None %}
+                                            <strong>Downloaded:</strong>
+                                            {{ item.download_date|date:"m/d/Y H:i" }}
+                                            </br>
+                                            <strong>Downloaded By:</strong>
+                                            {{item.downloaded_by}}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
                                 <div class="row">
                                     <div class="col-sm-12">
-                                        {%if item.total_pay != 100 %}
-                                            <h4 style="color:red;"> The Total % to Pay must be equal to 100</h4>
-                                        {%endif%}
+                                        {% if item.total_pay != 100 %}
+                                            <h4 style="color:red;">The Total % to Pay must be equal to 100</h4>
+                                        {% endif %}
                                         {% if item.supervisor == None or item.woID == None %}
                                             <h4 style="color:orangered;">You must select supervisor and PID to be able to add employees and production in this crew</h4>
-                                        {%endif%}
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="row">                           
+                                
+                                <div class="row">
                                     <div class="col-sm-8 px-1">
                                         <div class="card">
-                                            <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+                                            <h6 class="card-header card-header-wc">Employee List - % To Pay = {% if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{% endif %}</h6>
                                             <div class="card-body">
                                                 <div class="row">
                                                     <div class="col-sm-12 px-1">
                                                         <table class="table table-sm table-bordered table-striped">
                                                             <thead>
-                                                                <tr class="table-primary">                                                  
+                                                                <tr class="table-primary">
                                                                     <td width="20%" class="p-1">Name</td>
                                                                     <td width="8%" class="p-1">% Pay</td>
                                                                     <td width="8%" class="p-1">On Call</td>
-                                                                    <td width="8%" class="p-1">Bonus</td>                                     
+                                                                    <td width="8%" class="p-1">Bonus</td>
                                                                     <td width="8%" class="p-1">Total Hrs</td>
                                                                     <td width="9%" class="p-1">Reg Hrs</td>
                                                                     <td width="8%" class="p-1">OT Hrs</td>
@@ -1087,720 +932,740 @@
                                                                     <td width="8%" class="p-1">Payout</td>
                                                                     <td width="8%" class="p-1">
                                                                         {% if item.supervisor != None and item.woID != None %}
-                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                                                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
                                                                                 <a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-plus"></i></a>
-                                                                            {%endif%}
+                                                                            {% endif %}
                                                                         {% endif %}
                                                                     </td>
-        
-                                                                    
-                                                                </tr>
+                                                                <tr>
                                                             </thead>
                                                             <tbody>
-                                                                {%for emp in dailyEmp %}
-                                                                    <tr>                                                       
-                                                                        <td class="p-1">{{emp.EmployeeID}} 
-                                                                            {% if emp.is_own_vehicle%}      
-                                                                                <span class="badge bg-success text-white ml-2"> OV </span>      
-                                                                            {%endif%}
+                                                                {% for emp in dailyEmp %}
+                                                                    <tr>
+                                                                        <td class="p-1">{{emp.EmployeeID}}
+                                                                            {% if emp.is_own_vehicle %}
+                                                                                <span class="badge bg-success text-white ml-2">OV</span>
+                                                                            {% endif %}
                                                                         </td>
                                                                         <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
-                                                                        <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                                        <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                                                        <td class="p-1">{% if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                                        <td class="p-1">{% if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                                         <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
                                                                         <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
                                                                         <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
                                                                         <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
-                                                                        <td class="p-1" style="color: red;">{%if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                                        <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                                                        <td class="p-1" style="color: red;">{% if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                                        <td class="p-1" style="color: red;">{% if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                                         <td class="p-1">
-                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
+                                                                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
                                                                                 <a hx-get="/update_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
-                                                                                <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog">  <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
-                                                                            {%endif%}
-                                                                            </td>                                                        
+                                                                                <a hx-get="/delete_daily_emp/{{emp.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-user-minus" style="color: red;"></i></a>
+                                                                            {% endif %}
+                                                                        </td>
                                                                     </tr>
-                                                                {%endfor%}
-                                                            </tbody>                                                
+                                                                {% endfor %}
+                                                            </tbody>
                                                         </table>
                                                     </div>
-                                                </div>                                                
+                                                </div>
                                             </div>
-                                        </div>    
+                                        </div>
                                     </div>
+                                    
                                     <div class="col-sm-4 px-1">
                                         <div class="card">
-                                            <h6 class="card-header card-header-wc" >ITEM LIST  -     TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
-                                            
+                                            <h6 class="card-header card-header-wc">ITEM LIST - TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}}</h6>
                                             <div class="card-body">
                                                 <div class="row">
                                                     <div class="col-sm-12 px-1">
-                                                        <table  class="table table-sm table-bordered table-striped">
+                                                        <table class="table table-sm table-bordered table-striped">
                                                             <thead>
-                                                                <tr class="table-primary">                                                    
+                                                                <tr class="table-primary">
                                                                     <td width="20%" class="p-1">Item</td>
                                                                     <td width="20%" class="p-1">Qty.</td>
                                                                     <td width="20%" class="p-1">Price</td>
-                                                                    <td width="20%" class="p-1">Total</td>  
+                                                                    <td width="20%" class="p-1">Total</td>
                                                                     <td width="20%" class="p-1">
                                                                         {% if item.supervisor != None and item.woID != None %}
-                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
+                                                                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
                                                                                 <a hx-get="/create_daily_item/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>
                                                                             {% endif %}
                                                                         {% endif %}
-                                                                    </td>                                                 
+                                                                    </td>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                {%for itemd in dailyItem %}
+                                                                {% for itemd in dailyItem %}
                                                                     <tr>
                                                                         <td class="p-1">{{itemd.itemID.item.itemID}}</td>
                                                                         <td class="p-1">{{itemd.quantity}}</td>
                                                                         <td class="p-1">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
-                                                                        <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>   
+                                                                        <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>
                                                                         <td class="p-1">
-                                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                                                                {%if itemd.Status == 1 %}
+                                                                            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                                                {% if itemd.Status == 1 %}
                                                                                     <a hx-get="/update_daily_item/{{itemd.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
                                                                                     <a hx-get="/delete_daily_item/{{itemd.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>
-                                                                                    
-                                                                                {%endif%}
-                                                                            {%endif%}                                                                            
-                                                                        </td> 
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        </td>
                                                                     </tr>
-                                                                {%endfor%}
-                                                            </tbody>                                                
+                                                                {% endfor %}
+                                                            </tbody>
                                                         </table>
                                                     </div>
-                                                </div>                                                
+                                                </div>
                                             </div>
-                                        </div>                                          
-                                    </div>                                     
-                                </div>  
-                                <div clas="row">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- DOCS LIST SECTION WITH LAZY LOADING (HYBRID APPROACH) -->
+                                <div class="row">
                                     <div class="col-sm-12 px-1">
                                         <div class="card">
                                             <h6 class="card-header card-header-wc d-flex justify-content-between align-items-center">
                                                 Docs List
-                                                
                                             </h6>
                                             <div class="card-body">
-
-                                                <button type="button" class="btn btn-success btn-sm" onclick="downloadAllImagesOriginal()">
-                                                    <i class="fas fa-file-download"></i> Download All
-                                                </button>
-
-                                                <button type="button" class="btn btn-success btn-sm" onclick="downloadEachImageAsPDF()">
-                                                    <i class="fas fa-file-download"></i> Download All PDF
-                                                </button>
-
-                                            </br>
-
-                                                <table class="table table-sm">                                 
-                                                    <h3 class="mb-3">Maps
-                                                        {% if item.supervisor != None and item.woID != None %}
-                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                                                <!--<a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>-->
-                                                                <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/1"><i class="fa-solid fa-circle-plus"></i></a>
-                                                            {%endif%}
-                                                        {% endif %}                                                        
-                                               
-                                                    </h3>
-                                                    <div class="documents-container">
-                                                        {%if not dailyDocs %}
-                                                            <p>No Maps Included</p>                                                 
-                                                        {%endif%}
-                                                        {% for itemd in dailyDocs %}
-                                                            <div class="document-thumbnail" 
-                                                                data-url="{{ itemd.document.url }}"
-                                                                data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                                                
-                                                                <div class="thumbnail-content">
-                                                                    {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                                        <div class="pdf-thumbnail">
-                                                                            <i class="fas fa-file-pdf pdf-icon"></i>
-                                                                            <small class="text-muted">PDF Document</small>
-                                                                            <canvas class="d-none"></canvas>
-                                                                        </div>
-                                                                    {% else %}
-                                                                        <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                                                    {% endif %}
-                                                                    
-                                                                    <div class="overlay">
-                                                                        <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
-                                                                    <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                                        <i class="fas fa-times delete-icon"></i>
-                                                                    </div>
-                                                                {% endif %}
-
-                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                                    <i class="fas fa-download download-icon"></i>
-                                                                </div>
-                                                                    
-                                                            </div>
-                                                        {% endfor %}
-                                                    </div>
-                                               
-                    
-                                                    <h3 class="mb-3 mt-3">Pictures                                           
-                                                        {% if item.supervisor != None and item.woID != None %}
-                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                                                <!--<a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>-->
-                                                                <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/2"><i class="fa-solid fa-circle-plus"></i></a>
-                                                            {%endif%}
-                                                        {% endif %}
-                    
-                                                    </h3>
-                                                        <div class="documents-container">
-                                                            {%if not dailyDocsPic %}
-                                                                <p>No Pictures Included</p>     
-                                                            {%endif%}
-                                                            {% for itemd in dailyDocsPic %}
-                                                            <div class="document-thumbnail" 
-                                                                data-url="{{ itemd.document.url }}"
-                                                                data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                                                
-                                                                <div class="thumbnail-content">
-                                                                    {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                                        <div class="pdf-thumbnail">
-                                                                            <i class="fas fa-file-pdf pdf-icon"></i>
-                                                                            <small class="text-muted">PDF Document</small>
-                                                                            <canvas class="d-none"></canvas>
-                                                                        </div>
-                                                                    {% else %}
-                                                                        <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                                                    {% endif %}
-                                                                    
-                                                                    <div class="overlay">
-                                                                        <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
-                                                                    <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                                        <i class="fas fa-times delete-icon"></i>
-                                                                    </div>
-                                                                {% endif %}
-
-                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                                    <i class="fas fa-download download-icon"></i>
-                                                                </div>
-                                                            </div>
+                                                <!-- Global download buttons -->
+                                                <div class="mb-3">
+                                                    <button type="button" class="btn btn-success btn-sm" onclick="downloadAllImagesOriginal()">
+                                                        <i class="fas fa-file-download"></i> Download All
+                                                    </button>
+                                                    <button type="button" class="btn btn-success btn-sm" onclick="downloadEachImageAsPDF()">
+                                                        <i class="fas fa-file-download"></i> Download All PDF
+                                                    </button>
+                                                </div>
+                                                
+                                                <hr>
+                                                
+                                                <!-- Store document data in JavaScript (hidden from user, but available for lazy loading) -->
+                                                <script>
+                                                    // Store all document data from Django context into JavaScript variables
+                                                    docsData = {
+                                                        maps: [
+                                                            {% for doc in dailyDocs %}
+                                                                {
+                                                                    id: {{ doc.id }},
+                                                                    url: "{{ doc.document.url|escapejs }}",
+                                                                    name: "{{ doc.document.name|escapejs }}"
+                                                                }{% if not forloop.last %},{% endif %}
                                                             {% endfor %}
-                                                        </div>
-                                                    </div>
-                    
-                                                    <h3 class="mb-3 mt-3">Material Backup      
-                                                        {% if item.supervisor != None and item.woID != None %}
-                                                            {% if emp.is_superAdmin  or user.is_staff or period.status == 1 %}
-                                                                <!--<a hx-get="/create_daily_emp/{{item.id}}/{{selectedLocation}}" hx-target="#dialog"><i class="fa-solid fa-circle-plus"></i></a>-->
-                                                                <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/3"><i class="fa-solid fa-circle-plus"></i></a>
-                                                            {%endif%}
-                                                        {% endif %}
-                    
-                                                    </h3>       
-                                                        <div class="documents-container">
-                                                            {%if not dailyDocsMB %}
-                                                                <p>No Material Backup Included</p>     
-                                                            {%endif%}
-                                                            {% for itemd in dailyDocsMB %}
-                                                            <div class="document-thumbnail" 
-                                                                data-url="{{ itemd.document.url }}"
-                                                                data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                                                
-                                                                <div class="thumbnail-content">
-                                                                    {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                                        <div class="pdf-thumbnail">
-                                                                            <i class="fas fa-file-pdf pdf-icon"></i>
-                                                                            <small class="text-muted">PDF Document</small>
-                                                                            <canvas class="d-none"></canvas>
-                                                                        </div>
-                                                                    {% else %}
-                                                                        <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                                                    {% endif %}
-                                                                    
-                                                                    <div class="overlay">
-                                                                        <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                {% if emp.is_superAdmin  or user.is_staff or period.status == 1%}
-                                                                    <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                                        <i class="fas fa-times delete-icon"></i>
-                                                                    </div>
-                                                                {% endif %}
-
-                                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                                    <i class="fas fa-download download-icon"></i>
-                                                                </div>
-                                                            </div>
+                                                        ],
+                                                        pictures: [
+                                                            {% for doc in dailyDocsPic %}
+                                                                {
+                                                                    id: {{ doc.id }},
+                                                                    url: "{{ doc.document.url|escapejs }}",
+                                                                    name: "{{ doc.document.name|escapejs }}"
+                                                                }{% if not forloop.last %},{% endif %}
                                                             {% endfor %}
-                                                        </div>                            
-                                                    </div>                                   
-                                                    
-                                                </table>  
-
-
-                                                <div class="row">
-                                                    <div class="col-sm-12 px-1">
-
-
-
-
-                                                        
-                                                    </div>
-                                                </div>                                                
-                                            </div>
-                                        </div>    
-                                    </div>
-                                </div>
-                                <!-- Modal -->
-                                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                        <!--<h5 class="modal-title" id="staticBackdropLabel">Upload Daily</h5>-->
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method='post'  action="/upload_daily/{{item.id}}/{{selectedLocation}}" enctype="multipart/form-data" id="daily_upload" >
-                                                {% csrf_token %}                                                                                                                                                                      
-                                                <label class="form-label" for="file">Select File</label>                                    
-                                                <div class="input-group-btn">
-                                                    <div class="input-group mb-3">
-                                                        <input type="file" class="form-control" id="myfile" name="myfile" accept=".pdf" required>                                                                                                            
-                                                        <!--<button type="submit" class="btn btn-primary" form="daily_upload">Save</button>-->
-                                                    </div>                                                    
-                                                </div>                                                                                      
-                                            </form>
-                                        </div>
-                                        <div class="modal-footer">                                        
-                                        <button type="submit" form="daily_upload" class="btn btn-primary">Upload</button>
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                
-                                 <!-- Modal 2-->
-                                 <div class="modal fade" id="updateSup" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                        <h5 class="modal-title" id="staticBackdropLabel">Update Supervisor - dist. payment - Own Vehicle </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method='post'  action="" enctype="multipart/form-data" id="update_sup" >
-                                                {% csrf_token %}                                                                                                                                                                      
-                                                <div class="row">
-                                                    <div class="col-sm-6">      
-                                                        <div class="mb-3">                                                                                                                                                                                      
-                                                            <label for="supervisor" class="form-label">Supervisor</label>
-                                                            <select class="form-select" name="supervisor" id="supervisor" >
-                                                                <option value ="0" selected>Select Supervisor</option>
-                                                                {% for sup in superV %}    
-                                                                    {% if sup.employeeID|slugify == item.supervisor %}                                                 
-                                                                        <option value="{{sup.employeeID}}" selected>{{sup.first_name}} {{sup.last_name}}</option>  
-                                                                    {% else %}     
-                                                                        <option value="{{sup.employeeID}}">{{sup.first_name}} {{sup.last_name}}</option>   
-                                                                    {%endif%}            
-                                                                {% endfor %}      
-                                                            </select>                                                                                                                                                              
-                                                        </div>                                                                                                                                                                          
-                                                    </div>  
-                                                    <div class="col-sm-2">
+                                                        ],
+                                                        material: [
+                                                            {% for doc in dailyDocsMB %}
+                                                                {
+                                                                    id: {{ doc.id }},
+                                                                    url: "{{ doc.document.url|escapejs }}",
+                                                                    name: "{{ doc.document.name|escapejs }}"
+                                                                }{% if not forloop.last %},{% endif %}
+                                                            {% endfor %}
+                                                        ]
+                                                    };
+                                                </script>
+                                                
+                                                <!-- MAPS SECTION -->
+                                                <div class="mb-4">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h3 class="mb-0">Maps</h3>
                                                         <div>
-                                                            <label class="form-label" for="">dist. payment</label>
+                                                            {% if item.supervisor != None and item.woID != None %}
+                                                                {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                                    <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/1" class="btn btn-sm btn-primary me-2">
+                                                                        <i class="fa-solid fa-plus"></i> Add
+                                                                    </a>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="maps">
+                                                                <i class="fas fa-images"></i> Load Thumbnails
+                                                            </button>
                                                         </div>
-                                                        <div class="form-check">
-                                                            {% if item.split_paymet %}
-                                                                <input class="form-check-input" type="checkbox" value="True" id="split" name="split" checked >
-                                                            {% else %}
-                                                                <input class="form-check-input" type="checkbox" value="False" id="splpit" name="split" >
-                                                            {%endif%}
-                                                            <label class="form-check-label" for="flexCheckDefault">
-                                                              Split
-                                                            </label>
-                                                          </div>
-                                                    </div>                                            
-                                                    <div class="col-sm-4">
-                                                        <div class="mb-3">
-                                                            <!--<label class="form-label" id="ov_l">% own Vehicle</label> 
-                                                            <input type="input" class="form-control" placeholder="% own Vehicle" id="ov" name="ov" aria-label="ov" aria-describedby="ov_l" value="{%if item.own_vehicle > 0 %}{{item.own_vehicle}}{%endif%}" min="0" max="100" >                                  
-                                                            -->
-                                                        </div> 
                                                     </div>
-                                                    <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}"> 
-                                                </div>                                                                          
-                                            </form>
-                                        </div>
-                                        <div class="modal-footer">                                        
-                                            <button type="submit" form="update_sup" class="btn btn-primary">Save</button>
-                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-
-                                <!-- Daily Status Modal -->
-                                <div class="modal fade" id="dailyStatusModal" tabindex="-1" aria-labelledby="dailyStatusModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="dailyStatusModalLabel">Update Daily Status</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form id="dailyStatusForm">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" id="dailyId" name="daily_id">
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_rtb" name="daily_rtb">
-                                                        <label class="form-check-label" for="daily_rtb">
-                                                            Ready To Bill
-                                                        </label>
+                                                    <div id="maps-container" class="documents-container" data-loaded="false">
+                                                        <div class="text-muted" style="padding: 20px; text-align: center;">
+                                                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                                            Click "Load Thumbnails" to view maps
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_wp" name="daily_wp">
-                                                        <label class="form-check-label" for="daily_wp">
-                                                            Work in Progress
-                                                        </label>
+                                                </div>
+                                                
+                                                <!-- PICTURES SECTION -->
+                                                <div class="mb-4">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h3 class="mb-0">Pictures</h3>
+                                                        <div>
+                                                            {% if item.supervisor != None and item.woID != None %}
+                                                                {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                                    <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/2" class="btn btn-sm btn-primary me-2">
+                                                                        <i class="fa-solid fa-plus"></i> Add
+                                                                    </a>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="pictures">
+                                                                <i class="fas fa-images"></i> Load Thumbnails
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_cd" name="daily_cd">
-                                                        <label class="form-check-label" for="daily_cd">
-                                                            Construction Done
-                                                        </label>
+                                                    <div id="pictures-container" class="documents-container" data-loaded="false">
+                                                        <div class="text-muted" style="padding: 20px; text-align: center;">
+                                                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                                            Click "Load Thumbnails" to view pictures
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_nfs" name="daily_nfs">
-                                                        <label class="form-check-label" for="daily_nfs">
-                                                            Needs Fiber splicing
-                                                        </label>
+                                                </div>
+                                                
+                                                <!-- MATERIAL BACKUP SECTION -->
+                                                <div class="mb-4">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h3 class="mb-0">Material Backup</h3>
+                                                        <div>
+                                                            {% if item.supervisor != None and item.woID != None %}
+                                                                {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+                                                                    <a href="/create_daily_docs/{{item.id}}/{{selectedLocation}}/3" class="btn btn-sm btn-primary me-2">
+                                                                        <i class="fa-solid fa-plus"></i> Add
+                                                                    </a>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="material">
+                                                                <i class="fas fa-images"></i> Load Thumbnails
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_fd" name="daily_fd">
-                                                        <label class="form-check-label" for="daily_fd">
-                                                            Fiber Done
-                                                        </label>
+                                                    <div id="material-container" class="documents-container" data-loaded="false">
+                                                        <div class="text-muted" style="padding: 20px; text-align: center;">
+                                                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                                            Click "Load Thumbnails" to view material backup
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <div class="form-check mb-3">
-                                                        <input class="form-check-input" type="checkbox" id="daily_rtb_pep" name="daily_rtb_pep">
-                                                        <label class="form-check-label" for="daily_rtb_pep">
-                                                            RTB / Pending External Production
-                                                        </label>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="button" class="btn btn-primary" onclick="saveDailyStatus()">Save Changes</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            {%endif%} 
-                        {%endfor%}
-                       
-                        
-                                           
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                </div>                 
-            </div>    
+                </div>
+            </div>
         </div>
-        
+    </form>
+</div>
 
 <!-- Preview Modal -->
 <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- tamaño grande flexible -->
-    <div class="modal-content">
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      <div class="modal-body p-0">
-        <img id="imagePreview" src="" class="modal-img d-none" alt="Preview image">
-        <div id="pdfPreview" class="w-100 d-none" style="padding: 12px 18px;">
-          <div style="display:flex;justify-content:center;">
-            <canvas id="pdfCanvas"></canvas>
-          </div>
-          <div class="pdf-controls mt-2">
-            <button id="prevPage" class="btn btn-sm btn-outline-light">
-              <i class="fas fa-chevron-left"></i> Prev
-            </button>
-            <span class="page-counter mx-2">
-              Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
-            </span>
-            <button id="nextPage" class="btn btn-sm btn-outline-light">
-              Next <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-body p-0">
+                <img id="imagePreview" src="" class="modal-img d-none" alt="Preview image">
+                <div id="pdfPreview" class="w-100 d-none" style="padding: 12px 18px;">
+                    <div style="display:flex;justify-content:center;">
+                        <canvas id="pdfCanvas"></canvas>
+                    </div>
+                    <div class="pdf-controls mt-2">
+                        <button id="prevPage" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-chevron-left"></i> Prev
+                        </button>
+                        <span class="page-counter mx-2">
+                            Page <span id="currentPage">1</span> of <span id="totalPages">0</span>
+                        </span>
+                        <button id="nextPage" class="btn btn-sm btn-outline-light">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
-    
+<!-- Update Supervisor Modal -->
+<div class="modal fade" id="updateSup" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Update Supervisor - dist. payment - Own Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method='post' action="" enctype="multipart/form-data" id="update_sup">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="supervisor" class="form-label">Supervisor</label>
+                                <select class="form-select" name="supervisor" id="supervisor">
+                                    <option value="0" selected>Select Supervisor</option>
+                                    {% for sup in superV %}
+                                        {% if sup.employeeID|slugify == item.supervisor %}
+                                            <option value="{{sup.employeeID}}" selected>{{sup.first_name}} {{sup.last_name}}</option>
+                                        {% else %}
+                                            <option value="{{sup.employeeID}}">{{sup.first_name}} {{sup.last_name}}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div>
+                                <label class="form-label" for="">dist. payment</label>
+                            </div>
+                            <div class="form-check">
+                                {% if item.split_paymet %}
+                                    <input class="form-check-input" type="checkbox" value="True" id="split" name="split" checked>
+                                {% else %}
+                                    <input class="form-check-input" type="checkbox" value="False" id="splpit" name="split">
+                                {% endif %}
+                                <label class="form-check-label" for="flexCheckDefault">Split</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="mb-3">
+                                <!-- % own Vehicle field if needed -->
+                            </div>
+                        </div>
+                        <input type="text" class="form-control d-none" id="daily" name="daily" value="{{item.id}}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="update_sup" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Status Modal -->
+<div class="modal fade" id="dailyStatusModal" tabindex="-1" aria-labelledby="dailyStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dailyStatusModalLabel">Update Daily Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dailyStatusForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="dailyId" name="daily_id">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_rtb" name="daily_rtb">
+                        <label class="form-check-label" for="daily_rtb">Ready To Bill</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_wp" name="daily_wp">
+                        <label class="form-check-label" for="daily_wp">Work in Progress</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_cd" name="daily_cd">
+                        <label class="form-check-label" for="daily_cd">Construction Done</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_nfs" name="daily_nfs">
+                        <label class="form-check-label" for="daily_nfs">Needs Fiber splicing</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_fd" name="daily_fd">
+                        <label class="form-check-label" for="daily_fd">Fiber Done</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="daily_rtb_pep" name="daily_rtb_pep">
+                        <label class="form-check-label" for="daily_rtb_pep">RTB / Pending External Production</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveDailyStatus()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Daily Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method='post' action="/upload_daily/{{item.id}}/{{selectedLocation}}" enctype="multipart/form-data" id="daily_upload">
+                    {% csrf_token %}
+                    <label class="form-label" for="file">Select File</label>
+                    <div class="input-group-btn">
+                        <div class="input-group mb-3">
+                            <input type="file" class="form-control" id="myfile" name="myfile" accept=".pdf" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="daily_upload" class="btn btn-primary">Upload</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-                // Initialize PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+<script>
+    // Initialize PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    
+    // Variables for PDF handling
+    let pdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    
+    // DOM elements
+    const pdfCanvas = document.getElementById('pdfCanvas');
+    const ctx = pdfCanvas.getContext('2d');
+    const currentPageSpan = document.getElementById('currentPage');
+    const totalPagesSpan = document.getElementById('totalPages');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    
+    // Show PDF in modal
+    function showPdfPreview(url) {
+        document.getElementById('imagePreview').classList.add('d-none');
+        document.getElementById('pdfPreview').classList.remove('d-none');
         
-        // Variables for PDF handling
-        let pdfDoc = null;
-        let pageNum = 1;
-        let pageRendering = false;
-        let pageNumPending = null;
-        
-        
-        // DOM elements
-        const pdfCanvas = document.getElementById('pdfCanvas');
-        const ctx = pdfCanvas.getContext('2d');
-        const currentPageSpan = document.getElementById('currentPage');
-        const totalPagesSpan = document.getElementById('totalPages');
-        const prevPageBtn = document.getElementById('prevPage');
-        const nextPageBtn = document.getElementById('nextPage');
-        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-        
-        // Generate PDF thumbnails
-        document.addEventListener('DOMContentLoaded', function() {
-            const pdfThumbnails = document.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+        pdfjsLib.getDocument(url).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            totalPagesSpan.textContent = pdf.numPages;
+            pageNum = 1;
             
+            currentPageSpan.textContent = pageNum;
+            prevPageBtn.disabled = true;
+            nextPageBtn.disabled = pdf.numPages <= 1;
+            
+            pageNumPending = null;
+            pageRendering = false;
+            
+            const modalEl = document.getElementById('previewModal');
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                setTimeout(() => renderPage(pageNum), 50);
+            }, { once: true });
+            
+            previewModal.show();
+        }).catch(function(error) {
+            console.error('PDF preview error:', error);
+            alert('Error loading PDF document');
+        });
+    }
+    
+    // Render PDF page
+    function renderPage(num) {
+        pageRendering = true;
+        
+        pdfDoc.getPage(num).then(function(page) {
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            const containerWidth = pdfCanvas.parentElement.clientWidth * 0.96;
+            const scale = (containerWidth / unscaledViewport.width);
+            
+            const viewport = page.getViewport({ scale: scale });
+            pdfCanvas.width = viewport.width;
+            pdfCanvas.height = viewport.height;
+            
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            
+            page.render(renderContext).promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+        
+        currentPageSpan.textContent = num;
+        prevPageBtn.disabled = num <= 1;
+        nextPageBtn.disabled = num >= pdfDoc.numPages;
+    }
+    
+    // Queue PDF page rendering
+    function queueRenderPage(num) {
+        if (pageRendering) {
+            pageNumPending = num;
+        } else {
+            renderPage(num);
+        }
+    }
+    
+    // Prev / Next handlers
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', function() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        });
+    }
+    
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', function() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        });
+    }
+    
+    // Show image in modal
+    function showImagePreview(url) {
+        document.getElementById('pdfPreview').classList.add('d-none');
+        const imgPreview = document.getElementById('imagePreview');
+        imgPreview.src = url;
+        imgPreview.classList.remove('d-none');
+        previewModal.show();
+    }
+    
+    // Function to open Daily Status Modal
+    function openDailyStatusModal(dailyId) {
+        document.getElementById('dailyId').value = dailyId;
+        
+        fetch(`/get_daily_status/${dailyId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('daily_rtb').checked = data.daily_rtb;
+                document.getElementById('daily_wp').checked = data.daily_wp;
+                document.getElementById('daily_cd').checked = data.daily_cd;
+                document.getElementById('daily_nfs').checked = data.daily_nfs;
+                document.getElementById('daily_fd').checked = data.daily_fd;
+                document.getElementById('daily_rtb_pep').checked = data.daily_rtb_pep;
+                setupCheckboxListeners();
+            })
+            .catch(error => console.error('Error:', error));
+        
+        const modal = new bootstrap.Modal(document.getElementById('dailyStatusModal'));
+        modal.show();
+    }
+    
+    function setupCheckboxListeners() {
+        const rtbCheckbox = document.getElementById('daily_rtb');
+        const rtbPepCheckbox = document.getElementById('daily_rtb_pep');
+        
+        if (rtbCheckbox) {
+            rtbCheckbox.addEventListener('change', function() {
+                if (this.checked && rtbPepCheckbox) {
+                    rtbPepCheckbox.checked = false;
+                }
+            });
+        }
+        
+        if (rtbPepCheckbox) {
+            rtbPepCheckbox.addEventListener('change', function() {
+                if (this.checked && rtbCheckbox) {
+                    rtbCheckbox.checked = false;
+                }
+            });
+        }
+    }
+    
+    function saveDailyStatus() {
+        const dailyId = document.getElementById('dailyId').value;
+        const formData = {
+            daily_rtb: document.getElementById('daily_rtb').checked,
+            daily_wp: document.getElementById('daily_wp').checked,
+            daily_cd: document.getElementById('daily_cd').checked,
+            daily_nfs: document.getElementById('daily_nfs').checked,
+            daily_fd: document.getElementById('daily_fd').checked,
+            daily_rtb_pep: document.getElementById('daily_rtb_pep').checked
+        };
+        
+        fetch(`/update_daily_status/${dailyId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Daily status updated successfully!');
+                location.reload();
+                bootstrap.Modal.getInstance(document.getElementById('dailyStatusModal')).hide();
+            } else {
+                alert('Error updating daily status');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    // LAZY LOADING FUNCTIONALITY FOR DOCUMENTS (HYBRID APPROACH - NO EXTRA AJAX CALLS)
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadButtons = document.querySelectorAll('.load-thumbnails-btn');
+        
+        loadButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const section = this.getAttribute('data-section');
+                const containerId = `${section}-container`;
+                const container = document.getElementById(containerId);
+                
+                // Check if already loaded
+                if (container.getAttribute('data-loaded') === 'true') {
+                    alert('Thumbnails already loaded for this section');
+                    return;
+                }
+                
+                // Get documents data for this section
+                let documents = [];
+                if (section === 'maps') {
+                    documents = docsData.maps || [];
+                } else if (section === 'pictures') {
+                    documents = docsData.pictures || [];
+                } else if (section === 'material') {
+                    documents = docsData.material || [];
+                }
+                
+                if (documents.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-muted" style="padding: 20px; text-align: center;">
+                            <i class="fas fa-folder-open fa-2x mb-2"></i><br>
+                            No documents found in this section
+                        </div>
+                    `;
+                    container.setAttribute('data-loaded', 'true');
+                    return;
+                }
+                
+                // Clear container and render thumbnails
+                container.innerHTML = '';
+                renderThumbnails(container, documents, section);
+                container.setAttribute('data-loaded', 'true');
+            });
+        });
+    });
+    
+    // Function to render thumbnails from pre-loaded data
+    function renderThumbnails(container, documents, section) {
+        documents.forEach(doc => {
+            const thumbDiv = document.createElement('div');
+            thumbDiv.className = 'document-thumbnail';
+            thumbDiv.setAttribute('data-url', doc.url);
+            thumbDiv.setAttribute('data-type', doc.url.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image');
+            thumbDiv.setAttribute('data-doc-id', doc.id);
+            
+            const thumbnailContent = document.createElement('div');
+            thumbnailContent.className = 'thumbnail-content';
+            
+            if (doc.url.toLowerCase().endsWith('.pdf')) {
+                // PDF thumbnail placeholder (will be rendered after adding to DOM)
+                thumbnailContent.innerHTML = `
+                    <div class="pdf-thumbnail">
+                        <i class="fas fa-file-pdf pdf-icon"></i>
+                        <small class="text-muted">PDF Document</small>
+                        <canvas class="d-none" style="width:100%; height:auto;"></canvas>
+                    </div>
+                `;
+            } else {
+                // Image thumbnail - load image dynamically
+                const img = document.createElement('img');
+                img.src = doc.url;
+                img.alt = 'Document';
+                img.className = 'thumbnail-img';
+                thumbnailContent.appendChild(img);
+            }
+            
+            // Add overlay for preview
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.innerHTML = '<i class="fas fa-magnifying-glass-plus overlay-icon"></i>';
+            thumbnailContent.appendChild(overlay);
+            
+            // Add download button
+            const downloadBtn = document.createElement('div');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.onclick = function(e) {
+                e.stopPropagation();
+                downloadFile(doc.url);
+            };
+            downloadBtn.innerHTML = '<i class="fas fa-download download-icon"></i>';
+            thumbnailContent.appendChild(downloadBtn);
+            
+            thumbDiv.appendChild(thumbnailContent);
+            
+            // Add delete button if user has permission
+            {% if emp.is_superAdmin or user.is_staff or period.status == 1 %}
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                delete_daily_docs(doc.id, {{ selectedLocation }});
+            };
+            deleteBtn.innerHTML = '<i class="fas fa-times delete-icon"></i>';
+            thumbDiv.appendChild(deleteBtn);
+            {% endif %}
+            
+            // Add click handler for preview
+            thumbnailContent.addEventListener('click', function() {
+                const url = thumbDiv.getAttribute('data-url');
+                const type = thumbDiv.getAttribute('data-type');
+                
+                if (type === 'pdf') {
+                    showPdfPreview(url);
+                } else {
+                    showImagePreview(url);
+                }
+            });
+            
+            container.appendChild(thumbDiv);
+        });
+        
+        // Generate PDF thumbnails for any PDFs in this container
+        setTimeout(() => {
+            const pdfThumbnails = container.querySelectorAll('.document-thumbnail[data-type="pdf"]');
             pdfThumbnails.forEach(thumbnail => {
                 const pdfUrl = thumbnail.getAttribute('data-url');
                 const canvas = thumbnail.querySelector('canvas');
                 
-                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
-                    return pdf.getPage(1);
-                }).then(function(page) {
-                    const viewport = page.getViewport({ scale: 0.5 });
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    
-                    const renderContext = {
-                        canvasContext: canvas.getContext('2d'),
-                        viewport: viewport
-                    };
-                    
-                    page.render(renderContext).promise.then(function() {
-                        thumbnail.querySelector('.pdf-thumbnail').innerHTML = '';
-                        thumbnail.querySelector('.pdf-thumbnail').appendChild(canvas);
-                        canvas.classList.remove('d-none');
-                    });
-                }).catch(function(error) {
-                    console.error('PDF thumbnail error:', error);
-                });
-            });
-            
-            // Set up click handlers for thumbnails
-            document.querySelectorAll('.thumbnail-content').forEach(thumb => {
-                thumb.addEventListener('click', function() {
-                    const parent = this.closest('.document-thumbnail');
-                    const url = parent.getAttribute('data-url');
-                    const type = parent.getAttribute('data-type');
-                    
-                    if (type === 'pdf') {
-                        showPdfPreview(url);
-                    } else {
-                        showImagePreview(url);
-                    }
-                });
-            });
-
-        });
-        
-        // Show PDF in modal
-         function showPdfPreview(url) {
-            document.getElementById('imagePreview').classList.add('d-none');
-            document.getElementById('pdfPreview').classList.remove('d-none');
-
-            pdfjsLib.getDocument(url).promise.then(function(pdf) {
-                pdfDoc = pdf;
-                totalPagesSpan.textContent = pdf.numPages;
-                pageNum = 1;
-
-                // Reset UI
-                currentPageSpan.textContent = pageNum;
-                prevPageBtn.disabled = true;
-                nextPageBtn.disabled = pdf.numPages <= 1;
-
-                // Ensure state is clean
-                pageNumPending = null;
-                pageRendering = false;
-
-                // Wait until modal is shown to render (layout must be ready)
-                const modalEl = document.getElementById('previewModal');
-                modalEl.addEventListener('shown.bs.modal', function onShown() {
-                    // small timeout helps layout stabilize on some browsers
-                    setTimeout(() => renderPage(pageNum), 50);
-                }, { once: true });
-
-                previewModal.show();
-            }).catch(function(error) {
-                console.error('PDF preview error:', error);
-                alert('Error loading PDF document');
-            });
-        }
-        
-        // Render PDF page
-         function renderPage(num) {
-                pageRendering = true;
-
-                pdfDoc.getPage(num).then(function(page) {
-                // Obtener viewport base (scale = 1) y calcular escala para el ancho disponible
-                const unscaledViewport = page.getViewport({ scale: 1.0 });
-                // ancho disponible: ancho del contenedor del canvas (con padding reducido)
-                const containerWidth = pdfCanvas.parentElement.clientWidth * 0.96; // dejar margen
-                const scale = (containerWidth / unscaledViewport.width);
-
-                const viewport = page.getViewport({ scale: scale });
-                pdfCanvas.width = viewport.width;
-                pdfCanvas.height = viewport.height;
-
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-
-                page.render(renderContext).promise.then(function() {
-                    pageRendering = false;
-                    if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
-                    }
-                });
-                });
-
-                currentPageSpan.textContent = num;
-                prevPageBtn.disabled = num <= 1;
-                nextPageBtn.disabled = num >= pdfDoc.numPages;
-            }
-
-            // Queue PDF page rendering
-            function queueRenderPage(num) {
-                if (pageRendering) {
-                pageNumPending = num;
-                } else {
-                renderPage(num);
-                }
-            }
-        
-         // Prev / Next handlers
-            prevPageBtn.addEventListener('click', function() {
-                if (pageNum <= 1) return;
-                pageNum--;
-                queueRenderPage(pageNum);
-            });
-
-            nextPageBtn.addEventListener('click', function() {
-                if (pageNum >= pdfDoc.numPages) return;
-                pageNum++;
-                queueRenderPage(pageNum);
-            });
-
-            // Show image in modal
-            function showImagePreview(url) {
-                document.getElementById('pdfPreview').classList.add('d-none');
-                const imgPreview = document.getElementById('imagePreview');
-                imgPreview.src = url;
-                imgPreview.classList.remove('d-none');
-                previewModal.show();
-            }
-
-
-            // Adding Function to open Daily Status Modal
-            function openDailyStatusModal(dailyId) {
-                    // Set the hidden daily_id field
-                    document.getElementById('dailyId').value = dailyId;
-                    
-                    // Fetch current status and populate form
-                    fetch(`/get_daily_status/${dailyId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            document.getElementById('daily_rtb').checked = data.daily_rtb;
-                            document.getElementById('daily_wp').checked = data.daily_wp;
-                            document.getElementById('daily_cd').checked = data.daily_cd;
-                            document.getElementById('daily_nfs').checked = data.daily_nfs;
-                            document.getElementById('daily_fd').checked = data.daily_fd;
-                            document.getElementById('daily_rtb_pep').checked = data.daily_rtb_pep;
-
-                            // Add event listeners for mutual exclusivity
-                            setupCheckboxListeners();
-                        })
-                        .catch(error => console.error('Error:', error));
-                    
-                    // Show modal
-                    const modal = new bootstrap.Modal(document.getElementById('dailyStatusModal'));
-                    modal.show();
-                }
-
-                function setupCheckboxListeners() {
-                    const rtbCheckbox = document.getElementById('daily_rtb');
-                    const rtbPepCheckbox = document.getElementById('daily_rtb_pep');
-                    
-                    // When Ready To Bill is checked, uncheck RTB / Pending External Production
-                    rtbCheckbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            rtbPepCheckbox.checked = false;
-                        }
-                    });
-                    
-                    // When RTB / Pending External Production is checked, uncheck Ready To Bill
-                    rtbPepCheckbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            rtbCheckbox.checked = false;
-                        }
+                if (canvas && pdfUrl) {
+                    pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                        return pdf.getPage(1);
+                    }).then(function(page) {
+                        const viewport = page.getViewport({ scale: 0.5 });
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        const renderContext = {
+                            canvasContext: canvas.getContext('2d'),
+                            viewport: viewport
+                        };
+                        
+                        page.render(renderContext).promise.then(function() {
+                            const pdfThumb = thumbnail.querySelector('.pdf-thumbnail');
+                            if (pdfThumb) {
+                                // Clear the placeholder and show the canvas
+                                pdfThumb.innerHTML = '';
+                                pdfThumb.appendChild(canvas);
+                                canvas.classList.remove('d-none');
+                            }
+                        });
+                    }).catch(function(error) {
+                        console.error('PDF thumbnail error:', error);
                     });
                 }
-
-                function saveDailyStatus() {
-                    const dailyId = document.getElementById('dailyId').value;
-                    const formData = {
-                        daily_rtb: document.getElementById('daily_rtb').checked,
-                        daily_wp: document.getElementById('daily_wp').checked,
-                        daily_cd: document.getElementById('daily_cd').checked,
-                        daily_nfs: document.getElementById('daily_nfs').checked,
-                        daily_fd: document.getElementById('daily_fd').checked,
-                        daily_rtb_pep: document.getElementById('daily_rtb_pep').checked
-                    };
-                    
-                    fetch(`/update_daily_status/${dailyId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        },
-                        body: JSON.stringify(formData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Daily status updated successfully!');
-                            location.reload(); // Reload to see changes
-                            bootstrap.Modal.getInstance(document.getElementById('dailyStatusModal')).hide();
-                        } else {
-                            alert('Error updating daily status');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-                }
-
-      
-      </script>
+            });
+        }, 100);
+    }
+</script>
 
 {% endblock %}

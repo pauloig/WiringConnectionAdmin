@@ -5,15 +5,12 @@
 {% block container %}
 {% load widget_tweaks%}
 
-
-
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 
 <style>
    /* CSS will go here */
@@ -27,6 +24,7 @@
       flex-wrap: wrap;
       gap: 15px;
       margin-top: 20px;
+      min-height: 150px;
   }
   
   .document-thumbnail {
@@ -193,178 +191,97 @@
   }
   
   .preview-modal .modal-dialog {
-   max-width: 800px; /* Smaller fixed width */
-}
-
-.preview-modal .modal-content {
-   max-height: 80vh;
-   overflow: auto;
-}
-
-#pdfCanvas {
-   border: 1px solid #444;
-   max-height: 55vh !important; /* Reduced canvas height */
-   width: auto !important; /* Allow natural width */
-}
-
-.pdf-controls {
-   padding: 8px;
-   background: rgba(0,0,0,0.7);
-   border-radius: 4px;
-   margin-top: 10px !important;
-}
-
-.pdf-controls button {
-   padding: 3px 10px;
-   font-size: 0.85rem;
-   border-radius: 3px;
-}
-
-
-/*CSS to Daily Preview*/
-    /* Base Styles */
- 
-    
-    .preview-button {
-        background-color: #4a6baf;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    
-    /* Modal Styles 
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-    }*/
-    
-    .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 900px;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    
-    .close:hover {
-        color: black;
-    }
-    
-
-    .download-btn {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        background: white;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 2;
-        opacity: 0.8;
-        transition: opacity 0.2s ease;
-    }
-
-    .download-btn:hover {
-        opacity: 1;
-    }
-
-    .download-icon {
-        color: #3498db;
-        font-size: 14px;
-    }
-    /* Work Order Styles 
-    .work-order {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
-    
-    .work-order h1 {
-        color: #4a6baf;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    
-    .work-order table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 15px;
-    }
-    
-    .work-order th, .work-order td {
-        border: 1px solid #ddd;
-        padding: 6px;
-        text-align: left;
-    }
-    
-    .work-order th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-    }
-    
-    .work-order .section-title {
-        background-color: #4a6baf;
-        color: white;
-        padding: 8px;
-        margin: 15px 0 10px 0;
-        font-weight: bold;
-    }
-    
-    .work-order .signature-line {
-        margin-top: 30px;
-        border-top: 1px solid #000;
-        width: 200px;
-        display: inline-block;
-    }
-    
-    .work-order .comments-section {
-        margin-top: 20px;
-    }
-    
-    .work-order .total-row {
-        font-weight: bold;
-        background-color: #f2f2f2;
-    }
-    
-    .work-order .checkbox-item {
-        margin-right: 20px;
-        display: inline-block;
-    }
-*/
-
-  </style>
-
-
+      max-width: 800px;
+  }
   
-    
+  .preview-modal .modal-content {
+      max-height: 80vh;
+      overflow: auto;
+  }
+  
+  #pdfCanvas {
+      border: 1px solid #444;
+      max-height: 55vh !important;
+      width: auto !important;
+  }
+  
+  .pdf-controls {
+      padding: 8px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 4px;
+      margin-top: 10px !important;
+  }
+  
+  .pdf-controls button {
+      padding: 3px 10px;
+      font-size: 0.85rem;
+      border-radius: 3px;
+  }
+  
+  /* CSS to Daily Preview */
+  .preview-button {
+      background-color: #4a6baf;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+  }
+  
+  .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 900px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+  }
+  
+  .close:hover {
+      color: black;
+  }
+  
+  .download-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+  }
+  
+  .download-btn:hover {
+      opacity: 1;
+  }
+  
+  .download-icon {
+      color: #3498db;
+      font-size: 14px;
+  }
+</style>
 
 <div class="container">
-    <form method='post' action="{{request.path}}"  id="approveTimesheet">
+    <form method='post' action="{{request.path}}" id="approveTimesheet">
         {% csrf_token %}
 
         <div class="modal-header">
@@ -392,7 +309,7 @@
                 <div class="col-lg-1">
                     <div class="mb3-mobile">
                         <label for="{{ form.crew.id_for_label }}" class="form-label">Crew</label>
-                        {% render_field form.crew  name="crew" id="crew" class="form-control" %}
+                        {% render_field form.crew name="crew" id="crew" class="form-control" %}
                         <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
                     </div>    
                 </div>     
@@ -403,7 +320,6 @@
                             <input type="text" class="form-control" placeholder="Enter PID" aria-label="PID" id="PID" name="PID" aria-describedby="basic-addon1" value="{{dailyWO.woID.prismID}} - {{dailyWO.woID.workOrderId}} - {{dailyWO.woID.PO}}" disabled>                                                                                             
                               <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.id}}"> 
                               <input type="text" class="form-control d-none" id="dailyID2" name="dailyID2" value="{{dailyWO.pdfDaily}}"> 
-
                             </div>                                      
                     </div>        
                 </div> 
@@ -421,7 +337,6 @@
                                     {%endif%}            
                                 {% endfor %}      
                             </select>   
-                           
                         </div>                                            
                     </div>                                                                                                                                                                          
                 </div>  
@@ -435,29 +350,22 @@
                         {% else %}
                             <input class="form-check-input" type="checkbox" value="False" id="splpit" name="split" disabled>
                         {%endif%}
-                        <label class="form-check-label" for="flexCheckDefault">
-                          Split
-                        </label>
-                      </div>
+                        <label class="form-check-label" for="flexCheckDefault">Split</label>
+                    </div>
                 </div>    
             </div>  
            
             <div class="row">                           
-                                    
-                                                 
                 <div class="col-sm-7">
                     <div class="mb-3">
                         <label for="PID" class="form-label">Address</label>
                         <input type="text" class="form-control" placeholder="Address" aria-label="address" aria-describedby="address_l" value="{{dailyWO.woID.JobAddress}}" disabled>
-                        <!-- Add this block for the radio buttons -->
-                        
                     </div>     
                 </div>
                 <div class="col-sm-2 pt-5">
-                        
-                            <label class="form-label mr-4 pr-2">this is the only production:  </label> 
-                            {% render_field form.daily_production class="form-check-input" %}
-                            <label class="form-check-label" for="{{ form.daily_production.id_for_label }}"></label>  
+                    <label class="form-label mr-4 pr-2">this is the only production:  </label> 
+                    {% render_field form.daily_production class="form-check-input" %}
+                    <label class="form-check-label" for="{{ form.daily_production.id_for_label }}"></label>  
                 </div>
                 <div class="col-sm-3">
                     <div class="mb-3">
@@ -472,51 +380,37 @@
                 <div class="col-sm-9">   
                     <div class="row">                                                                    
                         <div class="col-sm-2 pt-5">                        
-                                    <label class="form-label mr-4 pr-1">Ready to Bill  </label> 
-                                    {% render_field form.daily_rtb class="form-check-input" %}
-                                    <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
+                            <label class="form-label mr-4 pr-1">Ready to Bill  </label> 
+                            {% render_field form.daily_rtb class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_rtb.id_for_label }}"></label>  
                         </div>    
                         <div class="col-sm-2 pt-5">                        
-                                    <label class="form-label mr-4 pr-2">Work in Progress</label> 
-                                    {% render_field form.daily_wp class="form-check-input" %}
-                                    <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
+                            <label class="form-label mr-4 pr-2">Work in Progress</label> 
+                            {% render_field form.daily_wp class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_wp.id_for_label }}"></label>  
                         </div>      
                         <div class="col-sm-3 pt-5">
-                                
-                                    <label class="form-label mr-4 pr-2">Construction Done</label> 
-                                    {% render_field form.daily_cd class="form-check-input" %}
-                                    <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
+                            <label class="form-label mr-4 pr-2">Construction Done</label> 
+                            {% render_field form.daily_cd class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_cd.id_for_label }}"></label>  
                         </div> 
                         <div class="col-sm-3 pt-5">
-                                
-                                    <label class="form-label mr-4 pr-2">Needs Fiber splicing</label> 
-                                    {% render_field form.daily_nfs class="form-check-input" %}
-                                    <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
+                            <label class="form-label mr-4 pr-2">Needs Fiber splicing</label> 
+                            {% render_field form.daily_nfs class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_nfs.id_for_label }}"></label>  
                         </div>   
                         <div class="col-sm-2 pt-5">
-                                
-                                    <label class="form-label mr-4 pr-2">Fiber Done</label> 
-                                    {% render_field form.daily_fd class="form-check-input" %}
-                                    <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
+                            <label class="form-label mr-4 pr-2">Fiber Done</label> 
+                            {% render_field form.daily_fd class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.daily_fd.id_for_label }}"></label>  
                         </div>  
-                    
                     </div>
                 </div>
-                    <div class="col-sm-3 pt-5">                        
-                                <label class="form-label mr-4 pr-2">RTB / Pending External Production</label> 
-                                {% render_field form.daily_rtb_pep class="form-check-input" %}
-                                <label class="form-check-label" for="{{ form.daily_rtb_pep.id_for_label }}"></label>  
-                    </div>  
-                
-                <!--<div class="col-sm-2">
-                    <div class="mb-3">
-                        <label for="{{ form.daily_Status.id_for_label }}" class="form-label">Daily Status</label>
-                        {% render_field form.daily_Status|attr:"required:required" class="form-control" %}
-                        <div class="invalid-feedback">{{ form.daily_Status.errors|first }}</div>
-                    </div> 
-                </div>-->
-                
-             
+                <div class="col-sm-3 pt-5">                        
+                    <label class="form-label mr-4 pr-2">RTB / Pending External Production</label> 
+                    {% render_field form.daily_rtb_pep class="form-check-input" %}
+                    <label class="form-check-label" for="{{ form.daily_rtb_pep.id_for_label }}"></label>  
+                </div>  
                 <div class="col-sm-1 pt-4">
                     <input type="text" class="form-control d-none" id="daily" name="daily" value="{{dailyWO.id}}">                                         
                 </div> 
@@ -536,13 +430,13 @@
                     {%if dailyWO.total_pay != 100 %}
                         <h4 style="color:red;"> The Total % to Pay must be equal to 100</h4>
                     {%endif%}
-                    
                 </div>
             </div>
+            
             <div class="row">                           
                 <div class="col-sm-8 px-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >Employee List -  % To Pay = {%if item.total_pay > 0 %}{{item.total_pay|floatformat:2|intcomma}}%{%endif%}</h6>
+                        <h6 class="card-header card-header-wc" >Employee List - % To Pay = {% if dailyWO.total_pay > 0 %}{{dailyWO.total_pay|floatformat:2|intcomma}}%{% endif %}</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12 px-1">
@@ -565,30 +459,28 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {%for emp in dailyEmp %}
+                                            {% for emp in dailyEmp %}
                                                 <tr>                                                       
                                                     <td class="p-1">{{emp.EmployeeID}} 
-                                                        {% if emp.is_own_vehicle%}      
+                                                        {% if emp.is_own_vehicle %}      
                                                             <span class="badge bg-success text-white ml-2"> OV </span>      
-                                                        {%endif%}
+                                                        {% endif %}
                                                     </td>
                                                     <td class="p-1">{{emp.per_to_pay|floatformat:2|intcomma}}%</td>
-                                                    <td class="p-1">{%if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                    <td class="p-1">{%if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                                    <td class="p-1">{% if emp.on_call > 0 %}${{emp.on_call|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                    <td class="p-1">{% if emp.bonus > 0 %}${{emp.bonus|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                     <td class="p-1">{{emp.total_hours|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.regular_hours|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.ot_hour|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">{{emp.double_time|floatformat:2|intcomma}}</td>
-                                                    <td class="p-1" style="color: red;">{%if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
-                                                    <td class="p-1" style="color: red;">{%if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{%else%}$0.00{%endif%}</td>
+                                                    <td class="p-1" style="color: red;">{% if emp.is_own_vehicle %}${{emp.own_vehicle_pay|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
+                                                    <td class="p-1" style="color: red;">{% if emp.payout > 0 %}${{emp.payout|floatformat:2|intcomma}}{% else %}$0.00{% endif %}</td>
                                                     <td class="p-1">                                                        
                                                         <a hx-get="/mobile/update_daily_emp_sup/{{emp.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-user-pen" style="color: green;"></i></a>
-                                                        <a hx-get="/delete_daily_emp/{{emp.id}}/{{per.periodID}}" onclick="delete_daily_emp({{emp.id}},{{selectedLocation}})"> <i class="fa-solid fa-user-minus" style="color: red;"></i></a>
-
-                                                                                                               
+                                                        <a href="#" onclick="delete_daily_emp({{emp.id}}, {{selectedLocation}}); return false;"><i class="fa-solid fa-user-minus" style="color: red;"></i></a>
                                                     </td>                                                        
                                                 </tr>
-                                            {%endfor%}
+                                            {% endfor %}
                                         </tbody>                                                
                                     </table>
                                 </div>
@@ -598,12 +490,11 @@
                 </div>
                 <div class="col-sm-4 px-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >ITEM LIST  -     TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}} </h6>
-                        
+                        <h6 class="card-header card-header-wc" >ITEM LIST - TOTAL: ${{TotalItem|floatformat:2|intcomma}} + ${{ovTotal|floatformat:2|intcomma}} = ${{GranTotalItem|floatformat:2|intcomma}}</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12 px-1">
-                                    <table  class="table table-sm table-bordered table-striped">
+                                    <table class="table table-sm table-bordered table-striped">
                                         <thead>
                                             <tr class="table-primary">                                                    
                                                 <td width="20%" class="p-1">Item</td>
@@ -616,18 +507,18 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {%for itemd in dailyItem %}
+                                            {% for itemd in dailyItem %}
                                                 <tr>
                                                     <td class="p-1">{{itemd.itemID.item.itemID}}</td>
                                                     <td class="p-1">{{itemd.quantity}}</td>
                                                     <td class="p-1">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
                                                     <td class="p-1">${{itemd.total|floatformat:2|intcomma}}</td>   
                                                     <td class="p-1">                                                        
-                                                                <a hx-get="/mobile/update_daily_item_sup/{{itemd.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
-                                                                <a hx-get="/delete_daily_item/{{itemd.id}}/{{selectedLocation}}" onclick="delete_daily_item({{itemd.id}},{{per.periodID}})"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>                                                                                                                                                                                         
+                                                        <a hx-get="/mobile/update_daily_item_sup/{{itemd.id}}/{{per.periodID}}" hx-target="#dialog"><i class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                                        <a href="#" onclick="delete_daily_item({{itemd.id}}, {{per.periodID}}); return false;"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a>                                                                                                                                                                                         
                                                     </td> 
                                                 </tr>
-                                            {%endfor%}
+                                            {% endfor %}
                                         </tbody>                                                
                                     </table>
                                 </div>
@@ -637,199 +528,154 @@
                 </div>                                     
             </div>
         </br>
+
+            <!-- DOCS LIST SECTION WITH LAZY LOADING -->
             <div class="row">
                 <div class="col-sm-12 px-1 mx-1">
                     <div class="card">
-                        <h6 class="card-header card-header-wc" >Docs List</h6>
+                        <h6 class="card-header card-header-wc">Docs List</h6>
                         <div class="card-body">
-                            <table class="table table-sm">                                 
-                                <h3 class="mb-3">Maps
-                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/1" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
-                           
-                                </h3>
-                                <div class="documents-container">
-                                    {%if not dailyDocs %}
-                                        <p>No Maps Included</p>                                                 
-                                    {%endif%}
-                                    {% for itemd in dailyDocs %}
-                                    <div class="document-thumbnail" 
-                                         data-url="{{ itemd.document.url }}"
-                                         data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                        
-                                        <div class="thumbnail-content">
-                                            {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                <div class="pdf-thumbnail">
-                                                    <i class="fas fa-file-pdf pdf-icon"></i>
-                                                    <small class="text-muted">PDF Document</small>
-                                                    <canvas class="d-none"></canvas>
-                                                </div>
-                                            {% else %}
-                                                <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                            {% endif %}
-                                            
-                                            <div class="overlay">
-                                                <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                            <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                <i class="fas fa-times delete-icon"></i>
-                                            </div>
-
-                                            <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                <i class="fas fa-download download-icon"></i>
-                                            </div>
-                                        
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                           
-
-                                <h3 class="mb-3 mt-3">Pictures                                           
-                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/2" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
-
-                                </h3>
-                                    <div class="documents-container">
-                                        {%if not dailyDocsPic %}
-                                            <p>No Pictures Included</p>     
-                                        {%endif%}
-                                        {% for itemd in dailyDocsPic %}
-                                        <div class="document-thumbnail" 
-                                            data-url="{{ itemd.document.url }}"
-                                            data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                            
-                                            <div class="thumbnail-content">
-                                                {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                    <div class="pdf-thumbnail">
-                                                        <i class="fas fa-file-pdf pdf-icon"></i>
-                                                        <small class="text-muted">PDF Document</small>
-                                                        <canvas class="d-none"></canvas>
-                                                    </div>
-                                                {% else %}
-                                                    <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                                {% endif %}
-                                                
-                                                <div class="overlay">
-                                                    <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                                <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                    <i class="fas fa-times delete-icon"></i>
-                                                </div>
-
-                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                    <i class="fas fa-download download-icon"></i>
-                                                </div>
-                                            
-                                        </div>
+                            
+                            <!-- Store document data in JavaScript (from Django context) -->
+                            <script>
+                                // Global variable to store document data for lazy loading
+                                var docsData = {
+                                    maps: [
+                                        {% for doc in dailyDocs %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
                                         {% endfor %}
+                                    ],
+                                    pictures: [
+                                        {% for doc in dailyDocsPic %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ],
+                                    material: [
+                                        {% for doc in dailyDocsMB %}
+                                            {
+                                                id: {{ doc.id }},
+                                                url: "{{ doc.document.url|escapejs }}",
+                                                name: "{{ doc.document.name|escapejs }}"
+                                            }{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ]
+                                };
+                            </script>
+                            
+                            <!-- MAPS SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Maps</h3>
+                                    <div>
+                                        <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/1" class="btn btn-sm btn-primary me-2">
+                                            <i class="fa-solid fa-plus"></i> Add
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="maps">
+                                            <i class="fas fa-images"></i> Load Thumbnails
+                                        </button>
                                     </div>
                                 </div>
+                                <div id="maps-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view maps
+                                    </div>
+                                </div>
+                            </div>
 
-                                <h3 class="mb-3 mt-3">Material Backup      
-                                    <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/3" class="pl-3"><i class="fa-solid fa-circle-plus"></i></a>
+                            <!-- PICTURES SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Pictures</h3>
+                                    <div>
+                                        <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/2" class="btn btn-sm btn-primary me-2">
+                                            <i class="fa-solid fa-plus"></i> Add
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="pictures">
+                                            <i class="fas fa-images"></i> Load Thumbnails
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="pictures-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view pictures
+                                    </div>
+                                </div>
+                            </div>
 
-                                </h3>       
-                                    <div class="documents-container">
-                                        {%if not dailyDocsMB %}
-                                            <p>No Material Backup Included</p>     
-                                        {%endif%}
-                                        {% for itemd in dailyDocsMB %}
-                                        <div class="document-thumbnail" 
-                                            data-url="{{ itemd.document.url }}"
-                                            data-type="{% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}">
-                                            
-                                            <div class="thumbnail-content">
-                                                {% if itemd.document.url|lower|slice:'-4:' == '.pdf' %}
-                                                    <div class="pdf-thumbnail">
-                                                        <i class="fas fa-file-pdf pdf-icon"></i>
-                                                        <small class="text-muted">PDF Document</small>
-                                                        <canvas class="d-none"></canvas>
-                                                    </div>
-                                                {% else %}
-                                                    <img src="{{ itemd.document.url }}" alt="Document" class="thumbnail-img">
-                                                {% endif %}
-                                                
-                                                <div class="overlay">
-                                                    <i class="fas fa-magnifying-glass-plus overlay-icon"></i>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                                <div class="delete-btn" onclick="delete_daily_docs({{ itemd.id }}, {{ selectedLocation }}); event.stopPropagation();">
-                                                    <i class="fas fa-times delete-icon"></i>
-                                                </div>
-                                          
-                                                <div class="download-btn" onclick="downloadFile('{{ itemd.document.url }}'); event.stopPropagation();">
-                                                    <i class="fas fa-download download-icon"></i>
-                                                </div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>                            
-                                </div>                                   
-                                
-                            </table>                                               
+                            <!-- MATERIAL BACKUP SECTION -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Material Backup</h3>
+                                    <div>
+                                        <a href="/mobile/create_daily_docs_sup/{{daily.id}}/{{per.periodID}}/3" class="btn btn-sm btn-primary me-2">
+                                            <i class="fa-solid fa-plus"></i> Add
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info load-thumbnails-btn" data-section="material">
+                                            <i class="fas fa-images"></i> Load Thumbnails
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="material-container" class="documents-container" data-loaded="false">
+                                    <div class="text-muted" style="padding: 20px; text-align: center;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                        Click "Load Thumbnails" to view material backup
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>    
                 </div>
-          </div>
-
-            <div class="row mt-4">
-                <div class="col-lg-12">
-                    <span class="d-flex justify-content-center">
-                        <h4>Are you sure to Approve and Move to Production this Daily?</h4>
-                        <h4 style="color:red;"> {{errorMessage}}</h4>
-                    </span>
-                </div>
-            </div>  
-            <div class="row mt-4">
-                <div class="col-lg-12 pt-4">
-                    <div class="">
-                        <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
-                        {% render_field form.comments|attr:"rows:5"|attr:"cols:20" name="crew" id="crew" class="form-control" %}
-                        <textarea name="htmlDaily" id="htmlDaily" class="form-control" rows="5" cols="20" hidden></textarea>
-                        <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
-                    </div>    
-                </div>    
-            </div>  
-            
+            </div>
         </div>
 
-        
-
-        
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <span class="d-flex justify-content-center">
+                    <h4>Are you sure to Approve and Move to Production this Daily?</h4>
+                    <h4 style="color:red;"> {{errorMessage}}</h4>
+                </span>
+            </div>
+        </div>  
+        <div class="row mt-4">
+            <div class="col-lg-12 pt-4">
+                <div class="">
+                    <label for="{{ form.crew.id_for_label }}" class="form-label">Comments</label>
+                    {% render_field form.comments|attr:"rows:5"|attr:"cols:20" name="crew" id="crew" class="form-control" %}
+                    <textarea name="htmlDaily" id="htmlDaily" class="form-control" rows="5" cols="20" hidden></textarea>
+                    <div class="invalid-feedback">{{ form.crew.errors|first }}</div>
+                </div>    
+            </div>    
+        </div>  
         
         <div class="mx-3"> 
             <button type="button" class="btn btn-primary" id="previewButton">Preview Daily</button>  
             <input class="btn btn-primary" type="submit" value="Approve">  
             <a href="/mobile/supervisor_list" type="button" class="btn btn-danger">Close</a>
-            
-            
-           <!--
-               <button type="button" class="preview-button" id="ApproveButton">Approve Daily</button> 
-            
-             <button type="button" class="btn btn-primary  onclick="handleFormSubmit()">Approve</button>   
-         -->
-            
         </div>
-   
     </form>
 
-     <!-- Preview Modal -->
-     <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered"> <!-- Changed from modal-xl to modal-lg -->
+    <!-- Preview Modal -->
+    <div class="modal fade preview-modal" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="modal-body p-3"> <!-- Added padding -->
-                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;"> <!-- Reduced height -->
+                <div class="modal-body p-3">
+                    <img id="imagePreview" src="" class="modal-img d-none" style="max-height: 65vh;">
                     <div id="pdfPreview" class="w-100 d-none">
                         <div class="d-flex justify-content-center">
-                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas> <!-- Constrained dimensions -->
+                            <canvas id="pdfCanvas" style="max-width: 100%; max-height: 60vh;"></canvas>
                         </div>
-                        <div class="pdf-controls mt-2"> <!-- Smaller controls -->
+                        <div class="pdf-controls mt-2">
                             <button id="prevPage" class="btn btn-sm btn-outline-light">
                                 <i class="fas fa-chevron-left"></i> Prev
                             </button>
@@ -846,51 +692,44 @@
         </div>
     </div>
 
-     <!-- Loading Overlay -->
-     <div id="loadingOverlay" style="
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background-color: rgba(0,0,0,0.5);
-     display: none;
-     justify-content: center;
-     align-items: center;
-     z-index: 9999;
-     ">
-     <div style="
-         background: white;
-         padding: 30px;
-         border-radius: 10px;
-         text-align: center;
-     ">
-         <div class="spinner" style="
-             width: 50px;
-             height: 50px;
-             border: 5px solid #f3f3f3;
-             border-top: 5px solid #3498db;
-             border-radius: 50%;
-             animation: spin 1s linear infinite;
-             margin: 0 auto 20px;
-         "></div>
-         <p style="font-size: 18px; margin: 0;">Approving Daily and sending the PDF, please wait...</p>
-     </div>
-     </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    ">
+        <div style="background: white; padding: 30px; border-radius: 10px; text-align: center;">
+            <div class="spinner" style="
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            "></div>
+            <p style="font-size: 18px; margin: 0;">Approving Daily and sending the PDF, please wait...</p>
+        </div>
+    </div>
 
-     <style>
-     @keyframes spin {
-         0% { transform: rotate(0deg); }
-         100% { transform: rotate(360deg); }
-     }
-     </style>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 
-    <!-- Daily MOdal -->
+    <!-- Daily Modal -->
     <div id="workOrderModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <!-- Add this div to show the zone value -->
-            
             <div class="work-order" id="workOrderContent">
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                     <tr style="background-color: #4a6baf; color: white;">
@@ -910,13 +749,12 @@
                     <tr>
                         <td style="border: 0.5px solid #666; padding: 4px;">{{dailyWO.woID.JobAddress}}</td>
                         <td style="border: 0.5px solid #666; padding: 4px;">{{dailyWO.day}}</td>
-                        <td style="border: 0.5px solid #666; padding: 4px;"> <div id="zoneDisplay"></div>
-                            &nbsp;</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;"><div id="zoneDisplay"></div></td>
                         <td style="border: 0.5px solid #666; padding: 4px;">
                             {% for sup in superV %}    
                                 {% if sup.employeeID|slugify == dailyWO.supervisor %}                                                 
                                     {{sup.first_name}} {{sup.last_name}}                        
-                                {%endif%}            
+                                {% endif %}            
                             {% endfor %}     
                         </td>
                     </tr>
@@ -935,28 +773,27 @@
                         <td style="border: 0.5px solid #666; padding: 4px;">O.V.</td>
                         <td style="border: 0.5px solid #666; padding: 4px;">Signature</td>
                     </tr>
-                    {%for emp in dailyEmp %}
-                        <tr>                                                       
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.EmployeeID}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.per_to_pay}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.start_time}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.start_lunch_time}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.end_lunch_time}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.end_time}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.regular_hours}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{emp.ot_hour}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
-                                {% if emp.is_own_vehicle %}X{% endif %}
-                            </td>
-                            <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
-                                {% if emp.EmployeeID.signature %}
-                                    <img src="{{ emp.EmployeeID.signature.url }}" alt="Employee Signature" style="max-height: 70px; max-width: 100px;">
-                                   
-                                {% else %}
-                                    <span style="color: #666; font-style: italic;">No signature available</span> 
-                                {% endif %}
-                            </td>
-                        </tr>
+                    {% for emp in dailyEmp %}
+                    <tr>                                                       
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.EmployeeID}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.per_to_pay}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.start_time}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.start_lunch_time}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.end_lunch_time}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.end_time}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.regular_hours}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{emp.ot_hour}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
+                            {% if emp.is_own_vehicle %}X{% endif %}
+                        </td>
+                        <td style="border: 0.5px solid #666; padding: 4px; text-align: center;">
+                            {% if emp.EmployeeID.signature %}
+                                <img src="{{ emp.EmployeeID.signature.url }}" alt="Employee Signature" style="max-height: 70px; max-width: 100px;">
+                            {% else %}
+                                <span style="color: #666; font-style: italic;">No signature available</span> 
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
                     <tr>
                         <td colspan="9" style="border: 0.5px solid #666; padding: 4px; font-size: 10px;">
@@ -971,7 +808,7 @@
             
                 <div style="margin: 10px 0; border-bottom: 0.5px solid #666;"></div>
                 
-                <div style="margin: 10px 0;" id="commentsNotesDisplay"><strong>Comments / Notes:</strong> </div>
+                <div style="margin: 10px 0;" id="commentsNotesDisplay"><strong>Comments / Notes:</strong></div>
             
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 0.5px solid #666;">
                     <tr style="background-color: #f2f2f2;">
@@ -981,15 +818,15 @@
                         <td style="border: 0.5px solid #666; padding: 4px;">Price</td>
                         <td style="border: 0.5px solid #666; padding: 4px;">Total</td>
                     </tr>
-                    {%for itemd in dailyItem %}
-                        <tr>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.itemID.item.itemID}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.itemID.item.description}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.quantity}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
-                            <td style="border: 0.5px solid #666; padding: 4px;">${{itemd.total|floatformat:2|intcomma}}</td>
-                        </tr>
-                    {%endfor%}
+                    {% for itemd in dailyItem %}
+                    <tr>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.itemID.item.itemID}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.itemID.item.description}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">{{itemd.quantity}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">${{itemd.emp_payout|floatformat:2|intcomma}}</td>
+                        <td style="border: 0.5px solid #666; padding: 4px;">${{itemd.total|floatformat:2|intcomma}}</td>
+                    </tr>
+                    {% endfor %}
                     <tr style="background-color: #f2f2f2;">
                         <td colspan="4" style="border: 0.5px solid #666; padding: 4px; text-align: right;"><strong>Total:</strong></td>
                         <td style="border: 0.5px solid #666; padding: 4px;"><strong>${{TotalItem|floatformat:2|intcomma}}</strong></td>
@@ -1005,24 +842,6 @@
                     <span id="onlyProductionText">
                         Is this the only production for this project? ☐ Yes ☐ No<br>
                     </span>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            function updateOnlyProductionText() {
-                                var onlyProd = document.getElementById("{{ form.daily_production.id_for_label }}");
-                                var textSpan = document.getElementById("onlyProductionText");
-                                if (onlyProd && onlyProd.checked) {
-                                    textSpan.innerHTML = 'Is this the only production for this project? ☑ Yes ☐ No<br>';
-                                } else {
-                                    textSpan.innerHTML = 'Is this the only production for this project? ☐ Yes ☑ No<br>';
-                                }
-                            }
-                            var onlyProd = document.getElementById("{{ form.daily_production.id_for_label }}");
-                            if (onlyProd) {
-                                onlyProd.addEventListener('change', updateOnlyProductionText);
-                                updateOnlyProductionText();
-                            }
-                        });
-                    </script>
                     <div id="dateDisplay">Date:</div> <br><br>
             
                     ☐ Production &nbsp;&nbsp;&nbsp;
@@ -1034,15 +853,8 @@
                     ☐ Maps<br><br>
             
                     <strong>Status:</strong><br>
-                    <div id="statusDisplay">
-                        ☐ Ready to bill &nbsp;&nbsp;&nbsp;
-                        ☐ Work in progress &nbsp;&nbsp;&nbsp;
-                        ☐ Construction Done &nbsp;&nbsp;&nbsp;
-                        ☐ Needs Fiber Splicing &nbsp;&nbsp;&nbsp;
-                        ☐ Fiber Done<br><br>
-                    </div>
+                    <div id="statusDisplay"></div>
                     
-            
                     <strong>Supervisor Comments:</strong><br>
                     <div style="height: 50px; border: 0.5px solid #666; margin: 5px 0;"></div>
             
@@ -1060,18 +872,12 @@
                     </table>
                 </div>
             </div>
-            <!--<div class="modal-footer">
-                 Your existing modal and button 
-                <button type="button" class="preview-button" id="generatePdfButton2">Approve Daily</button>
-            </div>-->
         </div>
-        
-       
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
-                // Initialize PDF.js
+    <script>
+        // Initialize PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
         
         // Variables for PDF handling
@@ -1083,80 +889,26 @@
         
         // DOM elements
         const pdfCanvas = document.getElementById('pdfCanvas');
-        const ctx = pdfCanvas.getContext('2d');
+        const ctx = pdfCanvas ? pdfCanvas.getContext('2d') : null;
         const currentPageSpan = document.getElementById('currentPage');
         const totalPagesSpan = document.getElementById('totalPages');
         const prevPageBtn = document.getElementById('prevPage');
         const nextPageBtn = document.getElementById('nextPage');
         const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
         
-        // Generate PDF thumbnails
-        document.addEventListener('DOMContentLoaded', function() {
-            const pdfThumbnails = document.querySelectorAll('.document-thumbnail[data-type="pdf"]');
-            
-            pdfThumbnails.forEach(thumbnail => {
-                const pdfUrl = thumbnail.getAttribute('data-url');
-                const canvas = thumbnail.querySelector('canvas');
-                
-                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
-                    return pdf.getPage(1);
-                }).then(function(page) {
-                    const viewport = page.getViewport({ scale: 0.5 });
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    
-                    const renderContext = {
-                        canvasContext: canvas.getContext('2d'),
-                        viewport: viewport
-                    };
-                    
-                    page.render(renderContext).promise.then(function() {
-                        thumbnail.querySelector('.pdf-thumbnail').innerHTML = '';
-                        thumbnail.querySelector('.pdf-thumbnail').appendChild(canvas);
-                        canvas.classList.remove('d-none');
-                    });
-                }).catch(function(error) {
-                    console.error('PDF thumbnail error:', error);
-                });
-            });
-            
-            // Set up click handlers for thumbnails
-            document.querySelectorAll('.thumbnail-content').forEach(thumb => {
-                thumb.addEventListener('click', function() {
-                    const parent = this.closest('.document-thumbnail');
-                    const url = parent.getAttribute('data-url');
-                    const type = parent.getAttribute('data-type');
-                    
-                    if (type === 'pdf') {
-                        showPdfPreview(url);
-                    } else {
-                        showImagePreview(url);
-                    }
-                });
-            });
-        });
-        
-
         function downloadFile(url) {
             // Create an image element to load the image
             const img = new Image();
-            img.crossOrigin = "anonymous"; // Handle cross-origin issues
+            img.crossOrigin = "anonymous";
             img.src = url;
 
             img.onload = function () {
-                // Create a jsPDF instance
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF();
-
-                // Calculate dimensions to fit the image in the PDF
                 const imgWidth = pdf.internal.pageSize.getWidth();
                 const imgHeight = (img.height * imgWidth) / img.width;
-
-                // Add the image to the PDF
                 pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
-
-                // Save the PDF
-                const fileName = url.split('/').pop().split('.')[0] + '.pdf'; // Extract file name and change extension to .pdf
+                const fileName = url.split('/').pop().split('.')[0] + '.pdf';
                 pdf.save(fileName);
             };
 
@@ -1167,20 +919,20 @@
 
         // Show PDF in modal
         function showPdfPreview(url) {
-            document.getElementById('imagePreview').classList.add('d-none');
-            document.getElementById('pdfPreview').classList.remove('d-none');
+            const imagePreview = document.getElementById('imagePreview');
+            const pdfPreview = document.getElementById('pdfPreview');
+            if (imagePreview) imagePreview.classList.add('d-none');
+            if (pdfPreview) pdfPreview.classList.remove('d-none');
             
             pdfjsLib.getDocument(url).promise.then(function(pdf) {
                 pdfDoc = pdf;
-                totalPagesSpan.textContent = pdf.numPages;
+                if (totalPagesSpan) totalPagesSpan.textContent = pdf.numPages;
                 pageNum = 1;
                 
-                // Reset UI
-                currentPageSpan.textContent = pageNum;
-                prevPageBtn.disabled = true;
-                nextPageBtn.disabled = pdf.numPages <= 1;
+                if (currentPageSpan) currentPageSpan.textContent = pageNum;
+                if (prevPageBtn) prevPageBtn.disabled = true;
+                if (nextPageBtn) nextPageBtn.disabled = pdf.numPages <= 1;
                 
-                // Render initial page
                 renderPage(pageNum);
             }).catch(function(error) {
                 console.error('PDF preview error:', error);
@@ -1192,9 +944,11 @@
         
         // Render PDF page
         function renderPage(num) {
+            if (!pdfDoc) return;
             pageRendering = true;
             
             pdfDoc.getPage(num).then(function(page) {
+                if (!pdfCanvas) return;
                 const viewport = page.getViewport({ scale: scale });
                 pdfCanvas.width = viewport.width;
                 pdfCanvas.height = viewport.height;
@@ -1213,9 +967,9 @@
                 });
             });
             
-            currentPageSpan.textContent = num;
-            prevPageBtn.disabled = num <= 1;
-            nextPageBtn.disabled = num >= pdfDoc.numPages;
+            if (currentPageSpan) currentPageSpan.textContent = num;
+            if (prevPageBtn) prevPageBtn.disabled = num <= 1;
+            if (nextPageBtn) nextPageBtn.disabled = num >= pdfDoc.numPages;
         }
         
         // Queue PDF page rendering
@@ -1228,317 +982,376 @@
         }
         
         // Previous page button
-        prevPageBtn.addEventListener('click', function() {
-            if (pageNum <= 1) return;
-            pageNum--;
-            queueRenderPage(pageNum);
-        });
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', function() {
+                if (pageNum <= 1) return;
+                pageNum--;
+                queueRenderPage(pageNum);
+            });
+        }
         
         // Next page button
-        nextPageBtn.addEventListener('click', function() {
-            if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            queueRenderPage(pageNum);
-        });
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', function() {
+                if (pageNum >= pdfDoc?.numPages) return;
+                pageNum++;
+                queueRenderPage(pageNum);
+            });
+        }
         
         // Show image in modal
         function showImagePreview(url) {
-            document.getElementById('pdfPreview').classList.add('d-none');
-            const imgPreview = document.getElementById('imagePreview');
-            imgPreview.src = url;
-            imgPreview.classList.remove('d-none');
+            const pdfPreview = document.getElementById('pdfPreview');
+            const imagePreview = document.getElementById('imagePreview');
+            if (pdfPreview) pdfPreview.classList.add('d-none');
+            if (imagePreview) {
+                imagePreview.src = url;
+                imagePreview.classList.remove('d-none');
+            }
             previewModal.show();
         }
 
-
-        function delete_daily_emp(id, selectedLocation){
-            event.preventDefault();
-            if (confirm(`Are you sure to remove this Employee?`))
-            {           
+        function delete_daily_emp(id, selectedLocation) {
+            if (confirm('Are you sure to remove this Employee?')) {
                 window.location.href = `/mobile/delete_daily_emp_sup/${id}/${selectedLocation}`;
-        
-                
             }  
         }
       
-        function delete_daily_item(id, selectedLocation){
-          event.preventDefault();
-          if (confirm(`Are you sure to remove this Item?`))
-          {           
-              window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
-      
-              
-          }  
-      }
-      
-      function delete_daily_docs(id, selectedLocation){
-          event.preventDefault();
-          if (confirm(`Are you sure to remove this attachment?`))
-          {           
-              window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
-      
-              
-          }  
-      }
-
-      //Functions to Daily Preview
-      // Get the modal
-      const modal = document.getElementById("workOrderModal");
-        
-      // Get the button that opens the modal
-      const btn = document.getElementById("previewButton");
-      
-      // Get the <span> element that closes the modal
-      const span = document.getElementsByClassName("close")[0];
-      
-      // When the user clicks the button, open the modal 
-      btn.onclick = function() {
-          // Get the value of the daily_zone field
-          var zoneValue = document.getElementById('id_daily_zone') ? document.getElementById('id_daily_zone').value : '';
-          // Use system date for dateValue
-          var today = new Date();
-          var yyyy = today.getFullYear();
-          var mm = String(today.getMonth() + 1).padStart(2, '0');
-          var dd = String(today.getDate()).padStart(2, '0');
-          var formattedDate = mm + '-' + dd + '-' + yyyy;
-          var dateValue = "Date: " + formattedDate;
-          var statusWP = document.getElementById('id_daily_wp') ? document.getElementById('id_daily_wp').checked : false;
-          var statusRTB = document.getElementById('id_daily_rtb') ? document.getElementById('id_daily_rtb').checked : false;
-          var statusCD = document.getElementById('id_daily_cd') ? document.getElementById('id_daily_cd').checked : false;
-          var statusNFS = document.getElementById('id_daily_nfs') ? document.getElementById('id_daily_nfs').checked : false;
-          var statusFD = document.getElementById('id_daily_fd') ? document.getElementById('id_daily_fd').checked : false;
-          var statusRTB_PEP = document.getElementById('id_daily_rtb_pep') ? document.getElementById('id_daily_rtb_pep').checked : false;
-
-
-            var techComments = document.getElementById('id_daily_comments');
-            var commentsText = techComments ? techComments.value : '';
-
-          console.log('Comments Text:', commentsText);
-
-        var StatusText = "";
-
-        if (statusRTB == true )
-            StatusText += '☑ Ready to bill   ';
-        else 
-            StatusText += '☐ Ready to bill   ';
-
-        if (statusWP == true )
-            StatusText += '☑ Work in progress   ';
-        else 
-            StatusText += '☐ Work in progress   ';
-
-        if (statusCD == true )
-            StatusText += '☑ Construction Done   ';
-        else 
-            StatusText += '☐ Construction Done   ';
-
-        if (statusNFS == true )
-            StatusText += '☑ Needs Fiber Splicing   ';
-        else 
-            StatusText += '☐ Needs Fiber Splicing   ';    
-
-        if (statusFD == true)
-            StatusText += '☑ Fiber Done   ';
-        else 
-            StatusText += '☐ Fiber Done   ';
-        
-        /*if (statusRTB_PEP == true)
-            StatusText += '☑ RTB / Pending External Production   ';
-        else 
-            StatusText += '☐ RTB / Pending External Production   ';
-                        */
-                               
-                        
-
-
-          // Show it at the top of the modal
-          document.getElementById('zoneDisplay').textContent = zoneValue;
-          document.getElementById('dateDisplay').textContent = dateValue;
-          document.getElementById('statusDisplay').textContent =  StatusText;
-
-          document.getElementById('commentsNotesDisplay').textContent += commentsText;
-
-          // ...existing code...
-          modal.style.display = "block";
-      }
-      
-      // When the user clicks on <span> (x), close the modal
-      span.onclick = function() {
-          modal.style.display = "none";
-      }
-      
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function(event) {
-          if (event.target == modal) {
-              modal.style.display = "none";
-          }
-      }
-      
-      // Optional: Print functionality
-      function printWorkOrder() {
-          const printContent = document.getElementById("workOrderContent").innerHTML;
-          const originalContent = document.body.innerHTML;
-          
-          document.body.innerHTML = printContent;
-          window.print();
-          document.body.innerHTML = originalContent;
-      }
-
-    async function sendPdfToDjango(pdfBuffer) {
-        // Convert ArrayBuffer to Blob
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
-        
-        // Create FormData
-        const formData = new FormData();
-        formData.append('pdfDaily', blob, 'daily_report.pdf');
-
-        const dailyID2 = document.getElementById('dailyID2').value;
-        
-        // Dynamically construct the URL with the docTypeValue
-        const updatePDFUrl = `/mobile/update_daily_pdf/0`.replace('0', dailyID2);
-        const approveUrl = `/mobile/approve_timesheet/0`.replace('0', dailyID2);
-
-        
-        console.log('updatePDFUrl: ',updatePDFUrl);
-        console.log('approveUrl: ',approveUrl);
-
-        try {
-            const response = await fetch(updatePDFUrl , {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-            });
-            
-            if (response.ok) {
-                console.log('Response', response);
-                document.getElementById("approveTimesheet").submit();
-            } else {
-                console.log('Error:', response);
-                throw new Error('Failed to save PDF');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error saving PDF');
+        function delete_daily_item(id, selectedLocation) {
+            if (confirm('Are you sure to remove this Item?')) {
+                window.location.href = `/mobile/delete_daily_item_sup/${id}/${selectedLocation}`;
+            }  
         }
-    }
-    
-    // Helper function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+      
+        function delete_daily_docs(id, selectedLocation) {
+            if (confirm('Are you sure to remove this attachment?')) {
+                window.location.href = `/mobile/delete_daily_docs_sup/${id}/${selectedLocation}`;
+            }  
+        }
+
+        // Functions for Daily Preview
+        const modal = document.getElementById("workOrderModal");
+        const btn = document.getElementById("previewButton");
+        const span = document.getElementsByClassName("close")[0];
+        
+        if (btn) {
+            btn.onclick = function() {
+                var zoneValue = document.getElementById('id_daily_zone') ? document.getElementById('id_daily_zone').value : '';
+                var today = new Date();
+                var yyyy = today.getFullYear();
+                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                var dd = String(today.getDate()).padStart(2, '0');
+                var formattedDate = mm + '-' + dd + '-' + yyyy;
+                var dateValue = "Date: " + formattedDate;
+                var statusWP = document.getElementById('id_daily_wp') ? document.getElementById('id_daily_wp').checked : false;
+                var statusRTB = document.getElementById('id_daily_rtb') ? document.getElementById('id_daily_rtb').checked : false;
+                var statusCD = document.getElementById('id_daily_cd') ? document.getElementById('id_daily_cd').checked : false;
+                var statusNFS = document.getElementById('id_daily_nfs') ? document.getElementById('id_daily_nfs').checked : false;
+                var statusFD = document.getElementById('id_daily_fd') ? document.getElementById('id_daily_fd').checked : false;
+
+                var techComments = document.getElementById('id_daily_comments');
+                var commentsText = techComments ? techComments.value : '';
+
+                var StatusText = "";
+
+                if (statusRTB) StatusText += '☑ Ready to bill   ';
+                else StatusText += '☐ Ready to bill   ';
+
+                if (statusWP) StatusText += '☑ Work in progress   ';
+                else StatusText += '☐ Work in progress   ';
+
+                if (statusCD) StatusText += '☑ Construction Done   ';
+                else StatusText += '☐ Construction Done   ';
+
+                if (statusNFS) StatusText += '☑ Needs Fiber Splicing   ';
+                else StatusText += '☐ Needs Fiber Splicing   ';    
+
+                if (statusFD) StatusText += '☑ Fiber Done   ';
+                else StatusText += '☐ Fiber Done   ';
+
+                var zoneDisplay = document.getElementById('zoneDisplay');
+                if (zoneDisplay) zoneDisplay.textContent = zoneValue;
+                var dateDisplay = document.getElementById('dateDisplay');
+                if (dateDisplay) dateDisplay.textContent = dateValue;
+                var statusDisplay = document.getElementById('statusDisplay');
+                if (statusDisplay) statusDisplay.textContent = StatusText;
+                var commentsNotesDisplay = document.getElementById('commentsNotesDisplay');
+                if (commentsNotesDisplay) commentsNotesDisplay.textContent += commentsText;
+
+                if (modal) modal.style.display = "block";
+            }
+        }
+        
+        if (span) {
+            span.onclick = function() {
+                if (modal) modal.style.display = "none";
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                if (modal) modal.style.display = "none";
+            }
+        }
+
+        async function sendPdfToDjango(pdfBuffer) {
+            const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+            const formData = new FormData();
+            formData.append('pdfDaily', blob, 'daily_report.pdf');
+
+            const dailyID2 = document.getElementById('dailyID2') ? document.getElementById('dailyID2').value : null;
+            const updatePDFUrl = `/mobile/update_daily_pdf/${dailyID2}`;
+            const approveUrl = `/mobile/approve_timesheet/${dailyID2}`;
+
+            try {
+                const response = await fetch(updatePDFUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                });
+                
+                if (response.ok) {
+                    document.getElementById("approveTimesheet").submit();
+                } else {
+                    throw new Error('Failed to save PDF');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving PDF');
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
 
-    function handleFormSubmit(event) {// Add this function to handle form submission
-        event.preventDefault();
-
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        // Show loader
-        //loadingOverlay.style.display = 'flex';
-
+        function handleFormSubmit(event) {
+            const workOrderContent = document.getElementById('workOrderContent');
+            const commentsTextarea = document.getElementById('htmlDaily');
             
-        // Get the work order content
-        const workOrderContent = document.getElementById('workOrderContent').innerHTML;
-        
-        // In your JavaScript, before sending the HTML:
-        let html = document.getElementById('workOrderContent').innerHTML;
-
-        
-        
-        // Get the comments textarea
-        const commentsTextarea = document.getElementById('htmlDaily');
-        
-        // Add the work order content to comments
-        if (commentsTextarea) {
-            commentsTextarea.value = html;
-
-            //commentsTextarea.value = 'prueba de html2canvas';
-            console.log('si existe');
-            console.log(workOrderContent);
+            if (workOrderContent && commentsTextarea) {
+                let html = workOrderContent.innerHTML;
+                commentsTextarea.value = html;
+            }
         }
-
-        const dailyID2 = document.getElementById('dailyID2').value;
-    
-        // Dynamically construct the URL with the docTypeValue
-        const updatePDFUrl = `/mobile/update_daily_pdf/0`.replace('0', dailyID2);
-        const approveUrl = `/mobile/approve_timesheet/0`.replace('0', dailyID2);
         
-        // Submit the form
-        console.log('Antessssssssss');
-        //document.getElementById("approveTimesheet").submit();
-        document.getElementById("approveTimesheet").submit();
-        console.log('Despuesssssss');
-    }
-    
-           
-    // Add event listener to the form
-    document.getElementById("approveTimesheet").addEventListener("submit", handleFormSubmit);
-    
+        const approveForm = document.getElementById("approveTimesheet");
+        if (approveForm) {
+            approveForm.addEventListener("submit", handleFormSubmit);
+        }
+        
+        // MUTUAL EXCLUSIVITY FOR CHECKBOXES
+        document.addEventListener('DOMContentLoaded', function() {
+            var rtb = document.getElementById('{{ form.daily_rtb.id_for_label }}');
+            var wp = document.getElementById('{{ form.daily_wp.id_for_label }}');
+            var rtb_pep = document.getElementById('{{ form.daily_rtb_pep.id_for_label }}');
+            
+            if (rtb && wp && rtb_pep) {
+                rtb.addEventListener('change', function() {
+                    if (rtb.checked) {
+                        wp.checked = false;
+                        rtb_pep.checked = false;
+                    }
+                });
+                
+                wp.addEventListener('change', function() {
+                    if (wp.checked) {
+                        rtb.checked = false;
+                        rtb_pep.checked = false;
+                    }
+                });
+                
+                rtb_pep.addEventListener('change', function() {
+                    if (rtb_pep.checked) {
+                        rtb.checked = false;
+                        wp.checked = false;
+                    }
+                });
+            }
 
+            var nfs = document.getElementById('{{ form.daily_nfs.id_for_label }}');
+            var fd = document.getElementById('{{ form.daily_fd.id_for_label }}');
+            if (nfs && fd) {
+                nfs.addEventListener('change', function() {
+                    if (nfs.checked) {
+                        fd.checked = false;
+                    }
+                    else if (!nfs.checked) {
+                        fd.checked = true;
+                    }
+                });
+                fd.addEventListener('change', function() {
+                    if (fd.checked) {
+                        nfs.checked = false;
+                    }
+                    else if (!fd.checked) {
+                        nfs.checked = true;
+                    }
+                });
+            }
+            
+            // LAZY LOADING FUNCTIONALITY FOR DOCUMENTS
+            const loadButtons = document.querySelectorAll('.load-thumbnails-btn');
+            
+            loadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    const containerId = `${section}-container`;
+                    const container = document.getElementById(containerId);
+                    
+                    if (!container) return;
+                    
+                    // Check if already loaded
+                    if (container.getAttribute('data-loaded') === 'true') {
+                        alert('Thumbnails already loaded for this section');
+                        return;
+                    }
+                    
+                    // Get documents data for this section
+                    let documents = [];
+                    if (section === 'maps') {
+                        documents = window.docsData?.maps || [];
+                    } else if (section === 'pictures') {
+                        documents = window.docsData?.pictures || [];
+                    } else if (section === 'material') {
+                        documents = window.docsData?.material || [];
+                    }
+                    
+                    if (documents.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-muted" style="padding: 20px; text-align: center;">
+                                <i class="fas fa-folder-open fa-2x mb-2"></i><br>
+                                No documents found in this section
+                            </div>
+                        `;
+                        container.setAttribute('data-loaded', 'true');
+                        return;
+                    }
+                    
+                    // Clear container and render thumbnails
+                    container.innerHTML = '';
+                    renderThumbnails(container, documents);
+                    container.setAttribute('data-loaded', 'true');
+                });
+            });
+        });
+        
+        // Function to render thumbnails from pre-loaded data
+        function renderThumbnails(container, documents) {
+            documents.forEach(doc => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'document-thumbnail';
+                thumbDiv.setAttribute('data-url', doc.url);
+                thumbDiv.setAttribute('data-type', doc.url.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image');
+                thumbDiv.setAttribute('data-doc-id', doc.id);
+                
+                const thumbnailContent = document.createElement('div');
+                thumbnailContent.className = 'thumbnail-content';
+                
+                if (doc.url.toLowerCase().endsWith('.pdf')) {
+                    thumbnailContent.innerHTML = `
+                        <div class="pdf-thumbnail">
+                            <i class="fas fa-file-pdf pdf-icon"></i>
+                            <small class="text-muted">PDF Document</small>
+                            <canvas class="d-none" style="width:100%; height:auto;"></canvas>
+                        </div>
+                    `;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = doc.url;
+                    img.alt = 'Document';
+                    img.className = 'thumbnail-img';
+                    thumbnailContent.appendChild(img);
+                }
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+                overlay.innerHTML = '<i class="fas fa-magnifying-glass-plus overlay-icon"></i>';
+                thumbnailContent.appendChild(overlay);
+                
+                const downloadBtn = document.createElement('div');
+                downloadBtn.className = 'download-btn';
+                downloadBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    downloadFile(doc.url);
+                };
+                downloadBtn.innerHTML = '<i class="fas fa-download download-icon"></i>';
+                thumbnailContent.appendChild(downloadBtn);
+                
+                thumbDiv.appendChild(thumbnailContent);
+                
+                // Add delete button
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    delete_daily_docs(doc.id, {{ selectedLocation|default:0 }});
+                };
+                deleteBtn.innerHTML = '<i class="fas fa-times delete-icon"></i>';
+                thumbDiv.appendChild(deleteBtn);
+                
+                thumbnailContent.addEventListener('click', function() {
+                    const url = thumbDiv.getAttribute('data-url');
+                    const type = thumbDiv.getAttribute('data-type');
+                    
+                    if (type === 'pdf') {
+                        showPdfPreview(url);
+                    } else {
+                        showImagePreview(url);
+                    }
+                });
+                
+                container.appendChild(thumbDiv);
+            });
+            
+            // Generate PDF thumbnails for any PDFs in this container
+            setTimeout(() => {
+                const pdfThumbnails = container.querySelectorAll('.document-thumbnail[data-type="pdf"]');
+                pdfThumbnails.forEach(thumbnail => {
+                    const pdfUrl = thumbnail.getAttribute('data-url');
+                    const canvas = thumbnail.querySelector('canvas');
+                    
+                    if (canvas && pdfUrl) {
+                        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                            return pdf.getPage(1);
+                        }).then(function(page) {
+                            const viewport = page.getViewport({ scale: 0.5 });
+                            canvas.width = viewport.width;
+                            canvas.height = viewport.height;
+                            
+                            const renderContext = {
+                                canvasContext: canvas.getContext('2d'),
+                                viewport: viewport
+                            };
+                            
+                            page.render(renderContext).promise.then(function() {
+                                const pdfThumb = thumbnail.querySelector('.pdf-thumbnail');
+                                if (pdfThumb) {
+                                    pdfThumb.innerHTML = '';
+                                    pdfThumb.appendChild(canvas);
+                                    canvas.classList.remove('d-none');
+                                }
+                            });
+                        }).catch(function(error) {
+                            console.error('PDF thumbnail error:', error);
+                        });
+                    }
+                });
+            }, 100);
+        }
     </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Make daily_rtb, daily_wp, and daily_rtb_pep mutually exclusive
-    var rtb = document.getElementById('{{ form.daily_rtb.id_for_label }}');
-    var wp = document.getElementById('{{ form.daily_wp.id_for_label }}');
-    var rtb_pep = document.getElementById('{{ form.daily_rtb_pep.id_for_label }}');
-    
-    if (rtb && wp && rtb_pep) {
-        rtb.addEventListener('change', function() {
-            if (rtb.checked) {
-                wp.checked = false;
-                rtb_pep.checked = false;
-            }
-        });
-        
-        wp.addEventListener('change', function() {
-            if (wp.checked) {
-                rtb.checked = false;
-                rtb_pep.checked = false;
-            }
-        });
-        
-        rtb_pep.addEventListener('change', function() {
-            if (rtb_pep.checked) {
-                rtb.checked = false;
-                wp.checked = false;
-            }
-        });
-    }
-
-    var nfs = document.getElementById('{{ form.daily_nfs.id_for_label }}');
-    var fd = document.getElementById('{{ form.daily_fd.id_for_label }}');
-    if (nfs && fd) {
-        nfs.addEventListener('change', function() {
-            if (nfs.checked) {
-                fd.checked = false;
-            }
-            else if (!nfs.checked) {
-                fd.checked = true;
-            }
-        });
-        fd.addEventListener('change', function() {
-            if (fd.checked) {
-                nfs.checked = false;
-            }
-             else if (!fd.checked) {
-                nfs.checked = true;
-            }
-        });
-    }
-
-});
-</script>
 </div>
 {% endblock %}
