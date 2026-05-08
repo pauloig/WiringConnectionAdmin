@@ -790,7 +790,8 @@
                                         <div class="document-thumbnail" 
                                             data-url="{{ item.pdfDaily.url }}"
                                             data-type="{% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}pdf{% else %}image{% endif %}"
-                                            style="width: 120px; height: 120px; flex-shrink: 0;">
+                                            style="width: 120px; height: 120px; flex-shrink: 0;"
+                                            id="daily-pdf-thumbnail">
                                             <div class="thumbnail-content">
                                                 {% if item.pdfDaily.url|lower|slice:'-4:' == '.pdf' %}
                                                     <div class="pdf-thumbnail">
@@ -1673,6 +1674,24 @@
             });
         }, 100);
     }
+
+    // Asignar listener específicamente para el pdfDaily después de que el DOM cargue
+    document.addEventListener('DOMContentLoaded', function() {
+        const dailyPdfThumb = document.querySelector('#daily-pdf-thumbnail .thumbnail-content');
+        if (dailyPdfThumb) {
+            dailyPdfThumb.addEventListener('click', function(e) {
+                if (e.target.closest('.download-btn')) return;
+                const parent = this.closest('.document-thumbnail');
+                const url = parent.getAttribute('data-url');
+                const type = parent.getAttribute('data-type');
+                if (type === 'pdf') {
+                    showPdfPreview(url);
+                } else {
+                    showImagePreview(url);
+                }
+            });
+        }
+    });
 </script>
 
 {% endblock %}
