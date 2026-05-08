@@ -542,6 +542,7 @@ class internalPO(models.Model):
     isAmountRounded = models.BooleanField(default=True)
     estimate = models.CharField(max_length=50, null=True, blank=True)
     invoice = models.CharField(max_length=50, null=True, blank=True)
+    invoices = models.CharField(max_length=350, null=True, blank=True)
     Status = models.IntegerField(default=1, choices = prodStatus_choice)
     receipt = models.FileField(null=True, upload_to="po")
     transferFromPO = models.ForeignKey(workOrder, on_delete=models.CASCADE, null=True, blank=True, db_column ='transferFromPO', related_name='transferFromPO')
