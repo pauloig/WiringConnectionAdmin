@@ -19,6 +19,14 @@
             window.location.href = `/convert_partial_estimate/${orderId}/${estNumber}`;
         }  
     }
+
+    function deleteInvoice(orderId, InvNumber){
+        event.preventDefault();
+        if (confirm(`Are you sure you want to delete the Invoice ${InvNumber}   ?`))
+        {           
+            window.location.href = `/delete_invoice/${orderId}/${InvNumber}`;
+        }  
+    }
 </script>
 
 <div class="container">
@@ -290,8 +298,15 @@
                                                     role="button"><i class="fa-solid fa-download"
                                                         style="color: green;"></i></a>
                                                 {% if emp.is_superAdmin or user.is_staff %}
-                                                &nbsp; <a href="/update_invoice/{{order.id}}/{{itemd.invoiceNumber}}"><i
+                                                        &nbsp; <a href="/update_invoice/{{order.id}}/{{itemd.invoiceNumber}}"><i
                                                         class="fa-solid fa-pen-to-square" style="color: green;"></i></a>
+                                                        
+                                                        &nbsp; 
+                                                        <a data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        title="Delete Invoice"
+                                                        onclick="deleteInvoice({{order.id}},{{itemd.invoiceNumber}})" >
+                                                            <i class="fa-solid fa-trash" style="color: red;"></i></a>
+                                                        &nbsp;
                                                 {%endif%}
                                             </td>
                                         </tr>

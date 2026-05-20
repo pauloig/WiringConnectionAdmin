@@ -143,8 +143,13 @@ urlpatterns = [
     path('comment_authorized_prod_item/<id>',views.comment_authorized_prod_item),
     path('billing_list/<id>/<isRestoring>',views.billing_list),
     path('restore_original_production/<id>',views.restore_original_production),
-    path('update_invoice/<id>/<invoiceID>',views.update_invoice),
+    
+    #Invoice and Estimate URL's
+    path('update_invoice/<id>/<invoiceID>',views.update_invoice),    
+    path('delete_invoice/<id>/<invoiceID>',views.delete_invoice),        
     path('update_estimate/<id>/<estimateID>',views.update_estimate),
+    
+    
     path('convert_final_estimate/<id>/<estimateID>',views.convert_final_estimate),
     path('convert_partial_estimate/<id>/<estimateID>',views.convert_partial_estimate),
     path('employee_location_list/<empID>',views.employee_location_list),

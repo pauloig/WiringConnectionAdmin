@@ -9193,6 +9193,29 @@ def update_estimate(request, id, estimateID):
     return render(request, "update_estimate.html", context)
 
 @login_required(login_url='/home/')
+def delete_invoice(request, id, invoiceID):    
+    context = {} 
+    emp = Employee.objects.filter(user__username__exact = request.user.username).first()
+    context["emp"] = emp
+
+    per = period.objects.filter(status__in=(1,2)).first()
+    context["per"] = per
+
+    invoice = woInvoice.objects.filter(woID_id=id, invoiceNumber=invoiceID).first()
+
+    if invoice:
+        
+        estimate = woEstimate.objects.filter(woID = invoice.woID, estimateNumber = invoice.estimateNumber).first()
+        
+        if estimate:
+            estimate.Status = 1
+            estimate.save()
+                
+        invoice.delete()
+
+    return HttpResponseRedirect("/billing_list/" + str(id)+ "/False") 
+
+@login_required(login_url='/home/')
 def convert_final_estimate(request, id, estimateID):    
     context = {} 
     emp = Employee.objects.filter(user__username__exact = request.user.username).first()
