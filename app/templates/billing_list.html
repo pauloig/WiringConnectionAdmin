@@ -522,7 +522,7 @@
                                     <tbody>                                       
                                         {% for po in internalPO %}
                                             <tr>
-                                                <td>{{po.internalPO}}</td>
+                                                <td>{{po.poNumber}}</td>
                                                 <td>{{po.vendor}} - 
                                                     {%for i in vendorList%}
                                                         {%if po.vendor == i.id%}

@@ -6451,7 +6451,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
        
 
 
-    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO','Total Expenses','Billing Amount','Pending Billing','Invoiced Amount', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
+    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO', 'Subcontractor', 'Total Expenses','Billing Amount','Pending Billing','Invoiced Amount', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_title) # at 0 row 0 column 
@@ -6510,7 +6510,13 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
 
         ws.write(row_num, 4, f"$ {empTotal:.2f}", font_style)
         ws.write(row_num, 5, f"$ {poTotal:.2f}",  font_style)
-        ws.write(row_num, 6, f"$ {totalExp:.2f}",  font_style)
+        
+        
+        subcontractor = 0
+        
+        ws.write(row_num, 6, f"$ {subcontractor:.2f}",  font_style)
+        
+        ws.write(row_num, 7, f"$ {totalExp:.2f}",  font_style)
         
         #New Columns for Billing Amount, Pending Billing and Invoiced Amount
         # Calculte Invoiced Amount
@@ -6547,29 +6553,29 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         pending_billing = validate_decimals(produnction_pending_billing) + validate_decimals(pending_POs)
         
         
-        ws.write(row_num, 7, f"$ {billing_amount:.2f}",  font_style)
-        ws.write(row_num, 8, f"$ {pending_billing:.2f}",  font_style)
-        ws.write(row_num, 9, f"$ {invoicedAmount:.2f}",  font_style)
-        ws.write(row_num, 10, f"$ {balance:.2f}",  font_style)
-        ws.write(row_num, 11, f"{balance_per:.2f}%",  font_style)        
+        ws.write(row_num, 8, f"$ {billing_amount:.2f}",  font_style)
+        ws.write(row_num, 9, f"$ {pending_billing:.2f}",  font_style)
+        ws.write(row_num, 10, f"$ {invoicedAmount:.2f}",  font_style)
+        ws.write(row_num, 11, f"$ {balance:.2f}",  font_style)
+        ws.write(row_num, 12, f"{balance_per:.2f}%",  font_style)        
         
         try:
             status_label = next((label for key, label in status_choice if str(key) == str(item.Status)), "")
         except Exception:
             status_label = ""
         
-        ws.write(row_num, 12, status_label, font_style)
+        ws.write(row_num, 13, status_label, font_style)
 
         
         if item.Location != None:
-            ws.write(row_num, 13, item.Location.name, font_style) # at 0 row 0 column 
+            ws.write(row_num, 14, item.Location.name, font_style) # at 0 row 0 column 
         else:
-             ws.write(row_num, 13, '', font_style) 
+             ws.write(row_num, 15, '', font_style) 
         
         if item.WCSup != None:
-            ws.write(row_num, 14, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
+            ws.write(row_num, 16, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
         else:
-            ws.write(row_num, 14, '', font_style) # at 0 row 0 column 
+            ws.write(row_num, 16, '', font_style) # at 0 row 0 column 
 
         try:            
             upload_date = parser.parse(item.UploadDate) if item.UploadDate else ''
@@ -6579,11 +6585,11 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         
         #aqui
         
-        ws.write(row_num, 15, string_upload_date, font_style)  
-        ws.write(row_num, 16, item.IssuedBy, font_style) 
-        ws.write(row_num, 17, item.JobName, font_style) 
-        ws.write(row_num, 18, item.JobAddress, font_style)      
-        ws.write(row_num, 19, item.Comments, font_style)       
+        ws.write(row_num, 17, string_upload_date, font_style)  
+        ws.write(row_num, 18, item.IssuedBy, font_style) 
+        ws.write(row_num, 19, item.JobName, font_style) 
+        ws.write(row_num, 20, item.JobAddress, font_style)      
+        ws.write(row_num, 21, item.Comments, font_style)       
 
         
     
