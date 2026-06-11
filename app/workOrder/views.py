@@ -6446,7 +6446,11 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
                               left thin, right thin, top thin, bottom thin;\
                      pattern: pattern solid, fore_color light_blue;')
 
-    font_style =  xlwt.XFStyle()              
+    font_style =  xlwt.XFStyle()       
+    
+
+    font_style_number = xlwt.XFStyle()
+    font_style_number.num_format_str = '$ #,##0.00'          
 
        
 
@@ -6467,8 +6471,8 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         row_num += 1
         ws.write(row_num, 0, item.prismID, font_style) # at 0 row 0 column 
         ws.write(row_num, 1, item.workOrderId, font_style) # at 0 row 0 column 
-        ws.write(row_num, 2, item.PO, font_style) # at 0 row 0 column 
-        ws.write(row_num, 3, f"$ {item.POAmount}", font_style) # at 0 row 0 column 
+        ws.write(row_num, 2, item.PO, font_style_number) # at 0 row 0 column 
+        ws.write(row_num, 3, item.POAmount, font_style_number) # at 0 row 0 column 
 
         dailys = Daily.objects.filter(woID = item)
         dailyDetail = []
@@ -6499,7 +6503,13 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         internalpo = internalPO.objects.filter(woID=item, nonBillable=False)
         poTotal = 0
         for po in internalpo:
-            poTotal += validate_decimals(po.total)
+            if po.total:
+                if po.isAmountRounded:
+                    poTotal += int(round(float(str(po.total))))
+                else:
+                    poTotal += Decimal(str(po.total))
+		
+        poTotal = validate_decimals(poTotal)
 
         balance = validate_decimals(item.POAmount) - validate_decimals(empTotal) - validate_decimals(poTotal) -  validate_decimals(epTotal)
         totalExp = validate_decimals(empTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
@@ -6508,15 +6518,16 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         else:
             balance_per = 0
 
-        ws.write(row_num, 4, f"$ {empTotal:.2f}", font_style)
-        ws.write(row_num, 5, f"$ {poTotal:.2f}",  font_style)
+        #ws.write(row_num, 4, f"$ {empTotal:.2f}", font_style)
+        ws.write(row_num, 4, empTotal, font_style_number)
+        ws.write(row_num, 5, poTotal,  font_style_number)
         
         
         subcontractor = 0
         
-        ws.write(row_num, 6, f"$ {subcontractor:.2f}",  font_style)
+        ws.write(row_num, 6, subcontractor,  font_style_number)
         
-        ws.write(row_num, 7, f"$ {totalExp:.2f}",  font_style)
+        ws.write(row_num, 7, totalExp,  font_style_number)
         
         #New Columns for Billing Amount, Pending Billing and Invoiced Amount
         # Calculte Invoiced Amount
@@ -6560,10 +6571,10 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         pending_billing = validate_decimals(prod_no_facturada) + validate_decimals(pending_POs)
         
         
-        ws.write(row_num, 8, f"$ {billing_amount:.2f}",  font_style)
-        ws.write(row_num, 9, f"$ {pending_billing:.2f}",  font_style)
-        ws.write(row_num, 10, f"$ {invoicedAmount:.2f}",  font_style)
-        ws.write(row_num, 11, f"$ {balance:.2f}",  font_style)
+        ws.write(row_num, 8, billing_amount,  font_style_number)
+        ws.write(row_num, 9, pending_billing,  font_style_number)
+        ws.write(row_num, 10, invoicedAmount,  font_style_number)
+        ws.write(row_num, 11, balance,  font_style_number)
         ws.write(row_num, 12, f"{balance_per:.2f}%",  font_style)        
         
         try:
@@ -6577,12 +6588,12 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         if item.Location != None:
             ws.write(row_num, 14, item.Location.name, font_style) # at 0 row 0 column 
         else:
-             ws.write(row_num, 15, '', font_style) 
+             ws.write(row_num, 14, '', font_style) 
         
         if item.WCSup != None:
-            ws.write(row_num, 16, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
+            ws.write(row_num, 15, item.WCSup.first_name + ' ' + item.WCSup.last_name, font_style) # at 0 row 0 column 
         else:
-            ws.write(row_num, 16, '', font_style) # at 0 row 0 column 
+            ws.write(row_num, 15, '', font_style) # at 0 row 0 column 
 
         try:            
             upload_date = parser.parse(item.UploadDate) if item.UploadDate else ''
@@ -6592,11 +6603,11 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         
         #aqui
         
-        ws.write(row_num, 17, string_upload_date, font_style)  
-        ws.write(row_num, 18, item.IssuedBy, font_style) 
-        ws.write(row_num, 19, item.JobName, font_style) 
-        ws.write(row_num, 20, item.JobAddress, font_style)      
-        ws.write(row_num, 21, item.Comments, font_style)       
+        ws.write(row_num, 16, string_upload_date, font_style)  
+        ws.write(row_num, 17, item.IssuedBy, font_style) 
+        ws.write(row_num, 18, item.JobName, font_style) 
+        ws.write(row_num, 19, item.JobAddress, font_style)      
+        ws.write(row_num, 20, item.Comments, font_style)       
 
         
     
@@ -6619,6 +6630,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
     ws.col(17).width = 11000
     ws.col(18).width = 15000
     ws.col(19).width = 20000
+    ws.col(20).width = 20000
 
     filename = 'orders.xls'    
     response = HttpResponse(content_type='application/ms-excel')
