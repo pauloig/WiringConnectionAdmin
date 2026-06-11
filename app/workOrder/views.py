@@ -8915,12 +8915,16 @@ def billing_list(request, id, isRestoring):
         po_total = 0
         for i in internal:
             if i.total:
-                po_total += validate_decimals(i.total)
-        
+                if i.isAmountRounded:
+                    po_total += int(round(float(str(i.total))))
+                else:
+                    po_total += Decimal(str(i.total))
+		
+        po_total = validate_decimals(po_total)
         
         context["prod_facturada"] = prod_facturada
         context["prod_no_facturada"] = prod_no_facturada
-        context["po_total"] = validate_decimals(po_total)
+        context["po_total"] = po_total 
         context["billing_amount"] = validate_decimals(po_total * 1.10) + validate_decimals(prod_facturada) +  validate_decimals(prod_no_facturada)
 
     except Exception as e:
