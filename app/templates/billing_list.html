@@ -325,14 +325,16 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card rounded">
-                        <h6 class="card-header card-header-wc">Calculos para reporte</h6>
+                        <h6 class="card-header card-header-wc">Report Calculations</h6>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    Prod. Facturada: {{prod_facturada}} <br>
-                                    Prod. NO Facturada - Authorized Billing: {{prod_no_facturada}} <br>
-                                    PO Total: {{po_total}} <br>
-                                    Billing Amount: {{billing_amount}} <br>
+                                    <strong>Internal PO:</strong> ${{po_total|floatformat:2|intcomma}} <br>
+                                    <strong>Payroll:</strong> ${{payroll|floatformat:2|intcomma}} <br>
+                                    <strong>Subcontractor:</strong> ${{subcontractor|floatformat:2|intcomma}} <br>
+                                    <strong>Invoiced Amount:</strong> ${{prod_facturada|floatformat:2|intcomma}} <br>
+                                    <strong>Pending Billing:</strong> ${{prod_no_facturada|floatformat:2|intcomma}} <br>                                    
+                                    <strong>Billing Amount:</strong> ${{billing_amount|floatformat:2|intcomma}} <br>
                                 </div>
                             </div>
                         </div>

@@ -6455,7 +6455,7 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
        
 
 
-    columns = ['prismID', 'work order ID', 'PO', 'PO Amount', 'Payroll','Internal PO', 'Subcontractor', 'Total Expenses','Billing Amount','Pending Billing','Invoiced Amount', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
+    columns = ['prismID', 'work order ID', 'PO', 'PO Amount','Internal PO', 'Payroll', 'Subcontractor', 'Invoiced Amount', 'Pending Billing','Billing Amount', 'Total Expenses', 'Balance','% Balance','Status','Location','Supervisor','upload Date','Issued By','Job Name','Job Address', 'Comments']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_title) # at 0 row 0 column 
@@ -6519,15 +6519,17 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
             balance_per = 0
 
         #ws.write(row_num, 4, f"$ {empTotal:.2f}", font_style)
-        ws.write(row_num, 4, empTotal, font_style_number)
-        ws.write(row_num, 5, poTotal,  font_style_number)
+        ws.write(row_num, 5, empTotal, font_style_number) #Payroll
+        ws.write(row_num, 4, poTotal,  font_style_number) # Internal PO
         
-        
+        # Subcontractor = External Production Calculate
         subcontractor = 0
-        
+        subC = externalProduction.objects.filter(woID = item)
+        for s in subC:
+            subcontractor += validate_decimals(s.total_invoice)
         ws.write(row_num, 6, subcontractor,  font_style_number)
         
-        ws.write(row_num, 7, totalExp,  font_style_number)
+        ws.write(row_num, 10, totalExp,  font_style_number)
         
         #New Columns for Billing Amount, Pending Billing and Invoiced Amount
         # Calculte Invoiced Amount
@@ -6571,9 +6573,9 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         pending_billing = validate_decimals(prod_no_facturada) + validate_decimals(pending_POs)
         
         
-        ws.write(row_num, 8, billing_amount,  font_style_number)
-        ws.write(row_num, 9, pending_billing,  font_style_number)
-        ws.write(row_num, 10, invoicedAmount,  font_style_number)
+        ws.write(row_num, 9, billing_amount,  font_style_number)
+        ws.write(row_num, 8, pending_billing,  font_style_number) #Pending Billing
+        ws.write(row_num, 7, invoicedAmount,  font_style_number) # Invoiced Amount
         ws.write(row_num, 11, balance,  font_style_number)
         ws.write(row_num, 12, f"{balance_per:.2f}%",  font_style)        
         
@@ -8934,9 +8936,27 @@ def billing_list(request, id, isRestoring):
 		
         po_total = validate_decimals(po_total)
         
+        #Calculate Payroll
+        dailys = Daily.objects.filter(woID = wo)
+        
+        empTotal = 0
+        for itemd in dailys:
+            dailyEmp = DailyEmployee.objects.filter(DailyID = itemd)
+
+            for empI in dailyEmp:
+                empTotal += validate_decimals(empI.payout)
+
+	    # Subcontractor = External Production Calculate
+        subcontractor = 0
+        subC = externalProduction.objects.filter(woID = wo)
+        for s in subC:
+            subcontractor += validate_decimals(s.total_invoice)
+        
         context["prod_facturada"] = prod_facturada
         context["prod_no_facturada"] = prod_no_facturada
         context["po_total"] = po_total 
+        context["subcontractor"] = subcontractor 
+        context["payroll"] = empTotal         
         context["billing_amount"] = validate_decimals(po_total * 1.10) + validate_decimals(prod_facturada) +  validate_decimals(prod_no_facturada)
 
     except Exception as e:
