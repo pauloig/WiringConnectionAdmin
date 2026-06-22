@@ -6547,13 +6547,13 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
         
         ##### Calculos
         prod_facturada = 0
-        prod_facturada = get_production_total_for_wo(woCalculate.id)
+        prod_facturada = get_invoiced_production_total_for_wo(woCalculate.id)
         prod_no_facturada = 0
-        prod_no_facturada = get_ue_production_total_for_wo(woCalculate.id)
+        prod_no_facturada = get_uninvoiced_production_total_for_wo(woCalculate.id)
         
         
         # production_invoiced + produnction_pending_billing + (internalPO * 10%)
-        billing_amount = validate_decimals(prod_no_facturada) + validate_decimals(prod_facturada)  + (validate_decimals(poTotal) * validate_decimals('1.1'))  
+        billing_amount = validate_decimals(prod_no_facturada) + validate_decimals(prod_facturada)  
         
         # validate if it is necessary add this formula tor the cases that the order have no production but have internal PO and External Production, in that case the billing amount will be the sum of the internal PO with 10% and the external production, but if the order have production the billing amount will be the sum of the production invoiced, production pending billing and the internal PO with 10% and the external production, this formula is to avoid that some orders that have no production but have internal PO and External Production have a billing amount of 0 when they should have a billing amount different from 0 because of the internal PO and External Production.
         #billing_amount = validate_decimals(dailyItemTotal) + validate_decimals(poTotal) + validate_decimals(epTotal)
@@ -6570,7 +6570,9 @@ def get_order_list(request,estatus, loc,pid,addR,invNumber,invAmount,invAmountF,
             pending_POs += validate_decimals(i.total) * validate_decimals('1.1') # assuming that the billing amount of the internal PO is the total with a 10% increase, this formula is to avoid that some internal POs that are not included in estimates and Invoices and are billables have a pending billing amount of 0 when they should have a pending billing amount different from 0 because of the internal PO
         
         pending_billing = 0
-        pending_billing = validate_decimals(prod_no_facturada) + validate_decimals(pending_POs)
+        pending_billing = validate_decimals(prod_no_facturada)
+        
+        invoicedAmount = validate_decimals(prod_facturada)
         
         
         ws.write(row_num, 9, billing_amount,  font_style_number)
@@ -8922,9 +8924,9 @@ def billing_list(request, id, isRestoring):
         
         ##### Calculos
         prod_facturada = 0
-        prod_facturada = get_production_total_for_wo(wo.id)
+        prod_facturada = get_invoiced_production_total_for_wo(wo.id)
         prod_no_facturada = 0
-        prod_no_facturada = get_ue_production_total_for_wo(wo.id)
+        prod_no_facturada = get_uninvoiced_production_total_for_wo(wo.id)
         
         po_total = 0
         for i in internal:
@@ -8935,6 +8937,34 @@ def billing_list(request, id, isRestoring):
                     po_total += Decimal(str(i.total))
 		
         po_total = validate_decimals(po_total)
+        
+        #po Facturado
+        po_facturado = 0
+        
+        internal_facturado = internalPO.objects.filter(woID = wo, nonBillable = False, invoice__isnull = False )
+        
+        for i in internal_facturado:
+            if i.total:
+                if i.isAmountRounded:
+                    po_facturado += int(round(float(str(i.total))))
+                else:
+                    po_facturado += Decimal(str(i.total))
+		
+        po_facturado = validate_decimals(po_facturado)
+        
+        #po No Facturado
+        po_no_facturado = 0
+        
+        internal_no_facturado = internalPO.objects.filter(woID = wo, nonBillable = False, invoice__isnull = True )
+        
+        for i in internal_no_facturado:
+            if i.total:
+                if i.isAmountRounded:
+                    po_no_facturado += int(round(float(str(i.total))))
+                else:
+                    po_no_facturado += Decimal(str(i.total))
+		
+        po_no_facturado = validate_decimals(po_no_facturado)
         
         #Calculate Payroll
         dailys = Daily.objects.filter(woID = wo)
@@ -8952,12 +8982,12 @@ def billing_list(request, id, isRestoring):
         for s in subC:
             subcontractor += validate_decimals(s.total_invoice)
         
-        context["prod_facturada"] = prod_facturada
-        context["prod_no_facturada"] = prod_no_facturada
+        context["prod_facturada"] = validate_decimals(prod_facturada)
+        context["prod_no_facturada"] = validate_decimals(prod_no_facturada)
         context["po_total"] = po_total 
         context["subcontractor"] = subcontractor 
         context["payroll"] = empTotal         
-        context["billing_amount"] = validate_decimals(po_total * 1.10) + validate_decimals(prod_facturada) +  validate_decimals(prod_no_facturada)
+        context["billing_amount"] = validate_decimals(prod_facturada) +  validate_decimals(prod_no_facturada)
 
     except Exception as e:
         errorMessage += str(e) + 'ultimo \n'
@@ -11545,7 +11575,7 @@ def calculate_billing_amount(request, wo):
 
 
 
-def get_production_total_for_wo(wo):
+def get_invoiced_production_total_for_wo(wo):
     if wo is None:
         return Decimal('0')
 
@@ -11554,15 +11584,32 @@ def get_production_total_for_wo(wo):
         if wo is None:
             return validate_decimals('0')
 
-    qs = authorizedBilling.objects.filter(woID=wo).exclude(estimate__isnull=True).exclude(estimate='').exclude(estimate='0')
+    qs = authorizedBilling.objects.filter(woID=wo).exclude(invoice__isnull=True).exclude(invoice='').exclude(invoice='0')
 
     total = validate_decimals('0')
     for ab in qs:        
         total += validate_decimals(ab.total)
 
-    return validate_decimals(total)
+    #po Facturado
+    po_facturado = 0
+    
+    internal_facturado = internalPO.objects.filter(woID = wo, nonBillable = False, invoice__isnull = False )
+    
+    for i in internal_facturado:
+        if i.total:
+            if i.isAmountRounded:
+                po_facturado += int(round(float(str(i.total))))
+            else:
+                po_facturado += Decimal(str(i.total))
+    
+    po_facturado = validate_decimals(po_facturado)  
+    
+    total_facturado = 0
+    total_facturado = validate_decimals(total) + validate_decimals(po_facturado * 1.10)
 
-def get_ue_production_total_for_wo(wo):
+    return validate_decimals(total_facturado)
+
+def get_uninvoiced_production_total_for_wo(wo):
     if wo is None:
         return Decimal('0')
 
@@ -11571,13 +11618,29 @@ def get_ue_production_total_for_wo(wo):
         if wo is None:
             return validate_decimals('0')
 
-    qs = authorizedBilling.objects.filter(woID=wo, Status = 1)
+    qs = authorizedBilling.objects.filter(woID=wo, Status__in = (1,2))
 
     total = validate_decimals('0')
     for ab in qs:        
         total += validate_decimals(ab.total)
-
-    return validate_decimals(total)
+        
+        
+    #po No Facturado
+    po_no_facturado = 0
+    
+    internal_no_facturado = internalPO.objects.filter(woID = wo, nonBillable = False, invoice__isnull = True )
+    
+    for i in internal_no_facturado:
+        if i.total:
+            if i.isAmountRounded:
+                po_no_facturado += int(round(float(str(i.total))))
+            else:
+                po_no_facturado += Decimal(str(i.total))
+    
+    po_no_facturado = validate_decimals(po_no_facturado)     
+    total_no_facturado = 0   
+    total_no_facturado = validate_decimals(total) + validate_decimals(po_no_facturado * 1.10)
+    return validate_decimals(total_no_facturado)
 
 
 def get_unestimated_production_total(wo):

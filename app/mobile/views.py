@@ -25,7 +25,8 @@ from io import BytesIO
 from xhtml2pdf import pisa
 import base64
 from django.views.decorators.http import require_POST
-from django.db.models import Sum
+from django.db.models import Sum, OuterRef, Subquery, Value, CharField, IntegerField
+from django.db.models.functions import Concat, Cast
 
 @login_required(login_url='/home/')
 def mobile(request):
@@ -1686,7 +1687,16 @@ def supervisor_list(request):
             ts = DailyMob.objects.filter(supervisor = emp.employeeID , Status__in = (2,3))
 
 
-    ts = ts.annotate(total_payout=Sum('dailymobemployee__payout'))
+    supervisor_name_subquery = catalogModel.Employee.objects.annotate(
+        full_name=Concat('first_name', Value(' '), 'last_name')
+    ).filter(employeeID=Cast(OuterRef('supervisor'), IntegerField())).values('full_name')[:1]
+
+    ts = ts.annotate(
+        total_payout=Sum('dailymobemployee__payout'),
+        supervisor_name=Subquery(supervisor_name_subquery, output_field=CharField())
+    )
+    
+    
         
     context["origen"] = "supervisor_list"
     context["emp"] = emp
