@@ -60,6 +60,8 @@ urlpatterns = [
     path('unlink_po/<id>/<woID>',views.unlink_po),
     path('delete_po/<id>/<woID>',views.delete_po),
     path('create_po/<id>/<selectedvs>',views.create_po),
+    # Validate Invoices
+    path('validate_invoices/', views.validate_invoices, name='validate_invoices'),
     path('add_internalPO_to_estimate/<poID>/<woID>/<estimateID>',views.add_internalPO_to_estimate),
     path('add_hours_to_estimate/<woID>/<estimateID>',views.add_hours_to_estimate),
     path('estimate_preview/<id>/<estimateID>',views.estimate_preview),

@@ -60,7 +60,10 @@
                             </div>                                    
                             <div class="row">
                                   <!-- Using the formset -->
-                                {{ form.as_p }}
+                                {{ form.as_p }}                                
+                                <input type="hidden" id="current_po_id" value="{{ po.id|default:'' }}">
+                                <div id="invoice-warning" class="mt-2" style="display:none;"></div>
+                                
                             </div>
                             <div class="row"> 
                                 <div class="col-lg-12">
@@ -123,4 +126,61 @@
         </div>      
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const input = document.querySelector('input[name="invoices"]');
+  const warnDiv = document.getElementById('invoice-warning');
+  const currentId = document.getElementById('current_po_id') ? document.getElementById('current_po_id').value : '';
+
+  if (!input) return;
+
+  // Function to perform validation
+  function validateInvoices() {
+    const val = input.value || '';
+    const invoices = val.split(',').map(s=>s.trim()).filter(Boolean);
+    
+    if (invoices.length === 0) {
+      warnDiv.style.display = 'none';
+      warnDiv.innerHTML = '';
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set('invoices', invoices.join(','));
+    if (currentId) params.set('current_id', currentId);
+
+    fetch('/validate_invoices/?' + params.toString(), { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.matches && data.matches.length) {
+          let msg = 'Duplicate invoices found: ';
+          const html = [];
+          data.matches.forEach(m => {
+            msg += `Invoice: ${m.invoice} |  PO#: ${m.poNumber} | Amount: ${m.total}\n`;
+            html.push(`<div class="alert alert-warning"><strong>Duplicate invoices found:</br>  Invoice:</strong> ${m.invoice} | <strong>PO#:</strong> ${m.poNumber} | <strong>Amount:</strong> ${m.total}</div>`);
+          });
+          alert(msg);
+          warnDiv.innerHTML = html.join('');
+          warnDiv.style.display = 'block';
+        } else {
+          warnDiv.style.display = 'none';
+          warnDiv.innerHTML = '';
+        }
+      })
+      .catch(err => {
+        console.error('validate_invoices error', err);
+      });
+  }
+
+  // Validate on blur
+  input.addEventListener('blur', validateInvoices);
+
+  // Validate on page load
+  if (input.value) {
+    validateInvoices();
+  }
+});
+</script>
+
 {% endblock %}

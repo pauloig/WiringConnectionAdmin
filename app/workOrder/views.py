@@ -48,7 +48,7 @@ from django.views.generic import CreateView
 from django.http import JsonResponse
 from django.db import transaction
 from workOrder import models as catalogModel
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, F
@@ -2594,6 +2594,38 @@ def create_po(request, id, selectedvs):
     context["emp"] = emp
     context["selectedWO"] = id
     return render(request, "create_po.html", context)
+
+
+@require_GET
+@login_required(login_url='/home/')
+def validate_invoices(request):
+    invoices_raw = request.GET.get('invoices','')
+    current_id = request.GET.get('current_id','')
+    invoices = [i.strip() for i in invoices_raw.split(',') if i.strip()]
+    matches = []
+
+    if not invoices:
+        return JsonResponse({'matches': []})
+
+    qs = internalPO.objects.all()
+    if current_id:
+        try:
+            qs = qs.exclude(pk=int(current_id))
+        except:
+            pass
+
+    for inv in invoices:
+        for rec in qs:
+            if rec.invoices:
+                rec_list = [r.strip() for r in rec.invoices.split(',') if r.strip()]
+                if inv in rec_list:
+                    matches.append({
+                        'invoice': inv,
+                        'po_id': rec.id,
+                        'poNumber': rec.poNumber,
+                        'total': rec.total or ''
+                    })
+    return JsonResponse({'matches': matches})
 
 @login_required(login_url='/home/')
 def estimate(request, id, estimateID):
