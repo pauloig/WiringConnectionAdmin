@@ -11638,7 +11638,26 @@ def get_invoiced_production_total_for_wo(wo):
     
     total_facturado = 0
     total_facturado = validate_decimals(total) + validate_decimals(po_facturado * 1.10)
+    
+    #Adding Billable Hours
+    bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True, invoice__isnull = False).exclude(Status=4)
+    
 
+    totalHours = 0
+    totalHoursRate =  0
+
+    for b in bill:
+        totalHours +=  validate_decimals(b.total_hours) 
+        #Calculating Regular Hours
+        totalHoursRate += (validate_decimals(b.regular_hours) * validate_decimals(b.EmployeeID.hourly_rate))
+
+        #Calculating OT Hours
+        totalHoursRate += (validate_decimals(b.ot_hour) * (validate_decimals(b.EmployeeID.hourly_rate)* 1.5))
+
+        #Calculating OT Hours
+        totalHoursRate += (validate_decimals(b.double_time) * (validate_decimals(b.EmployeeID.hourly_rate)* 2))
+
+    total_facturado += validate_decimals(totalHoursRate) 
     return validate_decimals(total_facturado)
 
 def get_uninvoiced_production_total_for_wo(wo):
@@ -11672,6 +11691,26 @@ def get_uninvoiced_production_total_for_wo(wo):
     po_no_facturado = validate_decimals(po_no_facturado)     
     total_no_facturado = 0   
     total_no_facturado = validate_decimals(total) + validate_decimals(po_no_facturado * 1.10)
+    
+    #Adding Billable Hours
+    bill = DailyEmployee.objects.filter(DailyID__woID =wo, billableHours = True, invoice__isnull = True).exclude(Status=4)
+    
+
+    totalHours = 0
+    totalHoursRate =  0
+
+    for b in bill:
+        totalHours +=  validate_decimals(b.total_hours) 
+        #Calculating Regular Hours
+        totalHoursRate += (validate_decimals(b.regular_hours) * validate_decimals(b.EmployeeID.hourly_rate))
+
+        #Calculating OT Hours
+        totalHoursRate += (validate_decimals(b.ot_hour) * (validate_decimals(b.EmployeeID.hourly_rate)* 1.5))
+
+        #Calculating OT Hours
+        totalHoursRate += (validate_decimals(b.double_time) * (validate_decimals(b.EmployeeID.hourly_rate)* 2))
+
+    total_no_facturado += validate_decimals(totalHoursRate) 
     return validate_decimals(total_no_facturado)
 
 
