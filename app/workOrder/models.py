@@ -551,7 +551,9 @@ class internalPO(models.Model):
     transferBy = models.CharField(max_length=60, blank=True, null=True)
     created_date = models.DateTimeField(blank=True, null=True)
     createdBy = models.CharField(max_length=60, blank=True, null=True)
-
+    updated_date = models.DateTimeField(blank=True, null=True)
+    updatedBy = models.CharField(max_length=60, blank=True, null=True)
+    
     class Meta:
         unique_together = ('id', 'woID')
 

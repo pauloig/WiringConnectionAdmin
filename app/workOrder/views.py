@@ -2326,8 +2326,8 @@ def update_po(request, id, woID, selectedvs):
         except Exception as e:
             None
 
-        form.instance.createdBy = request.user.username
-        form.instance.created_date = datetime.now()
+        form.instance.updatedBy = request.user.username
+        form.instance.updated_date = datetime.now()
             
         form.save()
 
@@ -2411,8 +2411,7 @@ def update_deleted_po(request, id, woID, selectedvs):
         except Exception as e:
             None
 
-        form.instance.createdBy = request.user.username
-        form.instance.created_date = datetime.now()
+        
             
         form.save()
 

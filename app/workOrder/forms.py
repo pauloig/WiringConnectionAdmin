@@ -304,6 +304,8 @@ class InternalPOForm(forms.ModelForm):
             'isAmountRounded',            
             'created_date',
             'createdBy',
+            'updated_date',
+            'updatedBy',
             'Status',
             #'transferFromPO',
             'transfer_date',
@@ -317,6 +319,8 @@ class InternalPOForm(forms.ModelForm):
         #self.fields['woID'].disabled = True
         self.fields['createdBy'].disabled = True
         self.fields['created_date'].disabled = True
+        self.fields['updatedBy'].disabled = True
+        self.fields['updated_date'].disabled = True
         self.fields['Status'].disabled = True
         #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
@@ -346,7 +350,7 @@ class DeletedInternalPOForm(forms.ModelForm):
             'total',
             'isAmountRounded',            
             'created_date',
-            'createdBy',
+            'createdBy',            
             'Status',
             #'transferFromPO',
             'transfer_date',
@@ -365,6 +369,7 @@ class DeletedInternalPOForm(forms.ModelForm):
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True
         self.fields['total'].disabled = True
+        
  
 class InternalPOFormAccounPay(forms.ModelForm):   
     #poNumber = forms.IntegerField(label = "PO Number", widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
@@ -389,6 +394,8 @@ class InternalPOFormAccounPay(forms.ModelForm):
             'isAmountRounded',            
             'created_date',
             'createdBy',
+            'updated_date',
+            'updatedBy',
             'Status',
             #'transferFromPO',
             'transfer_date',
@@ -406,6 +413,8 @@ class InternalPOFormAccounPay(forms.ModelForm):
         #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True        
+        self.fields['updated_date'].disabled = True
+        self.fields['updatedBy'].disabled = True
 
 class InternalPOFormAdmin(forms.ModelForm):   
     #poNumber = forms.IntegerField(label = "PO Number", widget=forms.TextInput(attrs={'class':'form-control'}), required=False)
@@ -433,6 +442,8 @@ class InternalPOFormAdmin(forms.ModelForm):
             'nonBillable',
             'created_date',
             'createdBy',
+            'updated_date',
+            'updatedBy',
             'Status',
             #'transferFromPO',
             'transfer_date',
@@ -450,6 +461,8 @@ class InternalPOFormAdmin(forms.ModelForm):
         #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True 
+        self.fields['updated_date'].disabled = True
+        self.fields['updatedBy'].disabled = True
 
 
 class InternalPOFormAdminUpdate(forms.ModelForm):   
@@ -478,6 +491,8 @@ class InternalPOFormAdminUpdate(forms.ModelForm):
             'nonBillable',
             'created_date',
             'createdBy',
+            'updated_date',
+            'updatedBy',
             'Status',
             #'transferFromPO',
             'transfer_date',
@@ -495,6 +510,8 @@ class InternalPOFormAdminUpdate(forms.ModelForm):
         #self.fields['transferFromPO'].disabled = True
         self.fields['transfer_date'].disabled = True
         self.fields['transferBy'].disabled = True 
+        self.fields['updated_date'].disabled = True
+        self.fields['updatedBy'].disabled = True
         
 
 
